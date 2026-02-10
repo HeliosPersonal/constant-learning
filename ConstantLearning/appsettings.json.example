@@ -27,7 +27,8 @@
     "_comment": "Configure learning behavior",
     "RepetitionWordsCount": 10,
     "NewWordsCount": 3,
-    "AnswerDelaySeconds": 5
+    "AnswerDelaySeconds": 5,
+    "LearnedWordsChunkSize": 10
   },
   
   "Language": {

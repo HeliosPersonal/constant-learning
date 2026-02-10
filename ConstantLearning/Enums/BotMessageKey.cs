@@ -31,6 +31,11 @@ public enum BotMessageKey
     // Help
     Help,
     
+    // Get All Learned
+    NoLearnedWords,
+    LearnedWordsHeader,
+    GetAllLearnedError,
+    
     // Message Formatter
     NoRepetitionWords,
     RepetitionHeader,

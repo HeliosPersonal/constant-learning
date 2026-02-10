@@ -80,6 +80,50 @@ Clear all learning progress for this group and start from scratch.
 
 ---
 
+### `/getalllearned`
+
+Display all words you've learned so far in this group.
+
+**Usage:**
+```
+/getalllearned
+```
+
+**Response:**
+```
+📚 Вивчені слова (1-10/42):
+
+1. tak [tak] → так
+2. dla [dla] → для
+3. więc [vjenʦ] → отже
+4. być [być] → бути
+5. mieć [mjeć] → мати
+6. robić [robić] → робити
+7. móc [muʦ] → могти
+8. wiedzieć [vjeʣeć] → знати
+9. powiedzieć [povjedzieć] → сказати
+10. chcieć [hćeć] → хотіти
+
+📚 Вивчені слова (11-20/42):
+
+11. znaleźć [znaleźć] → знайти
+...
+```
+
+**Notes:**
+- Words are shown in the order you learned them
+- Messages are sent in chunks (configurable, default: 10 words per message)
+- Small delay between chunks to avoid spam
+- Only works if group is registered
+
+**Configuration:**
+Change chunk size in `docker-compose.yml`:
+```yaml
+Learning__LearnedWordsChunkSize: "10"  # Words per message
+```
+
+---
+
 ## Schedule Configuration
 
 ### `/setrepetitiontime`
@@ -197,6 +241,7 @@ Show all available commands.
 | `/startlearning` | Register group | No |
 | `/stoplearning` | Pause messages | Yes |
 | `/restartprogress` | Clear progress | Yes |
+| `/getalllearned` | Show all learned words | Yes |
 | `/setrepetitiontime HH:MM` | Set repetition time | Yes |
 | `/setnewwordstime HH:MM` | Set new words time | Yes |
 | `/setwordscount XY` | Set word counts | Yes |

@@ -42,6 +42,7 @@
       Learning__RepetitionWordsCount: "10"       # How many words to repeat
       Learning__NewWordsCount: "3"               # How many new words per day
       Learning__AnswerDelaySeconds: "5"          # Delay before showing answers
+      Learning__LearnedWordsChunkSize: "10"      # Words per message in /getalllearned
       
       # Language settings - change these to learn different languages
       # For English: TargetLanguage="English", TargetLanguageCode="en", CsvPath="/app/Resources/Words/words-english-ukrainian.csv"

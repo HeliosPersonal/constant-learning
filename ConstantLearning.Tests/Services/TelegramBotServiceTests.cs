@@ -1,6 +1,8 @@
-﻿using ConstantLearning.Services;
+﻿using ConstantLearning.Configuration;
+using ConstantLearning.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Telegram.Bot;
 
@@ -16,13 +18,16 @@ public class TelegramBotServiceTests
         var botMessagesMock = new Mock<IBotMessagesService>();
         var loggerMock = new Mock<ILogger<TelegramBotService>>();
         var serviceProviderMock = new Mock<IServiceProvider>();
+        var learningOptionsMock = new Mock<IOptions<LearningOptions>>();
+        learningOptionsMock.Setup(x => x.Value).Returns(new LearningOptions { LearnedWordsChunkSize = 10 });
 
         // Act
         var service = new TelegramBotService(
             botClientMock.Object,
             botMessagesMock.Object,
             loggerMock.Object,
-            serviceProviderMock.Object);
+            serviceProviderMock.Object,
+            learningOptionsMock.Object);
 
         // Assert
         service.Should().NotBeNull();
@@ -36,12 +41,15 @@ public class TelegramBotServiceTests
         var botMessagesMock = new Mock<IBotMessagesService>();
         var loggerMock = new Mock<ILogger<TelegramBotService>>();
         var serviceProviderMock = new Mock<IServiceProvider>();
+        var learningOptionsMock = new Mock<IOptions<LearningOptions>>();
+        learningOptionsMock.Setup(x => x.Value).Returns(new LearningOptions { LearnedWordsChunkSize = 10 });
 
         var service = new TelegramBotService(
             botClientMock.Object,
             botMessagesMock.Object,
             loggerMock.Object,
-            serviceProviderMock.Object);
+            serviceProviderMock.Object,
+            learningOptionsMock.Object);
 
         const long chatId = 12345;
         const string text = "Test message";

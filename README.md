@@ -85,6 +85,7 @@ A Telegram bot for learning foreign words through spaced repetition. Built with 
 | `/startlearning` | Register group for learning |
 | `/stoplearning` | Pause scheduled messages |
 | `/restartprogress` | Clear learning progress |
+| `/getalllearned` | Show all learned words |
 | `/setrepetitiontime HH:MM` | Set daily repetition time |
 | `/setnewwordstime HH:MM` | Set daily new words time |
 | `/setwordscount XY` | Set word counts (X=new, Y=repetition) |
@@ -105,6 +106,7 @@ Telegram__WebhookUrl: "https://yourdomain.com/api/telegram/webhook"  # Optional
 Learning__NewWordsCount: "3"
 Learning__RepetitionWordsCount: "10"
 Learning__AnswerDelaySeconds: "30"
+Learning__LearnedWordsChunkSize: "10"
 
 # Language
 Language__TargetLanguage: "Polish"

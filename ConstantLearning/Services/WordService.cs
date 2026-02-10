@@ -8,6 +8,7 @@ public interface IWordService
 {
     Task<List<Word>> GetRandomLearnedWordsAsync(long chatId, int count);
     Task<List<Word>> GetNewWordsAsync(long chatId, int count);
+    Task<List<Word>> GetAllLearnedWordsAsync(long chatId);
     Task MarkWordsAsLearnedAsync(long chatId, IEnumerable<int> wordIds);
     Task UpdateRepetitionAsync(long chatId, IEnumerable<int> wordIds);
 }
@@ -48,6 +49,28 @@ public class WordService(AppDbContext context) : IWordService
             .OrderBy(w => w.FrequencyRank)
             .Take(count)
             .ToListAsync();
+    }
+
+    public async Task<List<Word>> GetAllLearnedWordsAsync(long chatId)
+    {
+        var learnedWordIds = await context.LearnedWords
+            .Where(lw => lw.ChatId == chatId)
+            .OrderBy(lw => lw.LearnedAt)
+            .Select(lw => lw.WordId)
+            .ToListAsync();
+
+        if (learnedWordIds.Count == 0)
+        {
+            return [];
+        }
+
+        var words = await context.Words
+            .Where(w => learnedWordIds.Contains(w.Id))
+            .ToListAsync();
+
+        return words
+            .OrderBy(w => learnedWordIds.IndexOf(w.Id))
+            .ToList();
     }
 
     public async Task MarkWordsAsLearnedAsync(long chatId, IEnumerable<int> wordIds)

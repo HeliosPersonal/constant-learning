@@ -1,4 +1,6 @@
-﻿using ConstantLearning.Enums;
+﻿using ConstantLearning.Configuration;
+using ConstantLearning.Enums;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -15,7 +17,8 @@ public class TelegramBotService(
     ITelegramBotClient botClient,
     IBotMessagesService botMessages,
     ILogger<TelegramBotService> logger,
-    IServiceProvider serviceProvider)
+    IServiceProvider serviceProvider,
+    IOptions<LearningOptions> learningOptions)
     : ITelegramBotService
 {
     public async Task SendMessageAsync(string text, long chatId, ParseMode parseMode = ParseMode.Markdown)
@@ -78,6 +81,12 @@ public class TelegramBotService(
                 if (messageText.StartsWith("/setwordscount", StringComparison.OrdinalIgnoreCase))
                 {
                     await HandleSetWordsCountCommand(messageChatId, messageText);
+                    return;
+                }
+
+                if (messageText.Equals("/getalllearned", StringComparison.OrdinalIgnoreCase))
+                {
+                    await HandleGetAllLearnedCommand(messageChatId);
                     return;
                 }
 
@@ -349,6 +358,64 @@ public class TelegramBotService(
             return false;
 
         return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+    }
+
+    private async Task HandleGetAllLearnedCommand(long messageChatId)
+    {
+        try
+        {
+            logger.LogInformation("Processing /getalllearned command for chat {ChatId}", messageChatId);
+
+            using var scope = serviceProvider.CreateScope();
+            var chatRegistrationService = scope.ServiceProvider.GetRequiredService<IChatRegistrationService>();
+            var wordService = scope.ServiceProvider.GetRequiredService<IWordService>();
+
+            if (!await EnsureChatRegisteredAsync(messageChatId, chatRegistrationService))
+                return;
+
+            var learnedWords = await wordService.GetAllLearnedWordsAsync(messageChatId);
+
+            if (learnedWords.Count == 0)
+            {
+                var noWordsMessage = botMessages.GetMessage(BotMessageKey.NoLearnedWords);
+                await botClient.SendMessage(chatId: messageChatId, text: noWordsMessage, parseMode: ParseMode.Markdown);
+                return;
+            }
+
+            var chunkSize = learningOptions.Value.LearnedWordsChunkSize;
+            var totalWords = learnedWords.Count;
+            var chunks = learnedWords.Chunk(chunkSize).ToList();
+
+            for (var i = 0; i < chunks.Count; i++)
+            {
+                var chunk = chunks[i];
+                var startIndex = i * chunkSize + 1;
+                var endIndex = Math.Min((i + 1) * chunkSize, totalWords);
+                
+                var header = botMessages.GetMessage(BotMessageKey.LearnedWordsHeader, $"{startIndex}-{endIndex}", totalWords);
+                var wordsList = string.Join("\n", chunk.Select((w, idx) => 
+                    $"{startIndex + idx}. {w.TargetWord} [{w.PhoneticTranscription}] → {w.SourceMeaning}"));
+                
+                var message = $"{header}\n\n{wordsList}";
+                
+                await botClient.SendMessage(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
+                
+                if (i < chunks.Count - 1)
+                {
+                    await Task.Delay(500);
+                }
+            }
+
+            logger.LogInformation("Sent {ChunkCount} messages with {TotalWords} learned words to chat {ChatId}", 
+                chunks.Count, totalWords, messageChatId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error handling getalllearned command for chat {ChatId}", messageChatId);
+
+            var errorMessage = botMessages.GetMessage(BotMessageKey.GetAllLearnedError);
+            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+        }
     }
 
     private async Task HandleHelpCommand(long messageChatId)
