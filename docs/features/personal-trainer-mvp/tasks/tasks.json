@@ -1,0 +1,946 @@
+{
+  "slug": "personal-trainer-mvp",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Створити каркас feature-модулів, Platform і NodaTime",
+      "layer": "wiring",
+      "deps": [],
+      "acs": [],
+      "dod": "`dotnet build` і наявні тести зелені; архітектурний тест падає на навмисному порушенні межі модуля й проходить без нього; `IClock` зареєстровано, `DateTime.Now` у нових модулях не використовується",
+      "files_hint": [
+        "ConstantLearning/Features/",
+        "ConstantLearning/Platform/",
+        "ConstantLearning/Data/AppDbContext.cs",
+        "ConstantLearning/Data/AppDbContextFactory.cs",
+        "ConstantLearning/Program.cs",
+        "ConstantLearning/ConstantLearning.csproj",
+        "ConstantLearning.Tests/Architecture/"
+      ]
+    },
+    {
+      "id": "T02",
+      "title": "Додати інтеграційні тести на PostgreSQL з FakeClock і фікстурами",
+      "layer": "tests",
+      "deps": [
+        "T01"
+      ],
+      "acs": [],
+      "dod": "приклад інтеграційного тесту піднімає контейнер, застосовує міграції й проходить; тести без Docker позначено й пропускаються з поясненням, а не падають",
+      "files_hint": [
+        "ConstantLearning.Tests/Infrastructure/",
+        "ConstantLearning.Tests/Fixtures/",
+        "ConstantLearning.Tests/ConstantLearning.Tests.csproj"
+      ]
+    },
+    {
+      "id": "T03",
+      "title": "Перенести міграції learner і нагадувань",
+      "layer": "migration",
+      "deps": [
+        "T01"
+      ],
+      "acs": [],
+      "dod": "міграції застосовуються на чистій БД і відкочуються `.down.sql` без залишків; snapshot EF не породжує нової міграції після `dotnet ef migrations add Check`; самоперевірка `.claude/rules/migrations.md` без порушень",
+      "files_hint": [
+        "docs/features/personal-trainer-mvp/migrations/20261031120000_create_learners_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120001_create_reminder_schedules_*",
+        "ConstantLearning/Migrations/",
+        "ConstantLearning/Features/Identity/Data/"
+      ]
+    },
+    {
+      "id": "T04",
+      "title": "Перенести міграції записів, версій, перекладів і прийнятих відповідей",
+      "layer": "migration",
+      "deps": [
+        "T03"
+      ],
+      "acs": [],
+      "dod": "міграції застосовуються на чистій БД і відкочуються `.down.sql` без залишків; snapshot EF не породжує нової міграції після `dotnet ef migrations add Check`; самоперевірка `.claude/rules/migrations.md` без порушень",
+      "files_hint": [
+        "docs/features/personal-trainer-mvp/migrations/20261031120002_create_dictionary_entries_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120003_create_entry_versions_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120004_add_published_version_fk_to_dictionary_entries_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120005_create_version_translations_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120006_create_version_accepted_answers_*",
+        "ConstantLearning/Migrations/",
+        "ConstantLearning/Features/Content/Data/"
+      ]
+    },
+    {
+      "id": "T05",
+      "title": "Перенести міграції слів learner, session, карток і журналу відповідей",
+      "layer": "migration",
+      "deps": [
+        "T04"
+      ],
+      "acs": [],
+      "dod": "міграції застосовуються на чистій БД і відкочуються `.down.sql` без залишків; snapshot EF не породжує нової міграції після `dotnet ef migrations add Check`; самоперевірка `.claude/rules/migrations.md` без порушень",
+      "files_hint": [
+        "docs/features/personal-trainer-mvp/migrations/20261031120007_create_learner_words_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120008_create_learning_sessions_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120009_create_session_items_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120010_create_answer_events_*",
+        "ConstantLearning/Migrations/",
+        "ConstantLearning/Features/Learning/Data/"
+      ]
+    },
+    {
+      "id": "T06",
+      "title": "Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій",
+      "layer": "migration",
+      "deps": [
+        "T05"
+      ],
+      "acs": [],
+      "dod": "міграції застосовуються на чистій БД і відкочуються `.down.sql` без залишків; snapshot EF не породжує нової міграції після `dotnet ef migrations add Check`; самоперевірка `.claude/rules/migrations.md` без порушень",
+      "files_hint": [
+        "docs/features/personal-trainer-mvp/migrations/20261031120011_create_content_reports_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120012_add_content_report_fk_to_entry_versions_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120013_create_answer_neutralizations_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120014_create_validation_evidence_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120015_create_publication_log_*",
+        "ConstantLearning/Migrations/",
+        "ConstantLearning/Features/Content/Data/",
+        "ConstantLearning/Features/Learning/Data/"
+      ]
+    },
+    {
+      "id": "T07",
+      "title": "Перенести міграції форм пошуку, довідок, задач звірки й відправлень",
+      "layer": "migration",
+      "deps": [
+        "T06"
+      ],
+      "acs": [],
+      "dod": "міграції застосовуються на чистій БД і відкочуються `.down.sql` без залишків; snapshot EF не породжує нової міграції після `dotnet ef migrations add Check`; самоперевірка `.claude/rules/migrations.md` без порушень",
+      "files_hint": [
+        "docs/features/personal-trainer-mvp/migrations/20261031120016_create_search_forms_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120017_create_morph_forms_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120018_create_reference_entries_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120019_create_verification_jobs_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120020_create_notification_dispatches_*",
+        "docs/features/personal-trainer-mvp/migrations/20261031120022_alter_content_reports_dedup_and_summary_*",
+        "ConstantLearning/Migrations/",
+        "ConstantLearning/Features/Content/Data/",
+        "ConstantLearning/Features/Notifications/Data/"
+      ]
+    },
+    {
+      "id": "T08",
+      "title": "Реалізувати обчислення доби learner зі зміною поясу",
+      "layer": "domain",
+      "deps": [
+        "T01"
+      ],
+      "acs": [
+        "AC-07",
+        "AC-54"
+      ],
+      "dod": "unit-тести з `FakeClock` на AC-07 (Варшава → Токіо) і AC-54 (Варшава → Нью-Йорк) зелені; тести на перехід на літній і зимовий час зелені; сервіс не звертається до БД",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Domain/LearnerDay/",
+        "ConstantLearning.Tests/Learning/Domain/LearnerDay/"
+      ]
+    },
+    {
+      "id": "T09",
+      "title": "Реалізувати оцінку відповіді з нормалізацією й різницею написання",
+      "layer": "domain",
+      "deps": [
+        "T01"
+      ],
+      "acs": [
+        "AC-12",
+        "AC-13",
+        "AC-14",
+        "AC-15",
+        "AC-16",
+        "AC-56",
+        "AC-57"
+      ],
+      "dod": "unit-тести на кожен результат AC-12…AC-16 зелені; unit-тести AC-56, AC-57 і таблиця нормалізації (пунктуація, кириличні двійники) зелені; diff однаковий для однакових пар відповідей",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Domain/Evaluation/",
+        "ConstantLearning.Tests/Learning/Domain/Evaluation/"
+      ]
+    },
+    {
+      "id": "T10",
+      "title": "Реалізувати планувальник повторень за портом над журналом відповідей",
+      "layer": "domain",
+      "deps": [
+        "T01"
+      ],
+      "acs": [
+        "AC-08",
+        "AC-18",
+        "AC-19",
+        "AC-22",
+        "AC-23"
+      ],
+      "dod": "property-тест: інтервал після правильної відповіді завжди в межах [max(2, prev+1); min(3·prev, 180)]; unit-тести AC-18, AC-19, AC-22, AC-23 зелені; пропущені доби не створюють mistake (AC-08)",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Domain/Scheduling/",
+        "ConstantLearning.Tests/Learning/Domain/Scheduling/"
+      ]
+    },
+    {
+      "id": "T11",
+      "title": "Реалізувати складання session з лімітами й квотами",
+      "layer": "domain",
+      "deps": [
+        "T08",
+        "T10"
+      ],
+      "acs": [
+        "AC-03",
+        "AC-04",
+        "AC-05",
+        "AC-06",
+        "AC-09",
+        "AC-10"
+      ],
+      "dod": "unit-тести AC-03…AC-06, AC-09, AC-10 зелені; квоти при рівності часток віддають місце `everyday`",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Domain/Composition/",
+        "ConstantLearning.Tests/Learning/Domain/Composition/"
+      ]
+    },
+    {
+      "id": "T12",
+      "title": "Автентифікувати запити за initData і додати роль content editor",
+      "layer": "ports",
+      "deps": [
+        "T03",
+        "T02"
+      ],
+      "acs": [
+        "AC-29",
+        "AC-41",
+        "AC-50"
+      ],
+      "dod": "тести: валідний підпис — 200, підроблений чи прострочений — `auth.invalid_init_data`; learner id береться лише з claims; запит до чужого ресурсу — «не знайдено» (AC-29); `initData` не потрапляє в логи",
+      "files_hint": [
+        "ConstantLearning/Features/Identity/Auth/",
+        "ConstantLearning.Tests/Identity/"
+      ]
+    },
+    {
+      "id": "T13",
+      "title": "Реалізувати онбординг і профіль learner",
+      "layer": "app",
+      "deps": [
+        "T12"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-02",
+        "AC-53"
+      ],
+      "dod": "інтеграційні тести AC-01, AC-02, AC-53 зелені; відповіді збігаються з прикладами `completeOnboarding` (201 і 200)",
+      "files_hint": [
+        "ConstantLearning/Features/Identity/Onboarding/",
+        "ConstantLearning/Features/Identity/Learners/",
+        "ConstantLearning.Tests/Identity/"
+      ]
+    },
+    {
+      "id": "T14",
+      "title": "Реалізувати зміну ліміту, поясу й нагадувань",
+      "layer": "app",
+      "deps": [
+        "T13",
+        "T08"
+      ],
+      "acs": [
+        "AC-27",
+        "AC-44",
+        "AC-45"
+      ],
+      "dod": "інтеграційні тести AC-27, AC-45 зелені; AC-44 у частині ліміту й поясу: новий ліміт не діє в поточну добу learner, пояс змінюється одразу; частину про нагадування перевіряє T30",
+      "files_hint": [
+        "ConstantLearning/Features/Identity/Settings/",
+        "ConstantLearning.Tests/Identity/"
+      ]
+    },
+    {
+      "id": "T15",
+      "title": "Реалізувати старт session з персистенцією карток",
+      "layer": "app",
+      "deps": [
+        "T11",
+        "T05",
+        "T04",
+        "T12"
+      ],
+      "acs": [
+        "AC-03",
+        "AC-04",
+        "AC-05",
+        "AC-08"
+      ],
+      "dod": "інтеграційні тести на PostgreSQL для AC-03, AC-04, AC-05, AC-08 зелені; паралельний старт двох session дає одну активну",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Start/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ]
+    },
+    {
+      "id": "T47",
+      "title": "Застосувати денний ліміт, зміну поясу й квоти під час старту session",
+      "layer": "app",
+      "deps": [
+        "T15",
+        "T08"
+      ],
+      "acs": [
+        "AC-06",
+        "AC-07",
+        "AC-09",
+        "AC-10",
+        "AC-54"
+      ],
+      "dod": "інтеграційні тести AC-06, AC-07, AC-09, AC-10, AC-54 з `FakeClock` зелені",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Start/Limits/",
+        "ConstantLearning.Tests/Learning/Sessions/Limits/"
+      ]
+    },
+    {
+      "id": "T16",
+      "title": "Реалізувати продовження session і закриття на межі доби",
+      "layer": "app",
+      "deps": [
+        "T15"
+      ],
+      "acs": [
+        "AC-24",
+        "AC-25"
+      ],
+      "dod": "інтеграційні тести AC-24, AC-25 з `FakeClock` зелені; unit-тест спільної перевірки «доба session минула» зелений; інтеграційні тести AC-52 — у T17 і T18",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Current/",
+        "ConstantLearning/Features/Learning/Sessions/DayBoundary/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ]
+    },
+    {
+      "id": "T17",
+      "title": "Реалізувати відповідь на картку з ідемпотентністю",
+      "layer": "app",
+      "deps": [
+        "T09",
+        "T10",
+        "T16"
+      ],
+      "acs": [
+        "AC-12",
+        "AC-13",
+        "AC-14",
+        "AC-15",
+        "AC-16",
+        "AC-33",
+        "AC-52",
+        "AC-56",
+        "AC-57"
+      ],
+      "dod": "інтеграційний тест подвійного надсилання дає рівно одну подію відповіді (QG-1); інтеграційні тести AC-12…AC-16, AC-33, AC-52, AC-56, AC-57 зелені; бенчмарк: 200 послідовних відповідей на фікстурі з 1 000 слів learner — p95 обробки на сервері ≤ 500 ms",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Answer/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ]
+    },
+    {
+      "id": "T48",
+      "title": "Застосувати переходи word status і control repetition у відповіді",
+      "layer": "app",
+      "deps": [
+        "T17"
+      ],
+      "acs": [
+        "AC-18",
+        "AC-19",
+        "AC-22",
+        "AC-23"
+      ],
+      "dod": "інтеграційні тести AC-18, AC-19, AC-22, AC-23 зелені; лічильник recalled words змінюється лише на цих переходах",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Answer/Status/",
+        "ConstantLearning.Tests/Learning/Sessions/Status/"
+      ]
+    },
+    {
+      "id": "T18",
+      "title": "Реалізувати картку нового слова, «Далі» і «Вже знаю»",
+      "layer": "app",
+      "deps": [
+        "T17",
+        "T10"
+      ],
+      "acs": [
+        "AC-11",
+        "AC-20",
+        "AC-21",
+        "AC-52"
+      ],
+      "dod": "інтеграційні тести AC-11, AC-20, AC-21 зелені; інтеграційні тести AC-52 для «Далі» і «Вже знаю» зелені; повтор «Далі» і «Вже знаю» безпечний",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/NewWords/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ]
+    },
+    {
+      "id": "T19",
+      "title": "Реалізувати екран «Сьогодні» на сервері",
+      "layer": "app",
+      "deps": [
+        "T16"
+      ],
+      "acs": [
+        "AC-10",
+        "AC-28",
+        "AC-29",
+        "AC-33"
+      ],
+      "dod": "інтеграційні тести AC-28, AC-29 зелені; слово запису без `approved` не рахується в повтореннях і recalled words (AC-33); бенчмарк: на фікстурі з 1 000 слів learner p95 відповіді сервера ≤ 300 ms",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Today/",
+        "ConstantLearning.Tests/Learning/Today/"
+      ]
+    },
+    {
+      "id": "T20",
+      "title": "Імпортувати редакторський CSV у версійований словник",
+      "layer": "infra",
+      "deps": [
+        "T04",
+        "T06"
+      ],
+      "acs": [
+        "AC-32",
+        "AC-33"
+      ],
+      "dod": "інтеграційний тест: повторний імпорт без змін не створює версій; AC-32, AC-33: запис без `approved` не має `published_version_id`, а в `publication_log` є рядок `unpublish`; версії й історія learner лишаються; старий `WordImportService` не викликається для нової моделі",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Import/",
+        "ConstantLearning/Features/Content/Publishing/",
+        "ConstantLearning/HostedServices/DatabaseInitializationService.cs",
+        "docs/dictionary/content-schema.md",
+        "ConstantLearning.Tests/Content/Import/"
+      ]
+    },
+    {
+      "id": "T21",
+      "title": "Генерувати форми пошуку для опублікованих версій",
+      "layer": "infra",
+      "deps": [
+        "T20",
+        "T07"
+      ],
+      "acs": [
+        "AC-30",
+        "AC-32"
+      ],
+      "dod": "тест: публікація нової версії замінює її форми, знята з публікації — прибирає; форма з діакритикою знаходиться без неї",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Search/Forms/",
+        "ConstantLearning.Tests/Content/Search/"
+      ]
+    },
+    {
+      "id": "T22",
+      "title": "Реалізувати пошук у словнику й картку запису",
+      "layer": "ports",
+      "deps": [
+        "T21",
+        "T12"
+      ],
+      "acs": [
+        "AC-30",
+        "AC-31",
+        "AC-32",
+        "AC-33"
+      ],
+      "dod": "інтеграційні тести AC-30…AC-33 зелені; бенчмарк: 500 запитів по 1–5 символів на фікстурі з 2 000 записів — p95 сервера ≤ 300 ms",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Search/Api/",
+        "ConstantLearning.Tests/Content/Search/"
+      ]
+    },
+    {
+      "id": "T23",
+      "title": "Реалізувати надсилання content report з лімітом і дедуплікацією",
+      "layer": "app",
+      "deps": [
+        "T06",
+        "T07",
+        "T12"
+      ],
+      "acs": [
+        "AC-34",
+        "AC-36",
+        "AC-46",
+        "AC-51"
+      ],
+      "dod": "інтеграційні тести AC-34, AC-36, AC-46, AC-51 зелені; подвійне надсилання створює один report і одну задачу звірки",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Reports/",
+        "ConstantLearning/Features/Identity/Aliases/",
+        "ConstantLearning.Tests/Content/Reports/"
+      ]
+    },
+    {
+      "id": "T24",
+      "title": "Реалізувати «Моя відповідь теж правильна»",
+      "layer": "app",
+      "deps": [
+        "T17",
+        "T23"
+      ],
+      "acs": [
+        "AC-17",
+        "AC-47",
+        "AC-55"
+      ],
+      "dod": "інтеграційні тести AC-17, AC-47, AC-55 зелені; повторний виклик повертає той самий результат; дія після закриття вікна повертає `answer.dispute_not_allowed`",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Disputes/",
+        "ConstantLearning.Tests/Learning/Disputes/"
+      ]
+    },
+    {
+      "id": "T25",
+      "title": "Завантажити довідкові знімки для звірки",
+      "layer": "infra",
+      "deps": [
+        "T07"
+      ],
+      "acs": [
+        "AC-35"
+      ],
+      "dod": "тести адаптера на зафіксованих зразках вікітексту зелені; збій парсера переводить запис у ручний режим, а не падає",
+      "files_hint": [
+        "ConstantLearning/Features/Content/References/",
+        "ConstantLearning.Tests/Content/References/"
+      ]
+    },
+    {
+      "id": "T26",
+      "title": "Реалізувати фонову звірку content reports",
+      "layer": "app",
+      "deps": [
+        "T23",
+        "T25",
+        "T20",
+        "T21"
+      ],
+      "acs": [
+        "AC-35",
+        "AC-42"
+      ],
+      "dod": "інтеграційні тести: підтверджено → нова опублікована версія (AC-35, AC-42); недоступне джерело тричі → черга редактора; повторне захоплення обробленої задачі нічого не змінює",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Verification/",
+        "ConstantLearning.Tests/Content/Verification/"
+      ]
+    },
+    {
+      "id": "T27",
+      "title": "Реалізувати чергу й рішення content editor",
+      "layer": "app",
+      "deps": [
+        "T23",
+        "T20",
+        "T21"
+      ],
+      "acs": [
+        "AC-38",
+        "AC-39",
+        "AC-40",
+        "AC-41",
+        "AC-42"
+      ],
+      "dod": "інтеграційні тести AC-38…AC-42 зелені; повторне рішення повертає `report.already_closed`",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Editor/Queue/",
+        "ConstantLearning.Tests/Content/Editor/"
+      ]
+    },
+    {
+      "id": "T28",
+      "title": "Реалізувати список застосованих змін і відкат",
+      "layer": "app",
+      "deps": [
+        "T27"
+      ],
+      "acs": [
+        "AC-48",
+        "AC-49",
+        "AC-50"
+      ],
+      "dod": "інтеграційні тести AC-48, AC-49, AC-50 зелені; відкат не змінює word status, відповіді й закритий report",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Editor/Rollback/",
+        "ConstantLearning.Tests/Content/Editor/"
+      ]
+    },
+    {
+      "id": "T29",
+      "title": "Реалізувати dispatcher таблиці відправлень",
+      "layer": "infra",
+      "deps": [
+        "T07",
+        "T02",
+        "T32"
+      ],
+      "acs": [],
+      "dod": "інтеграційний тест: два паралельні тики не надсилають один рядок двічі; прострочений понад 60 хв рядок стає `missed`; три тимчасові помилки Telegram дають `failed`; відмова «бот заблоковано» вимикає `learners.can_message`",
+      "files_hint": [
+        "ConstantLearning/Features/Notifications/Dispatch/",
+        "ConstantLearning.Tests/Notifications/"
+      ]
+    },
+    {
+      "id": "T30",
+      "title": "Реалізувати планування й умови нагадувань",
+      "layer": "app",
+      "deps": [
+        "T29",
+        "T08",
+        "T14",
+        "T16"
+      ],
+      "acs": [
+        "AC-26",
+        "AC-44"
+      ],
+      "dod": "тести з `FakeClock` на всі гілки AC-26 зелені; зміна поясу не дає другого нагадування за добу (AC-44); тест переходу DST зелений",
+      "files_hint": [
+        "ConstantLearning/Features/Notifications/Reminders/",
+        "ConstantLearning.Tests/Notifications/"
+      ]
+    },
+    {
+      "id": "T31",
+      "title": "Реалізувати щоденний підсумок learner і дайджест редактора",
+      "layer": "app",
+      "deps": [
+        "T29",
+        "T23"
+      ],
+      "acs": [
+        "AC-37",
+        "AC-43"
+      ],
+      "dod": "інтеграційні тести AC-37, AC-43 зелені; результат з ненадісланого підсумку потрапляє в наступний і не повторюється після надісланого",
+      "files_hint": [
+        "ConstantLearning/Features/Notifications/Summaries/",
+        "ConstantLearning.Tests/Notifications/"
+      ]
+    },
+    {
+      "id": "T32",
+      "title": "Переробити webhook бота під Mini App",
+      "layer": "ports",
+      "deps": [
+        "T03"
+      ],
+      "acs": [],
+      "dod": "тест: запит без правильного секрету — `webhook.invalid_secret`; тест: блокування бота вимикає `can_message`",
+      "files_hint": [
+        "ConstantLearning/Features/Bot/",
+        "ConstantLearning/Platform/Telegram/",
+        "ConstantLearning/Controllers/TelegramController.cs",
+        "ConstantLearning/HostedServices/WebhookConfigurationService.cs",
+        "ConstantLearning.Tests/Bot/"
+      ]
+    },
+    {
+      "id": "T33",
+      "title": "Приймати клієнтську телеметрію й публікувати серверні метрики",
+      "layer": "ports",
+      "deps": [
+        "T01"
+      ],
+      "acs": [],
+      "dod": "невідома метрика повертає `telemetry.invalid_metric`; метрики видно на локальному endpoint метрик",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Telemetry/",
+        "ConstantLearning/Platform/Metrics/"
+      ]
+    },
+    {
+      "id": "T34",
+      "title": "Створити каркас Mini App, що його роздає бекенд",
+      "layer": "ui",
+      "deps": [
+        "T01"
+      ],
+      "acs": [],
+      "dod": "`npm run build` і `npm test` зелені; SPA відкривається з бекенду за кореневим шляхом; типи клієнта генеруються з контракту однією командою",
+      "files_hint": [
+        "ConstantLearning.MiniApp/",
+        "ConstantLearning/wwwroot/",
+        "ConstantLearning/Program.cs"
+      ]
+    },
+    {
+      "id": "T35",
+      "title": "Зробити екран онбордингу",
+      "layer": "ui",
+      "deps": [
+        "T34",
+        "T13"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-02",
+        "AC-27",
+        "AC-53"
+      ],
+      "dod": "компонентні тести: збереження без днів показує пояснення (AC-02); без поясу нагадування просить вибрати пояс (AC-27)",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/onboarding/"
+      ]
+    },
+    {
+      "id": "T36",
+      "title": "Зробити екран «Сьогодні»",
+      "layer": "ui",
+      "deps": [
+        "T34",
+        "T19",
+        "T33"
+      ],
+      "acs": [
+        "AC-06",
+        "AC-10",
+        "AC-28"
+      ],
+      "dod": "компонентні тести AC-28 і пропозиції поясу зелені; телеметрія `today_ready_ms` надсилається один раз",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/today/"
+      ]
+    },
+    {
+      "id": "T37",
+      "title": "Зробити каркас заняття, картку нового слова й підсумок",
+      "layer": "ui",
+      "deps": [
+        "T36",
+        "T18"
+      ],
+      "acs": [
+        "AC-03",
+        "AC-11",
+        "AC-20",
+        "AC-21",
+        "AC-24",
+        "AC-52"
+      ],
+      "dod": "компонентні тести AC-11, AC-20, AC-24, AC-52 зелені",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/session/shell/",
+        "ConstantLearning.MiniApp/src/features/session/new-word/"
+      ]
+    },
+    {
+      "id": "T38",
+      "title": "Зробити вправу пригадування, результат і оскарження",
+      "layer": "ui",
+      "deps": [
+        "T37",
+        "T17",
+        "T24"
+      ],
+      "acs": [
+        "AC-12",
+        "AC-13",
+        "AC-14",
+        "AC-15",
+        "AC-16",
+        "AC-17",
+        "AC-55",
+        "AC-56",
+        "AC-57"
+      ],
+      "dod": "компонентні тести AC-12…AC-17, AC-55 зелені; подвійне натискання надсилає відповідь один раз з погляду користувача",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/session/recall/"
+      ]
+    },
+    {
+      "id": "T39",
+      "title": "Зробити пошук у словнику й картку запису",
+      "layer": "ui",
+      "deps": [
+        "T34",
+        "T22"
+      ],
+      "acs": [
+        "AC-30",
+        "AC-31"
+      ],
+      "dod": "компонентні тести AC-30, AC-31 зелені; застарілий запит скасовується",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/dictionary/search/"
+      ]
+    },
+    {
+      "id": "T40",
+      "title": "Зробити форму content report",
+      "layer": "ui",
+      "deps": [
+        "T39",
+        "T23"
+      ],
+      "acs": [
+        "AC-34",
+        "AC-36",
+        "AC-46",
+        "AC-51"
+      ],
+      "dod": "компонентні тести AC-34, AC-46, AC-51 зелені",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/dictionary/report/"
+      ]
+    },
+    {
+      "id": "T41",
+      "title": "Зробити екран налаштувань",
+      "layer": "ui",
+      "deps": [
+        "T34",
+        "T14"
+      ],
+      "acs": [
+        "AC-27",
+        "AC-44",
+        "AC-45"
+      ],
+      "dod": "компонентні тести AC-44, AC-45 зелені",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/settings/"
+      ]
+    },
+    {
+      "id": "T42",
+      "title": "Зробити чергу content editor і список застосованих змін",
+      "layer": "ui",
+      "deps": [
+        "T34",
+        "T27",
+        "T28"
+      ],
+      "acs": [
+        "AC-38",
+        "AC-39",
+        "AC-40",
+        "AC-41",
+        "AC-48",
+        "AC-49",
+        "AC-50"
+      ],
+      "dod": "компонентні тести рішень і відкату зелені; без ролі розділ недоступний (AC-41, AC-50)",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/editor/"
+      ]
+    },
+    {
+      "id": "T43",
+      "title": "Видалити код групової моделі",
+      "layer": "wiring",
+      "deps": [
+        "T32",
+        "T07",
+        "T20",
+        "T34"
+      ],
+      "acs": [],
+      "dod": "`dotnet build` і тести зелені без групового коду; у коді немає посилань на `ChatRegistration`, `LearnedWord`, `NewWordsJob`",
+      "files_hint": [
+        "ConstantLearning/Services/",
+        "ConstantLearning/Jobs/",
+        "ConstantLearning/Data/",
+        "ConstantLearning/Enums/",
+        "ConstantLearning/Resources/",
+        "ConstantLearning/Program.cs",
+        "ConstantLearning.Tests/Services/"
+      ]
+    },
+    {
+      "id": "T44",
+      "title": "Перенести міграцію видалення таблиць групової моделі",
+      "layer": "migration",
+      "deps": [
+        "T43",
+        "T07"
+      ],
+      "acs": [],
+      "dod": "міграція застосовується після видалення групового коду й відкочується до структури без даних; у PR є інструкція про `pg_dump` перед релізом",
+      "files_hint": [
+        "docs/features/personal-trainer-mvp/migrations/20261031120021_drop_group_model_*",
+        "ConstantLearning/Migrations/"
+      ]
+    },
+    {
+      "id": "T45",
+      "title": "Оновити збірку й маніфести розгортання",
+      "layer": "wiring",
+      "deps": [
+        "T34"
+      ],
+      "acs": [],
+      "dod": "образ збирається локально й відповідає на probe; у контейнері пояси Europe/Warsaw і Asia/Tokyo розв'язуються",
+      "files_hint": [
+        "ConstantLearning/Dockerfile",
+        "k8s/",
+        ".github/workflows/"
+      ]
+    },
+    {
+      "id": "T46",
+      "title": "Покрити наскрізними тестами критичні потоки через UI",
+      "layer": "tests",
+      "deps": [
+        "T35",
+        "T38",
+        "T40",
+        "T41",
+        "T45"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-03",
+        "AC-12",
+        "AC-17",
+        "AC-34"
+      ],
+      "dod": "сценарій AC-01: онбординг веде на «Сьогодні»; сценарій AC-03: заняття показує повторення перед новими словами; сценарій AC-12: правильна відповідь зараховується; сценарій AC-17: оскарження знімає mistake; сценарій AC-34: content report показує «Дякуємо, передали на перевірку»; усі сценарії зелені в CI",
+      "files_hint": [
+        "ConstantLearning.MiniApp/e2e/",
+        ".github/workflows/"
+      ]
+    },
+    {
+      "id": "T49",
+      "title": "Перевірити бюджети латентності під навантаженням",
+      "layer": "tests",
+      "deps": [
+        "T45",
+        "T17",
+        "T19",
+        "T22",
+        "T33"
+      ],
+      "acs": [],
+      "dod": "на 100 одночасних learner p95 оцінки ≤ 500 ms і пошуку ≤ 300 ms; звіт прогону збережено як артефакт CI",
+      "files_hint": [
+        "tests/load/",
+        ".github/workflows/"
+      ]
+    }
+  ]
+}

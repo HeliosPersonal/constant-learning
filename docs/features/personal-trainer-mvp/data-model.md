@@ -216,7 +216,7 @@ erDiagram
 | `version_id` | UUID | NOT NULL, FK → `entry_versions(id)` | показана версія |
 | `session_item_id` | UUID | NULL, UNIQUE, FK → `session_items(id)` SET NULL | одна відповідь на картку |
 | `exercise_kind` | VARCHAR(24) | NOT NULL | |
-| `outcome` | VARCHAR(24) | NOT NULL | `correct` / `mistake_typo` / `mistake_diacritic` / `dont_know` / `already_known` |
+| `outcome` | VARCHAR(24) | NOT NULL | `correct` / `mistake_typo` / `mistake_diacritic` / `dont_know` / `synonym` / `already_known`; `synonym` — нейтральна відповідь AC-56, не змінює інтервал |
 | `raw_answer` / `normalized_answer` | VARCHAR(200) | NULL | |
 | `answered_at` | TIMESTAMPTZ | NOT NULL | |
 | `learner_day` | DATE | NOT NULL | ліміт «Вже знаю» 10 на добу (AC-20, AC-21) |

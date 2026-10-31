@@ -330,13 +330,19 @@ paths:
                 next_item: null
                 session_completed: false
         "400":
-          description: Порожня відповідь (AC-13)
+          description: Порожня відповідь (AC-13) або кириличні літери після нормалізації (AC-57)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
-              example:
-                code: answer.empty
-                message: Введіть слово або натисніть «Не знаю».
+              examples:
+                empty:
+                  value:
+                    code: answer.empty
+                    message: Введіть слово або натисніть «Не знаю».
+                wrong_layout:
+                  value:
+                    code: answer.wrong_layout
+                    message: Перемкніть розкладку на польську або натисніть «Не знаю».
         "401": { $ref: "#/components/responses/Unauthorized" }
         "404": { $ref: "#/components/responses/SessionItemNotFound" }
         "409":
@@ -462,7 +468,7 @@ paths:
                 code: answer.not_found
                 message: Відповідь не знайдено.
         "409":
-          description: Дія недоступна для цієї відповіді (AC-15)
+          description: Дія недоступна — відмінність у діакритиці (AC-15) або вікно минуло: показано наступну картку чи закінчилась доба (AC-17)
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -1155,8 +1161,8 @@ components:
 
     AnswerOutcome:
       type: string
-      enum: [correct, mistake_typo, mistake_diacritic, dont_know]
-      description: answer_events.outcome для вправи пригадування
+      enum: [correct, mistake_typo, mistake_diacritic, dont_know, synonym]
+      description: answer_events.outcome для вправи пригадування; synonym — нейтральна відповідь (AC-56)
 
     AnswerResult:
       type: object
