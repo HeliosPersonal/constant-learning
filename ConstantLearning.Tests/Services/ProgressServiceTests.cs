@@ -1,4 +1,4 @@
-﻿using ConstantLearning.Data;
+using ConstantLearning.Data;
 using ConstantLearning.Data.Entities;
 using ConstantLearning.Services;
 using FluentAssertions;
@@ -28,7 +28,7 @@ public class ProgressServiceTests : IDisposable
     [Fact]
     public async Task RestartProgressAsync_RemovesAllLearnedWords_ForSpecificChat()
     {
-        // Arrange
+        // Підготовка
         _context.LearnedWords.AddRange(
             new LearnedWord { ChatId = 12345, WordId = 1, LearnedAt = DateTime.UtcNow },
             new LearnedWord { ChatId = 12345, WordId = 2, LearnedAt = DateTime.UtcNow },
@@ -36,10 +36,10 @@ public class ProgressServiceTests : IDisposable
         );
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var removedCount = await _service.RestartProgressAsync(12345);
 
-        // Assert
+        // Перевірка
         removedCount.Should().Be(2);
 
         var remainingWords = await _context.LearnedWords.ToListAsync();
@@ -50,17 +50,17 @@ public class ProgressServiceTests : IDisposable
     [Fact]
     public async Task RestartProgressAsync_ReturnsZero_WhenNoLearnedWords()
     {
-        // Act
+        // Дія
         var removedCount = await _service.RestartProgressAsync(12345);
 
-        // Assert
+        // Перевірка
         removedCount.Should().Be(0);
     }
 
     [Fact]
     public async Task RestartProgressAsync_DoesNotAffectOtherChats()
     {
-        // Arrange
+        // Підготовка
         _context.LearnedWords.AddRange(
             new LearnedWord { ChatId = 111, WordId = 1, LearnedAt = DateTime.UtcNow },
             new LearnedWord { ChatId = 222, WordId = 2, LearnedAt = DateTime.UtcNow },
@@ -68,10 +68,10 @@ public class ProgressServiceTests : IDisposable
         );
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         await _service.RestartProgressAsync(222);
 
-        // Assert
+        // Перевірка
         var remaining = await _context.LearnedWords.Select(w => w.ChatId).ToListAsync();
         remaining.Should().HaveCount(2);
         remaining.Should().Contain(new[] { 111L, 333L });

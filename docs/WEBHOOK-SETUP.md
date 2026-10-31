@@ -1,249 +1,88 @@
-﻿# Webhook Setup Guide
+# Налаштування Telegram webhook
 
-This guide explains how to configure Telegram webhooks for the bot.
+Webhook дає Telegram змогу надсилати оновлення безпосередньо до HTTP-адреси застосунку. У цьому проєкті endpoint має шлях /api/telegram/webhook.
 
-## 📡 What is a Webhook?
+~~~mermaid
+sequenceDiagram
+    participant T as Telegram
+    participant A as Застосунок
+    participant B as TelegramBotService
+    T->>A: POST /api/telegram/webhook
+    A->>B: Передати оновлення
+    B->>T: За потреби надіслати відповідь
+    A-->>T: HTTP 200
+~~~
 
-A webhook is an HTTPS endpoint where Telegram sends updates (messages) to your bot. Instead of your bot constantly asking Telegram for new messages (polling), Telegram pushes them to your server.
+## Вимоги
 
-**Benefits:**
-- ✅ Instant message delivery
-- ✅ Lower resource usage
-- ✅ Better for production
+- Публічна адреса, досяжна з інтернету.
+- HTTPS із чинним сертифікатом TLS.
+- Мережевий маршрут до порту застосунку 8888.
 
-**Requirements:**
-- 🔒 HTTPS URL (HTTP not allowed by Telegram)
-- 🌐 Publicly accessible domain
+## Налаштування робочого розгортання
 
-## 🚀 Production Setup
+Задайте в параметрах застосунку Telegram__WebhookUrl, наприклад:
 
-### Step 1: Get a Public Domain
+~~~yaml
+Telegram__WebhookUrl: "https://bot.example.com/api/telegram/webhook"
+~~~
 
-You need a domain with HTTPS. Options:
-- Your own domain with SSL certificate
-- Cloud provider (AWS, GCP, Azure)
-- PaaS (Heroku, Railway, Render)
+Під час запуску застосунок доповнює базову адресу шляхом /api/telegram/webhook, якщо його немає, і викликає Telegram Bot API для реєстрації webhook. Переконайтеся, що задана адреса веде саме до вашого застосунку.
 
-### Step 2: Configure Webhook URL
+Після розгортання перевірте журнал застосунку. Успішне налаштування фіксується повідомленням про адресу webhook. Надішліть боту команду й перевірте, що він відповідає.
 
-In `docker-compose.yml` or environment variables:
+## Локальна розробка через ngrok
 
-```yaml
-Telegram__WebhookUrl: "https://yourdomain.com/api/telegram/webhook"
-```
+1. Встановіть ngrok із [офіційного сайту](https://ngrok.com/).
+2. Запустіть тунель:
 
-**Important:** The URL must:
-- Start with `https://` (not `http://`)
-- End with `/api/telegram/webhook` (the bot's endpoint)
-- Be publicly accessible from the internet
-
-### Step 3: Deploy & Verify
-
-1. Deploy your bot
-2. Check logs for: `✅ Webhook set to: https://yourdomain.com/api/telegram/webhook`
-3. Send a message to your bot - should respond instantly
-
-## 🛠️ Local Development with ngrok
-
-For testing locally, use **ngrok** to create a secure tunnel:
-
-### Step 1: Install ngrok
-
-**Windows:**
-```bash
-# Using Chocolatey
-choco install ngrok
-
-# Or download from https://ngrok.com
-```
-
-**macOS:**
-```bash
-brew install ngrok/ngrok/ngrok
-```
-
-**Linux:**
-```bash
-# Download and install
-curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
-sudo apt update && sudo apt install ngrok
-```
-
-### Step 2: Start ngrok
-
-```bash
+~~~sh
 ngrok http 8888
-```
+~~~
 
-You'll see output like:
-```
-Forwarding  https://abc123.ngrok.io -> http://localhost:8888
-```
+3. Скопіюйте видану HTTPS-адресу. Додайте до неї /api/telegram/webhook і задайте результат як Telegram__WebhookUrl.
+4. Перезапустіть застосунок:
 
-### Step 3: Configure Webhook
+~~~sh
+docker compose restart app
+~~~
 
-Copy the **HTTPS URL** and update `docker-compose.yml`:
+Адреса безкоштовного тунелю зазвичай змінюється після його перезапуску. Оновіть значення Telegram__WebhookUrl і перезапустіть застосунок після зміни адреси.
 
-```yaml
-Telegram__WebhookUrl: "https://abc123.ngrok.io/api/telegram/webhook"
-```
+## Перевірка й усунення проблем
 
-### Step 4: Restart Bot
+Переглянути журнал:
 
-```bash
-docker-compose restart app
-```
+~~~sh
+docker compose logs -f app
+~~~
 
-### Step 5: Test
+Перевірити webhook через Telegram Bot API:
 
-Send a message to your bot - it should respond!
+~~~text
+https://api.telegram.org/bot<TOKEN>/getWebhookInfo
+~~~
 
-**⚠️ Important:** ngrok URLs change on each restart. You'll need to update the webhook URL and restart the bot whenever you restart ngrok.
+У відповіді перевірте поле url, кількість очікуваних оновлень і повідомлення про останню помилку доставки.
 
-### ngrok Free vs Paid
+Типові причини:
 
-**Free tier:**
-- ✅ Random subdomain (e.g., `abc123.ngrok.io`)
-- ❌ URL changes on restart
-- ✅ Good for testing
+- **Адреса не HTTPS:** Telegram вимагає HTTPS для webhook.
+- **Адреса недосяжна:** перевірте DNS, TLS-сертифікат, ingress і правила брандмауера.
+- **Неправильний шлях:** має бути /api/telegram/webhook.
+- **Немає відповіді застосунку:** переконайтеся, що контейнер слухає порт 8888 і працює endpoint.
+- **Бот не отримує команди:** перевірте налаштування доступу бота до повідомлень у групі та журнал застосунку.
 
-**Paid tier:**
-- ✅ Fixed subdomain (e.g., `mybot.ngrok.io`)
-- ✅ Custom domains
-- ✅ Better for regular development
+Щоб зняти webhook, задайте Telegram__WebhookUrl порожнім і перезапустіть застосунок або викличте метод deleteWebhook у Telegram Bot API. Без webhook цей застосунок не отримуватиме вхідні оновлення Telegram.
 
-## 🔍 Troubleshooting
+## Безпека
 
-### Webhook Not Working
+- Зберігайте токен бота в секреті або змінній середовища; не додавайте його до Git і не публікуйте в журналах.
+- Дозволяйте зовнішній доступ до endpoint лише через HTTPS.
+- Не використовуйте адресу тестового тунелю в робочому розгортанні.
 
-Check logs for errors:
-```bash
-docker-compose logs -f app
-```
+## Пов’язані матеріали
 
-Common issues:
-
-**1. URL not HTTPS**
-```
-❌ Error: Invalid webhook URL (must be HTTPS)
-```
-**Fix:** Ensure URL starts with `https://`
-
-**2. URL not accessible**
-```
-❌ Error: Failed to set webhook
-```
-**Fix:** Verify the URL is publicly accessible. Test with:
-```bash
-curl https://yourdomain.com/api/telegram/webhook
-```
-
-**3. Wrong endpoint**
-```
-❌ 404 Not Found
-```
-**Fix:** Ensure URL ends with `/api/telegram/webhook`
-
-### Verify Webhook Status
-
-Use Telegram Bot API:
-```bash
-curl https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getWebhookInfo
-```
-
-Response should show:
-```json
-{
-  "ok": true,
-  "result": {
-    "url": "https://yourdomain.com/api/telegram/webhook",
-    "has_custom_certificate": false,
-    "pending_update_count": 0
-  }
-}
-```
-
-### Remove Webhook
-
-To disable webhook:
-
-**Option 1:** Set empty URL in config:
-```yaml
-Telegram__WebhookUrl: ""
-```
-
-**Option 2:** Use Telegram API:
-```bash
-curl https://api.telegram.org/bot<YOUR_BOT_TOKEN>/deleteWebhook
-```
-
-## 🔐 Security
-
-### HTTPS Only
-
-Telegram **requires** HTTPS for webhooks. Using HTTP will fail:
-```
-Error: Invalid webhook URL (must be HTTPS)
-```
-
-### Webhook Secret (Optional)
-
-For extra security, you can add a secret token:
-
-```yaml
-Telegram__WebhookSecret: "your-secret-token"
-```
-
-Telegram will send this in the `X-Telegram-Bot-Api-Secret-Token` header.
-
-## 📊 Webhook vs Polling
-
-| Feature | Webhook | Polling |
-|---------|---------|---------|
-| **Speed** | Instant | Delayed (polling interval) |
-| **Resources** | Low | Higher (constant requests) |
-| **Setup** | Requires HTTPS domain | No setup |
-| **Cost** | May need hosting | Free |
-| **Development** | Needs ngrok | Easy |
-
-**Recommendation:**
-- 🧪 **Development:** Polling (simpler)
-- 🚀 **Production:** Webhook (better performance)
-
-## 🌐 Deployment Examples
-
-### Railway.app
-```yaml
-Telegram__WebhookUrl: "https://your-app.railway.app/api/telegram/webhook"
-```
-
-### Heroku
-```yaml
-Telegram__WebhookUrl: "https://your-app.herokuapp.com/api/telegram/webhook"
-```
-
-### Render.com
-```yaml
-Telegram__WebhookUrl: "https://your-app.onrender.com/api/telegram/webhook"
-```
-
-### Custom Domain
-```yaml
-Telegram__WebhookUrl: "https://bot.yourdomain.com/api/telegram/webhook"
-```
-
-## ✅ Best Practices
-
-1. **Always use HTTPS** - Telegram requirement
-2. **Keep webhook URL secret** - Don't expose publicly
-3. **Use environment variables** - Never hardcode tokens
-4. **Monitor logs** - Check for webhook errors
-5. **Test locally with ngrok** - Before production deployment
-6. **Handle errors gracefully** - Bot should not crash on bad updates
-
-## 📚 Additional Resources
-
-- [Telegram Bot API - Webhooks](https://core.telegram.org/bots/api#setwebhook)
-- [ngrok Documentation](https://ngrok.com/docs)
-- [ASP.NET Core Hosting](https://learn.microsoft.com/en-us/aspnet/core/host-and-deploy/)
+- [Telegram Bot API: setWebhook](https://core.telegram.org/bots/api#setwebhook)
+- [Швидкий запуск](QUICKSTART.md)
+- [Головний опис проєкту](../README.md)

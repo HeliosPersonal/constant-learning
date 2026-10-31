@@ -1,4 +1,4 @@
-﻿using ConstantLearning.Configuration;
+using ConstantLearning.Configuration;
 using ConstantLearning.Enums;
 using ConstantLearning.Services;
 using FluentAssertions;
@@ -30,7 +30,7 @@ public class BotMessagesServiceTests
 
         _loggerMock = new Mock<ILogger<BotMessagesService>>();
         
-        // Setup configuration mock to return test messages
+        // Налаштувати імітацію конфігурації для тестових повідомлень
         var ukSection = new Mock<IConfigurationSection>();
         var messagesCollection = new List<IConfigurationSection>
         {
@@ -57,10 +57,10 @@ public class BotMessagesServiceTests
     [Fact]
     public void GetMessage_ReturnsCorrectMessage_ForSimpleKey()
     {
-        // Act
+        // Дія
         var result = _service.GetMessage(BotMessageKey.ChatAlreadyRegistered);
 
-        // Assert
+        // Перевірка
         result.Should().NotBeNullOrEmpty();
         result.Should().Contain("вже зареєстровано");
     }
@@ -68,20 +68,20 @@ public class BotMessagesServiceTests
     [Fact]
     public void GetMessage_FormatsMessage_WithSingleArgument()
     {
-        // Act
+        // Дія
         var result = _service.GetMessage(BotMessageKey.ProgressRestarted, 5);
 
-        // Assert
+        // Перевірка
         result.Should().Contain("5");
     }
 
     [Fact]
     public void GetMessage_FormatsMessage_WithMultipleArguments()
     {
-        // Act
+        // Дія
         var result = _service.GetMessage(BotMessageKey.WordsCountSet, 3, 10);
 
-        // Assert
+        // Перевірка
         result.Should().Contain("3");
         result.Should().Contain("10");
     }
@@ -90,10 +90,10 @@ public class BotMessagesServiceTests
     [Fact]
     public void GetMessage_ReturnsUkrainianMessage_WhenLanguageCodeIsUk()
     {
-        // Act
+        // Дія
         var result = _service.GetMessage(BotMessageKey.LearningStopped);
 
-        // Assert
+        // Перевірка
         result.Should().Contain("зупинено");
     }
 }

@@ -1,4 +1,4 @@
-﻿using ConstantLearning.Configuration;
+using ConstantLearning.Configuration;
 using ConstantLearning.Enums;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -329,9 +329,9 @@ public class TelegramBotService(
     }
 
     /// <summary>
-    /// Checks if chat is registered and sends error message if not
+    /// Перевіряє, чи зареєстровано чат, і за потреби надсилає повідомлення про помилку
     /// </summary>
-    /// <returns>True if chat is registered, false otherwise</returns>
+    /// <returns>true, якщо чат зареєстровано; інакше false</returns>
     private async Task<bool> EnsureChatRegisteredAsync(long chatId, IChatRegistrationService chatRegistrationService)
     {
         var isRegistered = await chatRegistrationService.IsChatRegisteredAsync(chatId);

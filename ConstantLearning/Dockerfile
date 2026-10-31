@@ -1,21 +1,21 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# copy csproj and restore
+# Скопіювати файл проєкту й відновити залежності
 COPY ConstantLearning.csproj ./
 RUN dotnet restore
 
-# copy the rest of the source
+# Скопіювати решту вихідного коду
 COPY . .
 
-# build
+# Зібрати застосунок
 RUN dotnet build -c Release -o /app/build
 
-# publish
+# Опублікувати застосунок
 FROM build AS publish
 RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
 
-# runtime
+# Образ для запуску
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 EXPOSE 8888

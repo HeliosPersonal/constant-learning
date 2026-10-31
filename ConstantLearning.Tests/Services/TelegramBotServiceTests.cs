@@ -1,4 +1,4 @@
-﻿using ConstantLearning.Configuration;
+using ConstantLearning.Configuration;
 using ConstantLearning.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -13,7 +13,7 @@ public class TelegramBotServiceTests
     [Fact]
     public void Constructor_InitializesService_Successfully()
     {
-        // Arrange
+        // Підготовка
         var botClientMock = new Mock<ITelegramBotClient>();
         var botMessagesMock = new Mock<IBotMessagesService>();
         var loggerMock = new Mock<ILogger<TelegramBotService>>();
@@ -21,7 +21,7 @@ public class TelegramBotServiceTests
         var learningOptionsMock = new Mock<IOptions<LearningOptions>>();
         learningOptionsMock.Setup(x => x.Value).Returns(new LearningOptions { LearnedWordsChunkSize = 10 });
 
-        // Act
+        // Дія
         var service = new TelegramBotService(
             botClientMock.Object,
             botMessagesMock.Object,
@@ -29,14 +29,14 @@ public class TelegramBotServiceTests
             serviceProviderMock.Object,
             learningOptionsMock.Object);
 
-        // Assert
+        // Перевірка
         service.Should().NotBeNull();
     }
 
     [Fact]
     public async Task SendMessageAsync_DoesNotThrow_WithValidParameters()
     {
-        // Arrange
+        // Підготовка
         var botClientMock = new Mock<ITelegramBotClient>();
         var botMessagesMock = new Mock<IBotMessagesService>();
         var loggerMock = new Mock<ILogger<TelegramBotService>>();
@@ -54,10 +54,10 @@ public class TelegramBotServiceTests
         const long chatId = 12345;
         const string text = "Test message";
 
-        // Act
+        // Дія
         Func<Task> act = async () => await service.SendMessageAsync(text, chatId);
 
-        // Assert
+        // Перевірка
         await act.Should().NotThrowAsync();
     }
 }

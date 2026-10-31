@@ -10,29 +10,29 @@
   "AllowedHosts": "*",
   
   "ConnectionStrings": {
-    "_comment": "PostgreSQL connection string. For Docker: Host=postgres. For local: Host=localhost",
+    "_comment": "Рядок підключення PostgreSQL. У Docker: Host=postgres. Локально: Host=localhost",
     "DefaultConnection": "Host=postgres;Database=constantlearning;Username=postgres;Password=postgres"
   },
   
   "Telegram": {
-    "_comment_BotToken": "Get from @BotFather on Telegram. Format: 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz",
+    "_comment_BotToken": "Отримайте токен у Telegram через @BotFather. Формат: 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz",
     "BotToken": "",
-    "_comment_WebhookUrl": "Your public URL for webhook. Format: https://yourdomain.com/api/telegram/webhook",
-    "_comment_WebhookUrl_ngrok": "For local dev with ngrok: https://abc123.ngrok.io/api/telegram/webhook",
-    "_comment_WebhookUrl_note": "Leave empty to skip automatic webhook registration (can set manually)",
+    "_comment_WebhookUrl": "Публічна адреса webhook. Формат: https://yourdomain.com/api/telegram/webhook",
+    "_comment_WebhookUrl_ngrok": "Для локальної розробки через ngrok: https://abc123.ngrok.io/api/telegram/webhook",
+    "_comment_WebhookUrl_note": "Залиште порожнім, щоб пропустити автоматичну реєстрацію webhook",
     "WebhookUrl": ""
   },
   
   "Learning": {
-    "_comment": "Configure learning behavior",
+    "_comment": "Налаштуйте параметри навчання",
     "RepetitionWordsCount": 10,
     "NewWordsCount": 3,
-    "AnswerDelaySeconds": 5,
+    "AnswerDelaySeconds": 30,
     "LearnedWordsChunkSize": 10
   },
   
   "Language": {
-    "_comment": "Switch languages by changing these settings. Supported UI languages: 'uk' (Ukrainian), 'en' (English)",
+    "_comment": "Змініть ці параметри, щоб обрати мовну пару. Мови інтерфейсу: 'uk' (українська), 'en' (англійська)",
     "_example_Polish": "TargetLanguage='Polish', TargetLanguageCode='pl'",
     "_example_English": "TargetLanguage='English', TargetLanguageCode='en'",
     "_example_Spanish": "TargetLanguage='Spanish', TargetLanguageCode='es'",
@@ -44,7 +44,7 @@
   },
   
   "WordsImport": {
-    "_comment": "CSV format: rank,target,source,transcription. For English use: '/app/data/words-english.csv'",
+    "_comment": "Формат CSV: rank,target,source,transcription. Для англійської використовуйте: '/app/data/words-english.csv'",
     "CsvPath": "/app/data/words.csv"
   }
 }
