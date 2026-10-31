@@ -5,3 +5,7 @@ riderModule.iml
 /_ReSharper.Caches/
 /.idea/.idea.ConstantLearning/.idea/copilot.data.migration.edit.xml
 /ConstantLearning.sln.DotSettings.user
+
+# Локальні налаштування Claude Code та SDLC
+.claude/*.local.md
+.worktrees/
