@@ -14,7 +14,7 @@ ticket: "TBD"
 docs/features/personal-trainer-mvp/migrations/ (NOT the live ConstantLearning/Migrations/ tree);
 implement-tasks promotes them. -->
 
-> Міграції лежать у [`migrations/`](./migrations/) (21 пара `.up.sql` / `.down.sql`) і ще не застосовані. `implement-tasks` переносить кожну пару в EF Core міграцію (`migrationBuilder.Sql`) з новою позначкою часу. Повний DDL — у файлах міграцій; тут — модель, обмеження й обґрунтування індексів.
+> Міграції лежать у [`migrations/`](./migrations/) (22 пари `.up.sql` / `.down.sql`) і ще не застосовані. `implement-tasks` переносить кожну пару в EF Core міграцію (`migrationBuilder.Sql`) з новою позначкою часу. Повний DDL — у файлах міграцій; тут — модель, обмеження й обґрунтування індексів.
 >
 > **Правила курсу:** UUID v7 генерується в застосунку (`Guid.CreateVersion7()`); лише `created_at`, без `updated_at`; жорстке видалення; `VARCHAR(N)`; без `CHECK`, `TRIGGER` і бізнесових `DEFAULT` — статуси, ліміти й прапорці завжди задає застосунок. Оптимістична конкурентність — системна колонка PostgreSQL `xmin` (DDL не потрібен, SAD §8).
 

@@ -2,8 +2,8 @@
 
 ## Згенеровані файли
 
-- [`data-model.md`](../data-model.md) — ER, 21 таблиця, обґрунтування індексів.
-- 21 пара staged-міграцій у [`migrations/`](../migrations/), від `20261031120000_create_learners` до `20261031120021_drop_group_model`.
+- [`data-model.md`](../data-model.md) — ER, 19 таблиць, обґрунтування індексів.
+- 22 пари staged-міграцій у [`migrations/`](../migrations/), від `20261031120000_create_learners` до `20261031120021_drop_group_model`.
 - `.claude/rules/migrations.md` — створено з базового шаблону курсу (раніше не існував).
 
 **Міграції staged:** їх ще немає в живому дереві `ConstantLearning/Migrations/`. `implement-tasks` переносить кожну пару з новою позначкою часу, зберігаючи порядок усередині фічі.
