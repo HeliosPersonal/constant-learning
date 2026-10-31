@@ -6,320 +6,309 @@ updated_at: "2026-10-31"
 feature_size: L
 stage: "04-05"
 ticket: "TBD"
-target_surfaces: []  # filled in §4 — subset of: backend-service | web-frontend | mobile-app | desktop-app | cli | worker | library-sdk. Read (never re-derived) by api-forge/complete-sequence-diagrams/break-tasks/plan-tests/review-feature → _shared/surfaces.md
+target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by api-forge/complete-sequence-diagrams/break-tasks/plan-tests/review-feature
 ---
 
-# Software Architecture Document — <system / feature>
+# Software Architecture Document — personal-trainer-mvp
 
-<!-- Stages 04-05 → see sdlc/plugin/skills/architecture-design/SKILL.md -->
-<!-- 12 Arc42 sections. Empty sections — <!-- N/A: <one-line reason> -->. -->
-<!-- C4 Context (L1) lives inline in §3. C4 Container (L2) lives inline in §5. -->
-<!-- §6 Runtime view seeds the primary flow(s) here; complete-sequence-diagrams (stage 06) then -->
-<!--    fills §6 with every critical flow / §5 AC — no cap. -->
-<!-- Numbers in §10 come VERBATIM from PRD §6 NFR — no inventing, no rounding. -->
+> **Inputs:** [PRD](./PRD.md) · [CONTEXT](../../../CONTEXT.md) · [architecture-map](../../architecture-map.md) (reflects `2026702`).
+> Рішення з великим масштабом удару зважували три агенти-експерти (бекенд .NET, фронтенд Telegram Mini App, алгоритм повторень і контент); автор прийняв рекомендовані варіанти (режим «автономно + експерти»).
 
 ## 1. Introduction and goals
 
-<!-- 🎯 Навіщо: стабільна памʼять про «що + три головні якості + хто зацікавлений».     -->
-<!--           Через рік ніхто не згадає на словах, ЯКІ ТРИ ЯКОСТІ для системи критичні. -->
-<!-- 📋 Що писати: 1 абзац intent + 3 рядки топ-3 якості + таблиця stakeholders.        -->
-<!-- 📌 Приклад: «QG-1: швидкість редагування блоку p95 ≤500 мс»                         -->
-
-**Intent.** <One paragraph from PRD §Goals — what we're building and for whom.>
+**Intent.** Перетворити груповий Telegram-бот на персональний trainer: кожен learner проходить коротке щоденне заняття з пригадуванням польських слів у застосунку всередині Telegram (Mini App), тренер оцінює відповіді на сервері й адаптує інтервали повторень, бот нагадує про заняття, а content editor підтримує якість спільного словника через content reports (PRD §1–§2).
 
 **Top-3 quality goals (1-liners; full scenarios in §10):**
 
-1. <e.g. "Availability under partial failure of downstream module">
-2. <e.g. "Performance for EM dashboard under team-scale growth">
-3. <e.g. "Recoverability of checkpoints with <30 min RTO">
+1. **Коректність навчального обліку** — жодна відповідь не втрачається й не зараховується двічі; доба, ліміти й статуси слів рахуються в часовому поясі learner.
+2. **Чутливість інтерфейсу** — «Сьогодні», оцінка відповіді й пошук укладаються в latency-цілі PRD §6.
+3. **Надійність нагадувань** — рівно одне нагадування на добу в потрібний час, без дублікатів після рестартів.
 
 **Stakeholders.**
 
 | Role | Interest | Sign-off owner? |
 |---|---|---|
-| <e.g. IC> | <feature usage> | No |
-| <e.g. EM> | <dashboard reads> | No |
-| <e.g. Tech Lead> | <SAD approval> | Yes |
+| learner | Щоденні заняття, прогрес, нагадування, пошук слів | No |
+| content editor | Черга непідтверджених content reports, якість словника | No |
+| Власник проєкту (Viacheslav Melnichenko) | Продуктові рішення, роль content editor у пілоті, затвердження SAD | Yes |
+| Tech Lead | Архітектурна цілісність, ADR | Yes |
 
-<!-- Decision overrides (¶4) — populated by the Step-7 critic resolution loop, empty otherwise.       -->
-<!-- Each: «Decision override: <headline> — rationale: <reason>» so downstream skills see the choice.  -->
+<!-- Decision overrides (¶4) — populated by the Step-7 critic resolution loop, empty otherwise. -->
 
 ## 2. Constraints
 
-<!-- 🎯 Навіщо: §4 (стратегія) працює тільки коли §2 зафіксувала, ЩО ВЖЕ ЗАФІКСОВАНО:    -->
-<!--           стек, версії, дедлайн, регуляторні вимоги. Це вхід, не вихід.             -->
-<!-- 📋 Що писати: чотири блоки — Технічні / Організаційні / Конвенції / Регуляторні.     -->
-<!-- 📌 Приклад: «Postgres 18» (не «Postgres»); «дедлайн Q3 — жорсткий» (не «бажано»).    -->
-
 **Technical.**
-- <Language + version, e.g. Go 1.26>
-- <Framework + version, e.g. chi v5.1, pgx v5.7>
-- <Datastore + version, e.g. Postgres 18>
-- <Architecture convention, e.g. hexagonal per CLAUDE.md>
+- C# / .NET 10, ASP.NET Core з контролерами, EF Core 10.0.2 + Npgsql 10.0.0, PostgreSQL 16 — `architecture-map.md` §Stack.
+- Telegram.Bot 22.8.1 (webhook), Quartz 3.15.1 з in-memory сховищем і `[DisallowConcurrentExecution]`.
+- Один екземпляр застосунку (`replicas: 1`) у k8s; CI збирає образ і запускає тести, але не розгортає.
+- Фронтенду й JS-тулчейну в репозиторії немає — Mini App є першим UI.
 
 **Organisational.**
-- <Effort budget, e.g. 3 person-weeks>
-- <Deadline, e.g. 2026-Q3 hard>
-- <Team composition, e.g. 1 backend + 0.5 frontend>
+- Один розробник, переважно бекенд .NET.
+- Пілот на ~50 learner стартує лише після схвалення 2 000 лем (PRD §1, OQ-2).
+- Роль content editor — власник проєкту, призначений вручну (PRD OQ-3).
 
 **Conventions.**
-- <Link to CLAUDE.md or project conventions>
-- <Naming, ID strategy, error-handling pattern>
+- DI-реєстрація в `Program.cs`, primary constructors, interface-per-service, `IOptions<T>` — `architecture-map.md` §Conventions.
+- EF Core Migrations з іменами `yyyyMMddHHmmss_Name`, застосування на старті.
+- Тести: xUnit + Moq + FluentAssertions; документація й коментарі українською (`AGENTS.md`).
 
 **Regulatory / external.**
-- <e.g. GDPR — user deletion behavior per ADR-NNNN>
-- <e.g. SOC2, PCI — applicable controls>
+- Персональні дані learner класифіковано як confidential (PRD §6.1); security review обов'язковий.
+- Ліцензії зовнішніх даних: Wikisłownik — CC BY-SA 4.0 (атрибуція), PoliMorf і Morfeusz 2 — 2-clause BSD, VESUM — CC BY-NC-SA 4.0 (див. §11).
+- Обмеження частоти запитів до Wikisłownik підтверджено пілотом (`docs/dictionary/wiktionary-validation-pilot.csv`).
 
 ## 3. Context and scope
 
-<!-- 🎯 Навіщо: малює КОРДОН СИСТЕМИ — хто з нею говорить ззовні, де закінчується зона довіри. -->
-<!--           Без §3 §5 і §8 (авторизація) розпливаються — неясно, що «всередині», а що «зовні». -->
-<!-- 📋 Що писати: 2-3 речення бізнес-контексту + таблиця зовнішніх систем + Mermaid C4Context. -->
-<!-- 📌 Приклад: «зовнішні — нема (свідома відмова від third-party у v1)» — це теж рішення.   -->
-<!-- Кордон довіри (trust boundary) — лінія, за якою ти не довіряєш даним без перевірки.       -->
-
-<Business context in 2-3 sentences. What the system does for whom.>
+trainer обслуговує україномовних learner, які вивчають польську, і одного content editor. Learner взаємодіє з Mini App, що відкривається в Telegram, і отримує нагадування від бота; content editor розглядає чергу content reports у тому самому Mini App. Довідкові джерела використовуються лише для звірки контенту у фоні.
 
 **External systems (in / out):**
 
 | Actor or system | Type | Interaction |
 |---|---|---|
-| <e.g. IC> | Person | Creates goals, adds checkpoints |
-| <e.g. notification-service> | System (internal) | Receives cron registration |
-| <e.g. Identity Provider> | System (external) | Provides JWT tokens |
+| learner | Person | Заняття, словник, налаштування, content reports через Mini App; нагадування й підсумки від бота |
+| content editor | Person | Черга непідтверджених content reports, схвалення й відхилення змін |
+| Telegram Bot API | System (external) | Webhook з оновленнями; доставка повідомлень бота; запуск Mini App з підписаними даними ідентичності |
+| Wikisłownik / WSJP PAN / офіційні урядові сторінки | System (external) | Довідкові джерела для автоматичної звірки контенту (дамп і точкові запити) |
 
 **C4 Context (L1):**
 
 ```mermaid
 C4Context
-    title <system> — System Context
+    title personal-trainer-mvp — System Context
 
-    Person(user, "<User>", "<role + intent>")
-    System(system, "<Our System>", "<one-sentence description>")
-    System_Ext(ext, "<External system>", "<one-sentence description>")
+    Person(learner, "learner", "Вивчає польську через щоденні заняття")
+    Person(editor, "content editor", "Розглядає непідтверджені content reports")
+    System(trainer, "trainer", "Персональний тренер польських слів: Mini App і бот")
+    System_Ext(telegram, "Telegram", "Клієнт Telegram, Bot API, запуск Mini App")
+    System_Ext(refs, "Довідкові джерела", "Wikisłownik, WSJP PAN, урядові сторінки")
 
-    Rel(user, system, "<interaction>", "<protocol>")
-    Rel(system, ext, "<interaction>", "<protocol>")
+    Rel(learner, telegram, "Відкриває Mini App, отримує нагадування")
+    Rel(editor, telegram, "Відкриває чергу розгляду")
+    Rel(telegram, trainer, "Webhook і запити Mini App з initData", "HTTPS")
+    Rel(trainer, telegram, "Повідомлення бота", "HTTPS")
+    Rel(trainer, refs, "Звірка контенту", "HTTPS або дамп")
 ```
 
 ## 4. Solution strategy
 
-<!-- 🎯 Навіщо: 3-4 СТРАТЕГІЧНІ СТОВПИ, з яких потім ростуть усі ADR. Без §4 кожен ADR    -->
-<!--           виглядає випадковим — нема зонтика. ⭐ Найгустіша секція — тут ADR-gate    -->
-<!--           спрацьовує майже завжди (рішення незворотні + мульти-модульні).            -->
-<!-- 📋 Що писати: спершу Target surface(s), потім 3-4 стратегічні вибори.                -->
-<!--           На кожен — заголовок + 2-3 речення rationale.                              -->
-<!-- 📌 ПЕРШЕ рішення §4 — Target surface(s): ЩО САМЕ будуємо. Записується у frontmatter   -->
-<!--           target_surfaces: [...] і гейтить §5 (один контейнер на поверхню) + усі       -->
-<!--           наступні стадії. Деривиться з PRD §1 «для кого» + §4 ролей. → _shared/surfaces.md -->
-<!-- 📌 Приклад: «Зберігати урок як таблицю блоків» — стовп, з якого виросло ADR-0001.    -->
-
-**Target surface(s) (the first decision — what's being built):** `<e.g. [backend-service, web-frontend]>`
-<!-- Mirror this list into the frontmatter `target_surfaces`. For each declared UI surface          -->
-<!-- (web-frontend / mobile-app / desktop-app) add a UI-architecture choice below (web → SSR/SPA/   -->
-<!-- hybrid; mobile → native/cross-platform). Multi-surface is usually an ADR (multi-module +       -->
-<!-- irreversible). The UI reuses the repo's existing design system / components / tokens from       -->
-<!-- architecture-map.md §Frontend — it does not design greenfield. → _shared/surfaces.md           -->
+**Target surface(s) (the first decision — what's being built):** `[backend-service, web-frontend]` — ASP.NET Core бекенд з REST JSON API і фоновими завданнями в тому самому процесі + Telegram Mini App як клієнтська SPA. Окремої `worker`-поверхні немає: нагадування, дайджести й звірка виконуються в процесі бекенду (ADR-0001).
 
 **Top strategic choices (the seeds for ADRs):**
 
-1. **<e.g. Module isolation through events>** — <2-3 sentences rationale referencing Quality Goals and constraints>.
-2. **<e.g. Single-store persistence (Postgres)>** — <2-3 sentences>.
-3. **<e.g. UI-architecture: SPA consuming the backend API>** — <per declared UI surface; 2-3 sentences>.
-
-Each tactical decision in later sections should be traceable to one of these strategic seeds. Tactical decisions that *contradict* a strategic choice are red flags — surface them in §11 Risks.
+1. **Модульний моноліт на одному PostgreSQL** — новий код живе у feature-модулях `Identity`, `Learning`, `Content`, `Notifications`, `Bot` в одному проєкті з одним `AppDbContext`; групова модель виводиться з ужитку без міграції даних (ADR-0003, ADR-0004). Відповідь, розклад слова й стан session змінюються в одній транзакції, тож розподіл на сервіси нічого не дає при одному екземплярі.
+2. **Сервер — єдине джерело істини навчального стану** — session, оцінка відповіді, межі доби й планування повторень живуть на сервері; клієнт лише відмальовує стан і результат (ADR-0008, ADR-0009). Це закриває вимоги «0 втрачених відповідей» і «рівно одне зарахування» та не розкриває правильних відповідей клієнту.
+3. **Час learner як доменне поняття** — IANA-пояс learner і календарна доба з урахуванням DST моделюються явно; нагадування й дайджести йдуть через таблицю відправлень з унікальним ключем на дату (ADR-0006, ADR-0007).
+4. **Словник як версійований контент у БД** — незмінні версії записів, вказівник на опубліковану версію, асинхронна звірка content reports за довідковими знімками й попередньо обчислена таблиця форм для пошуку (ADR-0010, ADR-0011, ADR-0012).
+5. **UI-architecture: SPA, яку роздає бекенд** — React + TypeScript + Vite, Telegram UI kit поверх theme params, той самий origin, що й API; автентифікація через підписані `initData` у кожному запиті (ADR-0002, ADR-0005). Дизайн-системи в репозиторії немає (`architecture-map.md` §Frontend: N/A), тож UI-kit Telegram і є базовою дизайн-системою.
 
 ## 5. Building block view
 
-<!-- 🎯 Навіщо: ВНУТРІШНЯ ДЕКОМПОЗИЦІЯ — модулі, контейнери, БД. Статична топологія:   -->
-<!--           хто з ким може говорити. Без §5 §6 (сценарії) не має словника учасників. -->
-<!-- 📋 Що писати: 1 абзац про стиль (шари/гексагональна/clean/на подіях) +            -->
-<!--           дерево папок + Mermaid C4Container.                                       -->
-<!-- 📌 ОДИН Container на кожну оголошену target_surface (frontmatter): fullstack        -->
-<!--           [backend-service, web-frontend] = backend-API container + web/SPA container; -->
-<!--           [backend-service, mobile-app] = API + mobile app. Container(web, …) нижче — -->
-<!--           лише приклад однієї поверхні; додай/заміни під оголошене у §4. → _shared/surfaces.md -->
-<!-- 📌 Приклад: «web-app, content-api, media-worker, postgres, s3, cdn».                -->
-
-<One paragraph: layered / hexagonal / clean / event-driven. Why.>
+Модульний моноліт: технічні папки поточного бота замінюються feature-модулями, кожен з власними контролерами, сервісами, конфігураціями EF-сутностей і методом реєстрації `Add<Module>()`; `Program.cs` лишається composition root. Модуль читає чужі дані лише через його інтерфейс; правило перевіряє архітектурний тест (ADR-0003).
 
 **Internal decomposition:**
 
 ```
-<e.g. internal/modules/goals/>
-├── domain/       <entities + sentinel errors>
-├── app/          <use cases / services>
-├── infra/        <repository + outbox impl>
-├── ports/        <HTTP handlers, DTOs, error mapping>
-└── module.go     <self-wiring>
+ConstantLearning/
+├── Features/
+│   ├── Identity/        learner, автентифікація initData, роль content editor, псевдонімна мітка
+│   ├── Learning/        session, оцінка відповіді, планувальник повторень, журнал відповідей, «Сьогодні»
+│   ├── Content/         записи й версії словника, імпорт, пошук, content reports, звірка, черга редактора
+│   ├── Notifications/   таблиця відправлень, planner, dispatcher (нагадування, підсумки, дайджест)
+│   └── Bot/             webhook, /start з кнопкою Mini App, надсилання повідомлень
+├── Platform/            годинник і часові пояси, AppDbContext, Telegram-клієнт, фонові тики
+├── wwwroot/             зібрана Mini App (копіюється на етапі Docker-збірки)
+└── Program.cs           composition root
+ConstantLearning.MiniApp/  React + TypeScript + Vite
+ConstantLearning.Tests/    модульні й інтеграційні тести
 ```
 
 **C4 Container (L2):**
 
 ```mermaid
 C4Container
-    title <system> — Containers
+    title personal-trainer-mvp — Containers
 
-    Person(user, "<User>")
+    Person(learner, "learner", "Щоденні заняття")
+    Person(editor, "content editor", "Розгляд content reports")
 
-    Container_Boundary(boundary, "<Our System>") {
-        Container(web, "<Web/API container>", "<technology>", "<purpose>")
-        Container(svc, "<Service container>", "<technology>", "<purpose>")
-        ContainerDb(db, "<DB>", "<technology>", "<purpose>")
+    Container_Boundary(trainer, "trainer") {
+        Container(miniapp, "Mini App", "React, TypeScript, Vite", "Сьогодні, session, словник, налаштування, черга редактора")
+        Container(api, "Backend", "ASP.NET Core, .NET 10", "REST API, webhook бота, фонові тики нагадувань і звірки")
+        ContainerDb(db, "PostgreSQL", "PostgreSQL 16", "learner, прогрес, журнал відповідей, версії словника, форми пошуку, відправлення")
     }
 
-    System_Ext(ext, "<External>", "<purpose>")
+    System_Ext(telegram, "Telegram", "Bot API і клієнт")
+    System_Ext(refs, "Довідкові джерела", "Wikisłownik, WSJP PAN")
 
-    Rel(user, web, "<interaction>", "<protocol>")
-    Rel(web, svc, "<service calls>")
-    Rel(svc, db, "<reads/writes>", "<driver>")
-    Rel(svc, ext, "<emits>", "<protocol>")
+    Rel(learner, miniapp, "Користується", "Telegram WebView")
+    Rel(editor, miniapp, "Розглядає чергу", "Telegram WebView")
+    Rel(miniapp, api, "JSON API з initData", "HTTPS, той самий origin")
+    Rel(telegram, api, "Webhook оновлень", "HTTPS")
+    Rel(api, telegram, "Нагадування, підсумки, дайджест", "HTTPS")
+    Rel(api, db, "Читає й пише", "EF Core, Npgsql")
+    Rel(api, refs, "Точкові запити й дамп", "HTTPS")
 ```
 
 ## 6. Runtime view
 
-<!-- 🎯 Навіщо: ПОТІК У RUNTIME для 1-2 критичних сценаріїв. Хто з ким коли і у якому     -->
-<!--           порядку говорить. Без §6 §5 — лише купа коробок без життя.                  -->
-<!-- 📋 Що писати: Mermaid sequenceDiagram. Учасники — імена з §5 (не вигадуй нові!).      -->
-<!--           Повідомлення семантичні («складає чорновик»), БЕЗ HTTP-методів/шляхів —     -->
-<!--           ендпоінт-рівневі sequence-діаграми зʼявляться у stage 06 (api-forge).        -->
-<!-- ⏳ RESERVED FOR SEQUENCES: architecture-design сіє лише primary flow(s) тут.          -->
-<!--           complete-sequence-diagrams (stage 06) ДОПОВНЮЄ §6 кожним критичним flow /    -->
-<!--           кожним §5 AC — без обмеження. Не намагайся покрити все тут.                  -->
-<!-- 📌 Приклад: «methodist → web-app: складає чорновик → web-app → content-api: зберегти». -->
-
-**Critical flow 1: <flow name>**
+**Critical flow 1: відповідь на вправу пригадування (AC-12, AC-15–AC-18)**
 
 ```mermaid
 sequenceDiagram
-    actor User
-    participant API
-    participant Service
-    participant DB
-    User->>API: <request>
-    API->>Service: <call>
-    Service->>DB: <write tx>
-    DB-->>Service: ok
-    Service-->>API: result
-    API-->>User: 201
+    actor L as learner
+    participant M as Mini App
+    participant A as Backend
+    participant D as PostgreSQL
+    L->>M: Вводить польське слово
+    M->>A: Відповідь на картку session з initData
+    A->>A: Перевіряє initData і визначає learner
+    A->>D: Захоплює картку, якщо вона ще не оцінена
+    alt картку вже оцінено
+        D-->>A: Збережений результат
+        A-->>M: Той самий результат без повторного зарахування
+    else картка очікує відповіді
+        A->>A: Оцінює відповідь і планує наступне повторення
+        A->>D: Пише подію відповіді, стан слова й картку в одній транзакції
+        D-->>A: Збережено
+        A-->>M: Результат, різниця написання й наступна картка
+    end
+    M-->>L: Показує результат і приклад
 ```
 
-<!-- For XS/S: 1 flow above is enough. For M+: add 2-4 more (e.g. failure-mode flow, async flow). -->
+**Critical flow 2: щоденне нагадування (AC-26)**
 
-**Critical flow 2: <e.g. async event propagation>** — <if applicable, otherwise N/A>.
+```mermaid
+sequenceDiagram
+    participant T as Фоновий тик
+    participant A as Backend
+    participant D as PostgreSQL
+    participant G as Telegram
+    T->>A: Кожні 30 секунд
+    A->>D: Захоплює належні відправлення з пропуском заблокованих рядків
+    D-->>A: Відправлення на поточну добу learner
+    A->>D: Перевіряє стан session цієї доби
+    alt session завершено
+        A->>D: Позначає відправлення як пропущене
+    else session не почато або покинуто понад 30 хв
+        A->>G: Надсилає одне нагадування з кнопкою Mini App
+        A->>D: Позначає відправлення як надіслане
+    end
+```
+
+Решту критичних потоків (онбординг, «Вже знаю», межа доби, content report і звірка, черга редактора, пошук) додає `complete-sequence-diagrams`.
 
 ## 7. Deployment view
 
-<!-- 🎯 Навіщо: ТОПОЛОГІЯ, яку DevOps має знати без читання Helm-чартів — скільки реплік,  -->
-<!--           де живе фоновий обробник, ПРИ ЯКИХ ЧИСЛАХ масштабуємось.                     -->
-<!-- 📋 Що писати: 2-3 речення про топологію + метрики + алерти + конкретні числа-пороги.   -->
-<!-- 📌 Приклад: «500 IC → партиціонування за кварталом» (не «при зростанні подумаємо»).    -->
-<!-- 🎯 Можна N/A для XS/S функцій, що переюзають існуюче розгортання без змін.            -->
-
-<Topology in 2-3 sentences. Where it runs (k8s / VM / serverless), replicas, scaling thresholds.>
+Один образ Docker: multi-stage збірка спершу будує Mini App (Node 22), копіює її в `wwwroot`, потім публікує бекенд; build context розширюється до кореня репозиторію. У k8s — один Deployment з `replicas: 1` і PostgreSQL; Mini App і API обслуговуються з одного HTTPS-домену, який також є адресою webhook. Фонові тики (нагадування, дайджести, звірка) працюють у тому самому процесі.
 
 **Monitoring:**
-- <Metrics — e.g. Prometheus `<metric_name>`>
-- <Alerts — e.g. "outbox lag > 10 min → page on-call">
-- <Tracing — e.g. OpenTelemetry HTTP spans>
+- Журнал відправлень (`notification_dispatch`) — частка відправлень, надісланих у межах 2 хв від `due_at_utc`.
+- Серверні метрики latency для оцінки відповіді й пошуку; клієнтська телеметрія відкриття «Сьогодні» через окремий endpoint (`navigator.sendBeacon`).
+- Щоденна звірка журналу відповідей із картками session.
 
 **Scaling thresholds:**
-- <e.g. 500 IC × 5 goals × 26 checkpoints/Q = 65k rows/year — comfortable in one table>
-- <e.g. partitioning by quarter at >500k rows/year>
+- Пілот: ~50 learner, ціль ≥ 100 одночасних на одному екземплярі.
+- Друга репліка вимагає: міграцій поза стартом застосунку (bundle або init-контейнер); Quartz-тики безпечні завдяки захопленню рядків з пропуском заблокованих.
+- Обсяг: 2 000 лем × десятки форм — сотні тисяч рядків таблиці форм; журнал відповідей пілоту — десятки тисяч подій.
 
-<!-- For XS/S that doesn't change deployment: <!-- N/A: feature reuses existing deployment unit -->. -->
+**Обов'язкові виправлення до пілоту** (з `architecture-map.md` §Constraints): probes на `api/telegram/health`; рядок підключення через `ConnectionStrings__DefaultConnection`; webhook не видаляється на зупинці.
 
 ## 8. Crosscutting concepts
 
-<!-- 🎯 Навіщо: НАСКРІЗНІ ПАТЕРНИ, які перетинають кілька модулів: логування, помилки,    -->
-<!--           авторизація, ID strategy, outbox, кеш. ⭐ Друга найгустіша секція.          -->
-<!--           Якщо патерн всередині одного модуля — він НЕ сюди. Якщо це конвенція        -->
-<!--           проєкту в цілому — у CLAUDE.md.                                              -->
-<!-- 📋 Що писати: таблиця концепт / конвенція / де визначено. Один рядок на концепт.      -->
-<!-- 📌 Приклад: «UUID v7 (час+випадковий, сортується) у app-layer» — як default з CLAUDE.md. -->
-
 | Concept | Convention | Where defined |
 |---|---|---|
-| Logging | <e.g. structured slog, fields `module=<name>`> | <CLAUDE.md §X or here> |
-| Authentication | <e.g. JWT via session middleware> | <CLAUDE.md §X> |
-| Error handling | <e.g. domain sentinel → ports/errors.go → apperr JSON> | <CLAUDE.md §X> |
-| ID strategy | <e.g. UUID v7 in app layer> | <CLAUDE.md §X> |
-| Internationalisation | <e.g. N/A, English only> | — |
-| Observability | <e.g. OpenTelemetry on HTTP boundaries> | — |
-| Outbox / events | <module-specific patterns, if any> | <here> |
+| Logging | Структуровані шаблони `ILogger` з `{LearnerId}` замість `{ChatId}`; заголовок `Authorization` і `initData` ніколи не логуються | тут; `architecture-map.md` §Conventions |
+| Authentication | `AuthenticationHandler` перевіряє `initData` (HMAC-SHA256, свіжість `auth_date` ≤ 24 год) у кожному запиті | ADR-0005 |
+| Authorization | Policy `ContentEditor` з claim, який додає `IClaimsTransformation` за списком Telegram id у конфігурації (secret); `learner_id` лише з claims, чужі ресурси — «не знайдено» | тут (рішення OQ-3) |
+| Псевдонімна мітка автора | Випадковий alias на кшталт `R-7F3A9C`, унікальний, зберігається в learner при першому content report | тут (PRD §6.1) |
+| Error handling | ProblemDetails через `[ApiController]`; доменні відмови — бізнесові повідомлення українською; webhook завжди відповідає успіхом, помилки лише логуються | тут |
+| API style | REST JSON на контролерах `[ApiController]` усередині модулів, `AddOpenApi()`; TS-типи клієнта генеруються з OpenAPI | тут; `api-forge` |
+| Idempotency | Картка session — природний ключ відповіді: умовне захоплення `pending → answered`; повтор повертає збережений результат | ADR-0008 |
+| Concurrency | Оптимістична конкурентність через `xmin` на стані слова й session; унікальні `learner_word(learner_id, entry_id)` і одна активна session на learner у межах доби | тут |
+| Time | NodaTime: `IClock`, IANA tzdb, `LocalDate` доби learner; тести з `FakeClock` | ADR-0006 |
+| Answer evaluation | Чистий доменний сервіс: NFC, обрізання й стискання пробілів, нижній регістр; явна мапа згортання діакритики (`ą ć ę ł ń ó ś ź ż`); структурований diff з сервера | тут (AC-12–AC-17) |
+| ID strategy | `int` identity для нових сутностей за конвенцією репозиторію; Telegram user id — `long` з унікальним індексом | `architecture-map.md` §Conventions |
+| UI / design system | `@telegram-apps/telegram-ui` поверх `--tg-theme-*`; власні кольори лише похідні від theme params; lazy-чанки для словника, налаштувань і черги редактора | тут |
+| Data fetching | TanStack Query: кеш `/today`, відміна застарілих запитів пошуку, повтор мутацій з тим самим ключем картки | тут |
+| Search UX | Запит на кожен символ без debounce, відміна застарілого запиту, `CancellationToken` до EF-запиту | ADR-0012, AC-30 |
+| Bot webhook | `SetWebhook` з `secret_token` і перевіркою заголовка; явні `allowed_updates`; без видалення на зупинці; заблокований бот вимикає нагадування | тут |
+| Internationalisation | Інтерфейс українською; польські тексти — контент словника | — |
+| Observability | Журнал відправлень, серверні latency-метрики, клієнтська телеметрія «Сьогодні» | §7 |
 
 ## 9. Architecture decisions
 
-<!-- 🎯 Навіщо: ЗВОРОТНИЙ ІНДЕКС на папку adr/. `ls adr/` дає файли, §9 дає семантику —    -->
-<!--           чому вони існують, до якого зрізу SAD привʼязані, у якому статусі.           -->
-<!-- 📋 Що писати: таблиця з 4 колонками. Один рядок на ADR. Mixed status — це OK.         -->
-<!-- 📌 Приклад: «0001 | Зберігати урок як таблицю блоків | Accepted | §4».                -->
-
 | # | Title | Status | Section |
 |---|---|---|---|
-| <NNNN> | <imperative — e.g. "Use sliding window for rate limiting"> | Accepted | §<N> |
-| <NNNN> | <imperative — e.g. "Co-locate outbox worker in API process"> | Accepted | §<N> |
+| 0001 | Deliver the trainer as a backend service plus a Telegram Mini App | Accepted | §4 |
+| 0002 | Build the Mini App as a React SPA served by ASP.NET Core | Accepted | §4 |
+| 0003 | Organise code into feature modules inside the monolith | Accepted | §5 |
+| 0004 | Retire the group model without data migration | Accepted | §4 |
+| 0005 | Authenticate every API request with Telegram initData | Accepted | §8 |
+| 0006 | Model learner time with NodaTime and IANA zones | Accepted | §8 |
+| 0007 | Dispatch notifications through a Postgres dispatch table | Accepted | §6 |
+| 0008 | Keep the learning session server-side with per-card idempotency | Accepted | §6 |
+| 0009 | Schedule reviews with MEMORIZE behind a port over an answer log | Accepted | §4 |
+| 0010 | Version dictionary entries in Postgres with a published pointer | Accepted | §4 |
+| 0011 | Verify content reports asynchronously against reference snapshots | Accepted | §4 |
+| 0012 | Search via a precomputed table of folded word forms | Accepted | §8 |
 
-ADR files live under `docs/features/<slug>/adr/NNNN-<title>.md`.
+ADR files live under `docs/features/personal-trainer-mvp/adr/NNNN-<title>.md`.
 
 ## 10. Quality requirements
 
-<!-- 🎯 Навіщо: ДЕРЕВО ЯКОСТЕЙ (Quality Tree) — беремо мету з §1 і розкладаємо на          -->
-<!--           конкретні листя: тести, метрики, конфіги, drill-и. ⭐ Без §10 §1 — це       -->
-<!--           маніфест. З §10 кожна декларація мапиться на щось, ЩО МОЖНА ДОВЕСТИ.        -->
-<!-- 📋 Що писати: на кожну якість з §1 — When / Then / How verify. Числа з PRD §6 NFR     -->
-<!--           ДОСЛІВНО (не округлюй p95 ≤250мс до ≤300мс — це F6-помилка критика).        -->
-<!-- 📌 Приклад: «p95 ≤500 мс на UPDATE блоку, перевіримо k6 load test 100 req/s».        -->
+**QG-1. Коректність навчального обліку**
+- **When:** learner надсилає ту саму відповідь двічі (подвійне натискання, повтор після мережевої помилки) або двома пристроями.
+- **Then:** 0 втрачених відповідей; повторне надсилання тієї самої відповіді зараховується один раз (PRD §6).
+- **How verify:** інтеграційний тест подвійного надсилання на справжньому PostgreSQL (Testcontainers) + щоденна звірка журналу відповідей із картками session.
 
-Each top-3 goal from §1 expanded into a full scenario:
+**QG-2. Чутливість інтерфейсу**
+- **When:** learner відкриває trainer, відповідає на вправу або вводить символ у пошуку при ≥ 100 одночасних learner на одному екземплярі.
+- **Then:** Latency p95 відкриття екрана «Сьогодні» ≤ 1 500 ms; оцінки відповіді ≤ 500 ms; пошуку в словнику ≤ 300 ms на запит (PRD §6).
+- **How verify:** навантажувальний тест перед пілотом; клієнтська телеметрія «Сьогодні»; серверні метрики оцінки відповіді й пошуку.
 
-**QG-1. <quality attribute>**
-- **When:** <trigger condition>
-- **Then:** <expected behavior with numbers from PRD NFR>
-- **How verify:** <test / chaos drill / load test / observability>
+**QG-3. Надійність нагадувань**
+- **When:** настає час нагадування learner, зокрема після рестарту застосунку чи зміни часового поясу.
+- **Then:** ≥ 99% нагадувань надіслано в межах 2 хв від запланованого часу; не більше одного нагадування на календарну дату learner (PRD §6, AC-26, AC-44).
+- **How verify:** журнал доставки з тижневим вікном; тести planner на перехід DST і зміну поясу з `FakeClock`.
 
-**QG-2. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
-- **How verify:** <how>
-
-**QG-3. <quality attribute>**
-- **When:** <trigger>
-- **Then:** <expected>
-- **How verify:** <how>
+**QG-4. Доступність**
+- **When:** будь-який місяць пілоту.
+- **Then:** Availability 99.5% (PRD §6).
+- **How verify:** місячне SLO-вікно за health-probe.
 
 ## 11. Risks and technical debt
 
-<!-- 🎯 Навіщо: ⭐ збирає ВСЕ, що може зламатись — і не лише технічне. Без §11 ризики   -->
-<!--           обговорюються на стендапах і губляться; борг лишається у голові того,    -->
-<!--           хто його прийняв.                                                          -->
-<!-- 📋 Що писати: таблиця ризик/борг — серйозність — мітигація — власник. Технічний    -->
-<!--           борг окремою секцією.                                                      -->
-<!-- 📌 Приклад: «EM не пушить — member не оновлює дані | High | …». Перший ризик —      -->
-<!--           часто продуктовий, не технічний. Це нормально.                            -->
-
-<!-- Severity column literals: Low / Medium / High for regular risks; "Open question" for rows
-     created by Step-7 `Save as Open Question` resolutions (see references/socratic-loop.md). -->
-
 | Risk / debt | Severity | Mitigation | Owner |
 |---|---|---|---|
-| <e.g. Outbox lag may reach hours during downstream outage> | Medium | <Alert >10 min, on-call playbook, retry backoff> | <DevOps> |
-| <e.g. No event schema versioning in v1> | Medium | <ADR-NNNN planned for v2, graceful handling of unknown fields> | <Backend> |
-| Open architectural decision: <decision-headline> | Open question | Resolve before <stage trigger or YYYY-MM-DD>; <inline rationale from Step-7 Save-as-OQ> | <owner> |
+| Ліцензія VESUM (CC BY-NC-SA 4.0) забороняє комерційне використання українських словоформ і може поширити ShareAlike на таблицю форм | High | До генерації форм вибрати: VESUM для некомерційного пілоту з атрибуцією, hunspell `uk_UA` після перевірки ліцензій файлів або пошук лише за базовими формами | Viacheslav Melnichenko |
+| Немає машинного польсько-українського словника з відкритою ліцензією, крім Wikisłownik, — «другий словник» з AC-35 фактично недоступний | Medium | Автопідтвердження перекладу лише за Wikisłownik; решта йде content editor; частку автопідтверджень вимірювати на пілоті | Viacheslav Melnichenko |
+| Умови використання WSJP PAN невідомі | Medium | Лише точкові запити з обмеженням частоти до перевірки умов; без масового скрейпінгу | Viacheslav Melnichenko |
+| Парсер вікітексту Wikisłownik і конвертер IPA → кирилиця крихкі | Medium | Окремі адаптери за портом `IReferenceSource` з тестами на зразках; збій парсера переводить звірку в ручний режим | Backend |
+| `@telegram-apps/telegram-ui` фіксує проєкт на React 18 і розвивається повільно | Low | Тема прив'язана до `--tg-theme-*`, kit можна замінити власним CSS поступово | Frontend |
+| Наявність `tzdata` та ICU в образі `aspnet:10.0` не перевірена | Medium | Перевірити під час скафолдингу; NodaTime несе власну tzdb | Backend |
+| Інтерфейс недоступний під час рестарту, бо UI й API в одному процесі | Low | Один короткий рестарт на реліз; webhook більше не видаляється на зупинці | Backend |
+| Немає процесу перевірки в реальному клієнті Telegram | Medium | Тестовий бот і HTTPS-тунель для ручної перевірки; `mockTelegramEnv` для локальної розробки | Frontend |
+| Open architectural decision: поле прийнятих польських варіантів відповіді відсутнє в `content-schema.md`, хоча AC-16 і AC-38 його потребують | Open question | Resolve before /sdlc:generate-data-model; додати поле до редакторської схеми й імпорту | Viacheslav Melnichenko |
+| Open architectural decision: чи зараховувати іншу `approved`-лему з тим самим українським перекладом, кириличну літеру замість латинської й кінцеву пунктуацію | Open question | Resolve before /sdlc:api-forge; до рішення — mistake з дією «Моя відповідь теж правильна» | Viacheslav Melnichenko |
+| Open architectural decision: до якого моменту доступна дія «Моя відповідь теж правильна» | Open question | Resolve before /sdlc:api-forge; default — до переходу на наступну картку | Viacheslav Melnichenko |
+| Open architectural decision: якщо о часі reminder learner був активний менше 30 хв тому, нагадування пропускається без відкладеного повтору | Open question | Resolve before /sdlc:break-tasks; default — пропуск | Viacheslav Melnichenko |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
-- <e.g. Goal entity is not versioned (immutable) — OK for v1, may need audit versioning in v2>
+- Межі модулів тримаються на домовленості й архітектурному тесті, а не на окремих збірках.
+- Нагадування мають семантику «не більше одного»: збій між надсиланням і позначкою втрачає нагадування, і це йде в бюджет 1% NFR.
+- Параметри MEMORIZE апріорні до перенастроювання за даними пілоту (PRD OQ-4).
+- Один екземпляр і автоміграції на старті; друга репліка потребує змін з §7.
 
 ## 12. Glossary
 
-<!-- 🎯 Навіщо: ⭐ СЛОВНИК ДОМЕНУ, який припиняє суперечки через рік («checkpoint —      -->
-<!--           weekly чи biweekly? Quarter — календарний чи фіскальний?»).                -->
-<!-- 📋 Що писати: таблиця термін / значення. Бізнес-терміни + технічні вперемішку.       -->
-<!--           Один термін може мати дві мови у заголовку: «Goal (Обʼєктив)».              -->
-<!-- 📌 Приклад: «Lesson | урок усередині курсу, що складається з блоків (text, video)». -->
+Канонічні терміни — у [CONTEXT.md](../../../CONTEXT.md). Тут лише архітектурні терміни цього SAD.
 
 | Term | Meaning |
 |---|---|
-| <e.g. Goal> | <quarterly intent in statement form> |
-| <e.g. KR> | <Key Result — measurable target linked to a Goal> |
-| <e.g. Checkpoint> | <bi-weekly progress update on a KR> |
+| initData | Підписані Telegram дані запуску Mini App з ідентичністю користувача й `auth_date` |
+| Dispatch table | Таблиця запланованих відправлень бота з унікальним ключем `(recipient, kind, local_date)` |
+| Answer log | Append-only журнал подій відповідей — джерело істини, з якого перебудовується стан слів |
+| Published pointer | Посилання запису словника на поточну `approved`-версію, яку бачать learner |
+| Folded form | Словоформа після нормалізації й згортання діакритики для префіксного пошуку |
+| Reference snapshot | Локальна копія довідкових даних (дамп Wikisłownik, кеш точкових запитів) для звірки |
