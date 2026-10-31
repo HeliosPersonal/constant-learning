@@ -46,3 +46,12 @@
 
 - Немає `<!-- TBD -->` у `data-model.md`.
 - Ліцензія `morph_forms` для української (VESUM) — SAD §11, вирішити до наповнення таблиці.
+
+## Синхронізація після другого clarify-prd (2026-10-31)
+
+- Додано пару `20261031120022_alter_content_reports_dedup_and_summary`; тепер міграцій 23 пари, таблиць так само 19.
+- `content_reports.dedup_key` + частковий UNIQUE для незакритих reports — повтор того самого повідомлення не створює нового (AC-51).
+- UNIQUE на `content_reports.answer_event_id` замість FK-індексу — один report на оцінену відповідь (AC-47).
+- `content_reports.summary_dispatch_id` і частковий індекс замість `ix_content_reports_learner_closed` — підсумок «з моменту попереднього» (AC-37).
+- `ix_publication_log_actor_created` — список застосованих змін для відкату (US-12, AC-48).
+- Індекси створюються без `CONCURRENTLY`: таблиці нові в цій фічі й порожні на момент застосування. Самоперевірка нової пари: назва ✅, `.down.sql` повертає попередні індекси й прибирає колонки ✅, FK-індекс для `summary_dispatch_id` ✅, без `CHECK`/`TRIGGER`/бізнесових `DEFAULT` ✅.

@@ -14,7 +14,7 @@ ticket: "TBD"
 docs/features/personal-trainer-mvp/migrations/ (NOT the live ConstantLearning/Migrations/ tree);
 implement-tasks promotes them. -->
 
-> Міграції лежать у [`migrations/`](./migrations/) (22 пари `.up.sql` / `.down.sql`) і ще не застосовані. `implement-tasks` переносить кожну пару в EF Core міграцію (`migrationBuilder.Sql`) з новою позначкою часу. Повний DDL — у файлах міграцій; тут — модель, обмеження й обґрунтування індексів.
+> Міграції лежать у [`migrations/`](./migrations/) (23 пари `.up.sql` / `.down.sql`) і ще не застосовані. `implement-tasks` переносить кожну пару в EF Core міграцію (`migrationBuilder.Sql`) з новою позначкою часу. Повний DDL — у файлах міграцій; тут — модель, обмеження й обґрунтування індексів.
 >
 > **Правила курсу:** UUID v7 генерується в застосунку (`Guid.CreateVersion7()`); лише `created_at`, без `updated_at`; жорстке видалення; `VARCHAR(N)`; без `CHECK`, `TRIGGER` і бізнесових `DEFAULT` — статуси, ліміти й прапорці завжди задає застосунок. Оптимістична конкурентність — системна колонка PostgreSQL `xmin` (DDL не потрібен, SAD §8).
 
@@ -32,6 +32,7 @@ erDiagram
     learners ||--o{ content_reports : reports
     content_reports ||--o| verification_jobs : verified_by
     learners ||--o{ notification_dispatches : receives
+    notification_dispatches ||--o{ content_reports : summarizes
     dictionary_entries ||--o{ entry_versions : versions
     dictionary_entries |o--o| entry_versions : published_as
     entry_versions ||--o{ version_translations : translates
@@ -100,6 +101,8 @@ erDiagram
         uuid entry_id FK
         varchar origin
         varchar status
+        varchar dedup_key
+        uuid summary_dispatch_id FK
     }
     notification_dispatches {
         uuid id PK
@@ -291,6 +294,8 @@ erDiagram
 | `action` | VARCHAR(16) | NOT NULL | `publish` / `unpublish` / `rollback` |
 | `actor_kind` | VARCHAR(24) | NOT NULL | `import` / `auto_verification` / `editor` |
 | `actor_learner_id` | UUID | NULL, FK → `learners(id)` | content editor |
+
+**Відкат (US-12).** Список застосованих змін — рядки `publish` з `actor_kind` `auto_verification` чи `editor`, нова версія яких має `content_report_id` (AC-48). Відкат дозволено, лише коли `to_version_id` рядка досі дорівнює `dictionary_entries.published_version_id` (AC-49): у транзакції з оптимістичною перевіркою вказівника тренер повертає вказівник на `from_version_id`, пише рядок `rollback` і перебудовує `search_forms`. Версії, `content_reports` і `answer_events` не змінюються.
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
 ### Агрегат Content — `content_reports`
@@ -311,7 +316,13 @@ erDiagram
 | `rejection_reason` | VARCHAR(32) | NULL | (AC-39) |
 | `resulting_version_id` | UUID | NULL, FK | |
 | `closed_at` | TIMESTAMPTZ | NULL | підсумок learner (AC-37), KPI часу розгляду |
-| `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | ліміт 20 на добу (PRD §6.1) |
+| `dedup_key` | VARCHAR(64) | NULL | SHA-256 від нормалізованих `origin`, `entry_id`, `field`, `proposed_value`, `comment` або `search_query` (нижній регістр, стиснуті пробіли); обчислює застосунок; null для `answer_dispute` (AC-51) |
+| `summary_dispatch_id` | UUID | NULL, FK → `notification_dispatches(id)` | підсумок, у який потрапив результат; ставиться під час захоплення відправлення й скидається, якщо воно стало `failed` чи `missed` (AC-37) |
+| `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | ліміт 20 на добу без `answer_dispute` (AC-46, AC-47) |
+
+**Constraints:** частковий UNIQUE (`learner_id`, `dedup_key`) для незакритих reports — повтор того самого повідомлення повертає наявний report (AC-51); UNIQUE (`answer_event_id`) — не більше одного report на оцінену відповідь (AC-47).
+
+**Mutable:** `status`, `outcome`, `rejection_reason`, `resulting_version_id`, `closed_at`, `summary_dispatch_id`. Додано міграцією `20261031120022_alter_content_reports_dedup_and_summary` під час синхронізації з PRD після другого `clarify-prd`.
 
 ### Агрегат Content — `verification_jobs`, `reference_entries`, `search_forms`, `morph_forms`
 
@@ -366,14 +377,18 @@ erDiagram
 | `ix_answer_events_learner_entry` | `answer_events(learner_id, entry_id, answered_at)` | Перебудова стану слова з журналу (ADR-0009) |
 | `ix_answer_events_learner_day_outcome` | `answer_events(learner_id, learner_day, outcome)` | Ліміт «Вже знаю» 10 на добу (AC-20, AC-21); KPI активних днів |
 | `ix_answer_events_entry_id`, `ix_answer_events_version_id` | FK | Індекси FK |
-| `ix_content_reports_learner_created` | `content_reports(learner_id, created_at)` | Ліміт 20 content reports на добу (PRD §6.1) |
-| `ix_content_reports_learner_closed` | `content_reports(learner_id, closed_at)` | Підсумок закритих за добу (AC-37) |
+| `ix_content_reports_learner_created` | `content_reports(learner_id, created_at)` | Ліміт 20 content reports на добу (AC-46) |
+| `ix_content_reports_learner_unsummarized` | `content_reports(learner_id, closed_at) WHERE closed_at IS NOT NULL AND summary_dispatch_id IS NULL` | Результати, закриті після попереднього підсумку (AC-37) |
+| `ux_content_reports_open_dedup` | `content_reports(learner_id, dedup_key) WHERE closed_at IS NULL AND dedup_key IS NOT NULL` | Повтор відкритого report (AC-51) |
+| `ux_content_reports_answer_event_id` | `content_reports(answer_event_id)` | Один report на оцінену відповідь (AC-47); заміняє FK-індекс |
+| `ix_content_reports_summary_dispatch_id` | FK | Індекс FK |
 | `ix_content_reports_status_created` | `content_reports(status, created_at)` | Черга content editor і дайджест (AC-43) |
-| `ix_content_reports_entry_id`, `_version_id`, `_answer_event_id`, `_resulting_version_id` | FK | Індекси FK |
+| `ix_content_reports_entry_id`, `_version_id`, `_resulting_version_id` | FK | Індекси FK |
 | `ux_answer_neutralizations_answer_event` | `answer_neutralizations(answer_event_id)` | Ідемпотентність AC-17 |
 | `ix_answer_neutralizations_content_report_id` | FK | Індекс FK |
 | `ix_validation_evidence_version_id` | FK | Докази звірки версії |
 | `ix_publication_log_entry_created` | `publication_log(entry_id, created_at)` | Журнал публікацій запису для відкату |
+| `ix_publication_log_actor_created` | `publication_log(actor_kind, created_at)` | Список змін, застосованих звіркою чи content editor, від нових до старих (AC-48) |
 | `ix_publication_log_from_version_id`, `_to_version_id`, `_actor_learner_id` | FK | Індекси FK |
 | `ix_search_forms_form_folded` | `search_forms(form_folded text_pattern_ops)` | Точний збіг і префіксний пошук (AC-30) |
 | `ix_search_forms_entry_id`, `ix_search_forms_version_id` | FK | Перебудова форм при публікації |

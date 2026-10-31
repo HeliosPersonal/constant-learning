@@ -43,7 +43,8 @@ paths:
       operationId: completeOnboarding
       description: |
         Створює learner за ідентичністю з initData. Якщо часовий пояс не передано або він невідомий,
-        доба рахується за Europe/Warsaw, а `time_zone_confirmed` = false (AC-01).
+        доба рахується за Europe/Warsaw, а `time_zone_confirmed` = false (AC-01). Якщо learner уже
+        існує, повертає його без змін і без помилки — значення з тіла запиту ігноруються (AC-53).
       requestBody:
         required: true
         content:
@@ -68,6 +69,22 @@ paths:
                 pending_daily_new_words_limit: null
                 reminder: null
                 onboarded_at: "2026-10-31T09:00:00Z"
+        "200":
+          description: learner уже існує — повернуто наявні налаштування без змін (AC-53)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Learner" }
+              example:
+                id: 0192f0a0-0000-7000-8000-000000000001
+                first_name: Test User
+                time_zone: Europe/Warsaw
+                time_zone_confirmed: true
+                daily_new_words_limit: 5
+                pending_daily_new_words_limit: null
+                reminder:
+                  local_time: "19:00"
+                  days_of_week: [mon, wed, fri]
+                onboarded_at: "2026-10-30T09:00:00Z"
         "400":
           description: Невалідні налаштування (AC-02, AC-45)
           content:
@@ -77,14 +94,6 @@ paths:
                 code: settings.reminder_days_required
                 message: Виберіть хоча б один день або пропустіть налаштування нагадувань.
         "401": { $ref: "#/components/responses/Unauthorized" }
-        "409":
-          description: Онбординг уже завершено
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Error" }
-              example:
-                code: learner.already_onboarded
-                message: Ви вже налаштували тренер.
 
   /api/v1/learners/me:
     get:
@@ -331,7 +340,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
         "404": { $ref: "#/components/responses/SessionItemNotFound" }
         "409":
-          description: Картку вже оцінено іншою відповіддю або доба session минула
+          description: Картку вже оцінено іншою відповіддю або доба session минула (AC-52) — дію не зараховано, session закрито
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -343,7 +352,7 @@ paths:
                 expired:
                   value:
                     code: session.expired
-                    message: Доба заняття минула — почніть нове.
+                    message: Заняття минулої доби закрито — почніть нове.
 
   /api/v1/sessions/{session_id}/items/{item_id}/acknowledge:
     post:
@@ -385,7 +394,8 @@ paths:
       operationId: markAlreadyKnown
       description: |
         Ставить control repetition через 7 діб і word status «На повторення». Додає нове слово на
-        заміну, якщо за добу позначено менше 10 слів (AC-20, AC-21). Повтор безпечний.
+        заміну, якщо за добу позначено менше 10 слів (AC-20); інакше заміни немає, а слово
+        рахується до daily new words limit поточної доби (AC-21). Повтор безпечний.
       parameters:
         - $ref: "#/components/parameters/SessionId"
         - $ref: "#/components/parameters/ItemId"
@@ -419,11 +429,14 @@ paths:
   /api/v1/answers/{answer_event_id}/dispute:
     post:
       tags: [learning, content-reports]
-      summary: «Моя відповідь теж правильна» (AC-17)
+      summary: «Моя відповідь теж правильна» (AC-17, AC-55)
       operationId: disputeAnswer
       description: |
         Скасовує mistake, відновлює стан слова до відповіді й створює content report із введеним
-        варіантом. Повторний виклик повертає той самий результат.
+        варіантом. Для перевірки нового слова перше повторення лишається наступної доби (AC-55).
+        Не більше одного report на оцінену відповідь, тож він не рахується до денного ліміту
+        20 reports і доступний навіть після його вичерпання (AC-47). Повторний виклик повертає
+        той самий результат.
       parameters:
         - in: path
           name: answer_event_id
@@ -554,8 +567,11 @@ paths:
       description: |
         Переклад або транскрипція із запропонованим значенням ідуть на автоматичну звірку
         (ADR-0011, AC-35); інше — у чергу content editor (AC-36). Відсутній запис передає
-        `search_query` без `entry_id` (AC-31). Не більше 20 повідомлень на learner за добу.
-        Ідемпотентності немає: подвійне надсилання створює два reports (ADR-0008, відкладено — див. api-sync-report.md).
+        `search_query` без `entry_id` (AC-31). Не більше 20 повідомлень на learner за добу learner;
+        «Моя відповідь теж правильна» до ліміту не рахується (AC-46, AC-47). Ідентичний повтор
+        незакритого report (той самий запис, поле, значення й коментар або пошуковий запит без
+        урахування регістру й зайвих пробілів) не створює нового: відповідь 202 з `id` наявного
+        report, до ліміту зараховано одне повідомлення (AC-51).
       requestBody:
         required: true
         content:
@@ -595,13 +611,13 @@ paths:
                 code: dictionary.entry_not_found
                 message: Слово не знайдено.
         "429":
-          description: Перевищено 20 повідомлень за добу (PRD §6.1)
+          description: Вичерпано 20 повідомлень за добу learner (AC-46); клієнт зберігає введені значення у формі
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
               example:
                 code: report.daily_limit_reached
-                message: Ви вже надіслали багато повідомлень сьогодні — спробуйте завтра.
+                message: Сьогоднішній ліміт 20 повідомлень вичерпано — нові можна надіслати після 00:00 за вашим часом.
 
   /api/v1/editor/content-reports:
     get:
@@ -705,6 +721,94 @@ paths:
               example:
                 code: report.already_closed
                 message: Це повідомлення вже розглянуто.
+
+  /api/v1/editor/applied-changes:
+    get:
+      tags: [editor]
+      summary: Зміни словника, застосовані за content reports (US-12)
+      operationId: listAppliedChanges
+      description: |
+        Лише для content editor. Публікації, зроблені автоматичною звіркою чи схваленням content
+        editor за content report, від нових до старих (AC-48). `rollback_allowed` = true, лише
+        коли версія зміни досі опублікована (AC-49).
+      parameters:
+        - in: query
+          name: after
+          schema: { type: string, format: uuid }
+        - in: query
+          name: before
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Застосовані зміни
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AppliedChangePage" }
+              example:
+                items:
+                  - id: 0192f0a0-0000-7000-8000-0000000000f1
+                    entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                    lemma_pl: urząd
+                    field: translation
+                    previous_value: державна установа
+                    new_value: установа
+                    confirmed_by: auto_verification
+                    content_report_id: 0192f0a0-0000-7000-8000-0000000000d2
+                    applied_at: "2026-10-31T12:00:00Z"
+                    rollback_allowed: true
+                has_next: false
+                has_prev: false
+                next_cursor: null
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/EditorRoleRequired" }
+
+  /api/v1/editor/applied-changes/{change_id}/rollback:
+    post:
+      tags: [editor]
+      summary: Відкотити застосовану зміну до попередньої версії (US-12)
+      operationId: rollbackAppliedChange
+      description: |
+        Повертає опублікований вказівник запису на попередню версію й пише відкат у журнал
+        публікацій (AC-48). Word status, відповіді learner, закритий content report і вже
+        надісланий результат не змінюються. Відкотити можна лише поточну версію запису (AC-49).
+        Повторний виклик для вже відкоченої зміни повертає `editor.rollback_not_current`.
+      parameters:
+        - in: path
+          name: change_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Відкат застосовано
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RollbackResult" }
+              example:
+                change_id: 0192f0a0-0000-7000-8000-0000000000f1
+                entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                published_version_id: 0192f0a0-0000-7000-8000-0000000000a9
+                rolled_back_at: "2026-10-31T15:00:00Z"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/EditorRoleRequired" }
+        "404":
+          description: Застосовану зміну не знайдено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: editor.change_not_found
+                message: Зміну не знайдено.
+        "409":
+          description: Версія зміни вже не поточна — запис має новішу версію або зміну вже відкочено (AC-49)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: editor.rollback_not_current
+                message: Відкотити можна лише поточну версію запису.
 
   /api/telegram/webhook:
     post:
@@ -838,15 +942,15 @@ components:
             code: session.item_not_found
             message: Картку не знайдено.
     SessionExpired:
-      description: Доба session минула (AC-25)
+      description: Доба session минула — дію не зараховано, session закрито (AC-25, AC-52)
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
           example:
             code: session.expired
-            message: Доба заняття минула — почніть нове.
+            message: Заняття минулої доби закрито — почніть нове.
     EditorRoleRequired:
-      description: Користувач не має ролі content editor (AC-41)
+      description: Користувач не має ролі content editor (AC-41, AC-50)
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
@@ -1239,6 +1343,44 @@ components:
             - type: "null"
         resulting_version_id: { type: [string, "null"], format: uuid }
         closed_at: { type: string, format: date-time }
+
+    AppliedChange:
+      type: object
+      required: [id, entry_id, lemma_pl, field, previous_value, new_value, confirmed_by, content_report_id, applied_at, rollback_allowed]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid, description: ідентифікатор рядка журналу публікацій }
+        entry_id: { type: string, format: uuid }
+        lemma_pl: { type: string, maxLength: 200 }
+        field: { $ref: "#/components/schemas/ReportField" }
+        previous_value: { type: [string, "null"], maxLength: 500 }
+        new_value: { type: string, maxLength: 500 }
+        confirmed_by: { type: string, enum: [auto_verification, editor] }
+        content_report_id: { type: string, format: uuid }
+        applied_at: { type: string, format: date-time }
+        rollback_allowed: { type: boolean }
+
+    AppliedChangePage:
+      type: object
+      required: [items, has_next, has_prev, next_cursor]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AppliedChange" }
+        has_next: { type: boolean }
+        has_prev: { type: boolean }
+        next_cursor: { type: [string, "null"], format: uuid }
+
+    RollbackResult:
+      type: object
+      required: [change_id, entry_id, published_version_id, rolled_back_at]
+      additionalProperties: false
+      properties:
+        change_id: { type: string, format: uuid }
+        entry_id: { type: string, format: uuid }
+        published_version_id: { type: string, format: uuid, description: попередня версія, що знову опублікована }
+        rolled_back_at: { type: string, format: date-time }
 
     TelegramUpdate:
       type: object
