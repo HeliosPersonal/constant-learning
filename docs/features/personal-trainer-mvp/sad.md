@@ -709,7 +709,7 @@ Coverage: 11/11 user stories · 45/45 ACs — 1 non-runtime N/A.
 | Concurrency | Оптимістична конкурентність через `xmin` на стані слова й session; унікальні `learner_word(learner_id, entry_id)` і одна активна session на learner у межах доби | тут |
 | Time | NodaTime: `IClock`, IANA tzdb, `LocalDate` доби learner; тести з `FakeClock` | ADR-0006 |
 | Answer evaluation | Чистий доменний сервіс: NFC, обрізання й стискання пробілів, нижній регістр; явна мапа згортання діакритики (`ą ć ę ł ń ó ś ź ż`); структурований diff з сервера | тут (AC-12–AC-17) |
-| ID strategy | `int` identity для нових сутностей за конвенцією репозиторію; Telegram user id — `long` з унікальним індексом | `architecture-map.md` §Conventions |
+| ID strategy | UUID v7, генерується застосунком (`Guid.CreateVersion7()`) — дефолт курсу для нової схеми, старі `int`-таблиці видаляються (ADR-0004); Telegram user id — `long` з унікальним індексом | `data-model.md` |
 | UI / design system | `@telegram-apps/telegram-ui` поверх `--tg-theme-*`; власні кольори лише похідні від theme params; lazy-чанки для словника, налаштувань і черги редактора | тут |
 | Data fetching | TanStack Query: кеш `/today`, відміна застарілих запитів пошуку, повтор мутацій з тим самим ключем картки | тут |
 | Search UX | Запит на кожен символ без debounce, відміна застарілого запиту, `CancellationToken` до EF-запиту | ADR-0012, AC-30 |
