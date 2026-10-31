@@ -203,6 +203,482 @@ sequenceDiagram
 
 Решту критичних потоків (онбординг, «Вже знаю», межа доби, content report і звірка, черга редактора, пошук) додає `complete-sequence-diagrams`.
 
+### Онбординг learner
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - людина вперше відкриває trainer і ще не є learner
+    U->>UI: Відкриває Mini App
+    UI->>S: Підписані дані запуску й визначений часовий пояс
+    S->>S: Перевіряє підпис і свіжість даних запуску
+    U->>UI: Обирає денний ліміт 5 і пропускає нагадування
+    UI->>S: Завершити онбординг
+    alt пояс визначено й він є в базі поясів
+        S->>D: Створює learner з лімітом і поясом
+    else пояс не визначено
+        S->>D: Створює learner з поясом Варшави й позначкою «пояс не вибрано»
+    end
+    Note over S,D: persists learner (унікальний Telegram id)
+    D-->>S: Збережено
+    S-->>UI: Екран «Сьогодні» з першим заняттям
+    UI-->>U: Показує «Сьогодні»
+    alt learner налаштовує нагадування без жодного дня тижня
+        S-->>UI: Відмова з поясненням вибрати день або пропустити крок
+        UI-->>U: Показує пояснення, нагадування не збережено
+    end
+    Note over U,UI: Postcondition - learner існує з лімітом, поясом і, за бажанням, нагадуванням
+```
+
+### Складання session
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - learner відкрив trainer, активної session на цю добу немає
+    U->>UI: Починає заняття
+    UI->>S: Почати session
+    S->>S: Визначає добу learner за його поясом
+    S->>D: Читає слова, які час повторити, від найбільш прострочених
+    D-->>S: Слова до повторення
+    S->>D: Читає видані сьогодні нові слова й момент доступності нової порції
+    D-->>S: Залишок денного ліміту
+    alt повторень 20 або більше
+        S->>S: Бере 20 найбільш прострочених повторень без нових слів
+    else денний ліміт вичерпано або порцію видано за попереднім поясом
+        S->>S: Бере лише повторення й готує пояснення про вичерпаний ліміт
+    else base course завершено
+        S->>S: Бере лише повторення й позначку «курс завершено»
+    else є вільні місця
+        S->>S: Додає нові леми, чергуючи квоти за відставанням частки, до 20 карток
+    end
+    Note over S: Пропущені доби не додають ні mistake, ні додаткових занять
+    S->>D: Створює session з упорядкованими картками, добою й кінцем доби
+    Note over S,D: persists session і session items, одна активна session на learner у межах доби
+    D-->>S: Збережено
+    S-->>UI: Перша картка й склад session
+    UI-->>U: Показує першу картку
+    Note over U,UI: Postcondition - session не більше ніж на 20 слів, нові слова в межах ліміту
+```
+
+### Картка нового слова й «Вже знаю»
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - session містить нові слова
+    S-->>UI: Картка нового слова з перекладом, транскрипцією й прикладом
+    UI-->>U: Показує картку з діями «Далі» і «Вже знаю»
+    alt learner натискає «Далі»
+        U->>UI: Далі
+        UI->>S: Картку показано
+        S->>D: Фіксує перший показ і першу добу слова
+        Note over S,D: persists learner word state (first shown day)
+    else learner натискає «Вже знаю», замін за добу менше 10
+        U->>UI: Вже знаю
+        UI->>S: Позначити слово відомим
+        S->>D: Ставить статус «На повторення» і control repetition через 7 діб
+        S->>D: Додає в session наступне нове слово на заміну
+        Note over S,D: persists answer event already known і learner word state
+    else learner натискає «Вже знаю», замін за добу вже 10
+        U->>UI: Вже знаю
+        UI->>S: Позначити слово відомим
+        S->>D: Ставить control repetition через 7 діб без заміни
+    end
+    D-->>S: Збережено
+    S-->>UI: Після показу всіх нових слів по одній перевірці кожного без транскрипції
+    UI-->>U: Показує вправи перевірки
+    Note over U,UI: Postcondition - перевірка нового слова не є запланованим повторенням
+```
+
+### Оцінка відповіді й статус слова
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - картка session очікує відповіді
+    U->>UI: Вводить відповідь або натискає «Не знаю»
+    alt відповідь порожня
+        UI-->>U: Пропонує ввести слово або натиснути «Не знаю», без оцінки
+    else відповідь надіслано
+        UI->>S: Відповідь на картку
+        S->>D: Відкриває транзакцію й читає картку, стан слова й опубліковану версію
+        D-->>S: Прийняті варіанти й стан слова
+        S->>S: Нормалізує відповідь і порівнює з прийнятими варіантами
+        alt збіг після нормалізації
+            S->>S: Успіх, довший інтервал
+        else «Не знаю»
+            S->>S: Mistake, повторення наступної доби
+        else відмінність лише в діакритиці
+            S->>S: Mistake з позначеною відмінністю без дії «Моя відповідь теж правильна»
+        else інша відповідь
+            S->>S: Mistake з позначеною відмінністю й дією «Моя відповідь теж правильна»
+        end
+        alt друга правильна поспіль у різних запланованих повтореннях
+            S->>S: Статус «Вже пригадую», слово в recalled words
+        else mistake для слова зі статусом «Вже пригадую»
+            S->>S: Статус «На повторення», лічильник обнулено
+        else control repetition правильно
+            S->>S: Перше з двох повторень, інтервал довший за 7 діб
+        else control repetition з mistake
+            S->>S: Слово у звичайний адаптивний графік
+        end
+        S->>D: Переводить картку в оцінену, пише подію відповіді й стан слова
+        Note over S,D: persists answer event, learner word state, session item в одній транзакції
+        D-->>S: Зафіксовано
+        S-->>UI: Результат, різниця написання, приклад і наступна картка
+        UI-->>U: Показує результат
+    end
+    Note over U,UI: Postcondition - відповідь зараховано рівно один раз
+```
+
+### «Моя відповідь теж правильна»
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - тренер зафіксував mistake для відповіді поза прийнятими варіантами
+    U->>UI: Натискає «Моя відповідь теж правильна»
+    UI->>S: Оскаржити оцінку картки
+    S->>D: Читає подію відповіді й знімок стану до неї
+    D-->>S: Подія й знімок
+    alt подію вже нейтралізовано
+        S-->>UI: Той самий результат без повторної дії
+    else mistake за відмінністю лише в діакритиці
+        S-->>UI: Відмова, дія недоступна
+    else mistake з дією
+        S->>D: Пише подію нейтралізації й відновлює стан слова зі знімка
+        S->>D: Створює content report із введеним варіантом
+        Note over S,D: persists neutralization event, learner word state, content report
+        D-->>S: Збережено
+        S-->>UI: Відповідь не зараховано ні як успіх, ні як mistake
+        UI-->>U: Показує «Дякуємо, передали на перевірку»
+    end
+    Note over U,UI: Postcondition - рішення щодо content report не змінює результат цієї відповіді
+```
+
+### Продовження session і межа доби
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - learner опрацював частину карток session і закрив trainer
+    U->>UI: Знову відкриває trainer
+    UI->>S: Поточна session
+    S->>D: Читає активну session і її кінець доби
+    D-->>S: Session з курсором
+    alt зараз раніше за кінець доби session
+        S-->>UI: Наступна неопрацьована картка без нових слів понад заплановані
+        UI-->>U: Продовжує заняття
+    else доба session минула
+        S->>D: Закриває session як незавершену
+        S->>D: Показані, але не перевірені нові слова лишає в ліміті тієї доби, непоказані повертає в чергу
+        Note over S,D: persists session status і learner word state
+        D-->>S: Збережено
+        S-->>UI: Session не рахується завершеною, можна почати нову
+        UI-->>U: Показує «Сьогодні»
+    end
+    Note over U,UI: Postcondition - completed session лише в межах однієї доби learner
+```
+
+### Налаштування темпу, поясу й нагадувань
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - learner відкриває налаштування
+    U->>UI: Змінює ліміт, пояс або нагадування
+    UI->>S: Зберегти налаштування
+    alt ліміт не 3, 5 або 10
+        S-->>UI: Відмова, доступні лише 3, 5 або 10
+        UI-->>U: Показує допустимі значення
+    else нагадування без вибраного поясу
+        S-->>UI: Відмова з проханням вибрати пояс вручну
+        UI-->>U: Показує вибір поясу
+    else дані коректні
+        S->>D: Зберігає новий ліміт з початку наступної доби за новим поясом
+        S->>D: Перераховує заплановане відправлення на наступну дату
+        Note over S,D: persists learner settings і notification dispatch row
+        S->>D: Перевіряє, чи відправлення на цю дату вже надіслано
+        D-->>S: Стан відправлень
+        S-->>UI: Налаштування збережено
+        UI-->>U: Показує нові значення
+    end
+    Note over U,UI: Postcondition - не більше одного нагадування на календарну дату learner
+```
+
+### Екран «Сьогодні»
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - learner автентифікований, learner id береться лише з підписаних даних
+    U->>UI: Відкриває trainer
+    UI->>S: Дані екрана «Сьогодні»
+    S->>D: Рахує слова до повторення, recalled words і completed sessions за поточну й 6 попередніх дат
+    D-->>S: Лічильники лише цього learner
+    S-->>UI: Лічильники й стан курсу
+    UI-->>U: Показує «Сьогодні»
+    Note over U,UI: Postcondition - learner бачить лише власний прогрес
+```
+
+### Пошук у словнику
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - learner відкрив словник
+    U->>UI: Вводить символ
+    UI->>UI: Скасовує попередній незавершений запит
+    UI->>S: Пошук за поточним текстом
+    S->>S: Нормалізує запит і згортає діакритику
+    alt запит з 1 символу
+        S->>D: Точний збіг серед форм опублікованих записів
+    else запит від 2 символів
+        S->>D: Точний збіг і збіг за початком серед форм опублікованих записів
+    end
+    Note over S,D: read search forms joined to published version, filtered to approved
+    D-->>S: Леми з частиною мови, значенням і word status learner
+    alt збігів немає
+        S-->>UI: Порожній результат
+        UI-->>U: Показує «Не знайшли слово» і дію повідомити про відсутній запис
+    else є збіги
+        S-->>UI: Точний збіг першим, далі за порядком base course
+        UI-->>U: Показує результати
+    end
+    Note over U,UI: Postcondition - запис без approved не знаходиться, перегляд картки не змінює порядок занять
+```
+
+### Content report і автоматична звірка
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+    participant B as message-bus
+    participant X as external-system
+
+    Note over U,UI: Trigger - learner надсилає content report
+    U->>UI: Обирає поле, за бажанням вводить запропоноване значення й коментар
+    UI->>S: Надіслати content report
+    S->>D: Перевіряє ліміт 20 повідомлень на добу й зберігає report
+    Note over S,D: persists content report з псевдонімною міткою автора
+    alt переклад або транскрипція із запропонованим значенням
+        S->>B: Ставить задачу звірки
+    else польська форма, приклад, відсутній запис або без запропонованого значення
+        S->>D: Ставить report у чергу content editor без звірки
+    end
+    S-->>UI: Прийнято
+    UI-->>U: Показує «Дякуємо, передали на перевірку»
+    B->>S: Видає задачу звірки
+    S->>S: Перевіряє ключ ідемпотентності задачі, пропускає вже оброблену
+    S->>X: Шукає запропоноване значення в довідковому джерелі для цього поля
+    X-->>S: Знайдено чи ні
+    Note over S,X: retry 3 times with exponential backoff on failure
+    alt значення підтверджено й нова версія проходить перевірки для approved
+        S->>D: Створює нову версію, пересуває вказівник публікації, закриває report
+        Note over S,D: persists entry version, publication log, report outcome
+    else не підтверджено
+        S->>D: Ставить report у чергу content editor
+    else вичерпано спроби
+        S->>B: Переводить задачу в dead-letter
+        S->>D: Ставить report у чергу content editor з причиною «джерело недоступне»
+        Note over S,B: dead-letter after 3 failed attempts
+    end
+```
+
+### Щоденні підсумки й дайджест
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as client
+    participant S as service
+    participant D as data-store
+    participant X as external-system
+
+    Note over C,S: Trigger - тик кожні 30 секунд, належні відправлення підсумків о 12-й за поясом learner і дайджесту о 9-й за Варшавою
+    C->>S: Тик
+    S->>D: Захоплює належні відправлення з пропуском заблокованих рядків
+    D-->>S: Відправлення з унікальним ключем отримувач, вид і дата
+    S->>S: Перевіряє ключ ідемпотентності, пропускає вже надіслані
+    alt підсумок для learner і за минулу добу є закриті reports
+        S->>D: Читає результати закритих reports learner
+        S->>X: Надсилає одне повідомлення з результатом кожного
+    else підсумок для learner без закритих reports
+        S->>D: Позначає відправлення як пропущене
+    else дайджест і є reports без рішення
+        S->>D: Рахує нові після попереднього дайджесту й усі без рішення
+        S->>X: Надсилає content editor одне повідомлення з переходом до черги
+    else дайджест без reports без рішення
+        S->>D: Позначає відправлення як пропущене
+    end
+    Note over S,X: retry 3 times with exponential backoff on transient failure before delivery
+    alt вичерпано спроби
+        S->>D: Позначає відправлення як failed
+        Note over S,D: dead-letter after 3 failed attempts
+    else надіслано
+        S->>D: Позначає відправлення як надіслане
+        Note over S,D: persists notification dispatch status
+    end
+```
+
+### Розгляд черги content editor
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as user
+    participant UI as ui
+    participant S as service
+    participant D as data-store
+
+    Note over U,UI: Precondition - у черзі є reports без рішення
+    U->>UI: Відкриває чергу розгляду
+    UI->>S: Список reports
+    alt користувач без ролі content editor
+        S-->>UI: Чужі reports не показано, зміна словника недоступна
+        UI-->>U: Доступне лише надсилання власного report
+    else content editor
+        S->>D: Читає reports з псевдонімними мітками авторів
+        D-->>S: Reports без імен і Telegram id
+        S-->>UI: Черга
+        U->>UI: Ухвалює рішення щодо report
+        UI->>S: Рішення
+        alt схвалити зміну
+            S->>D: Створює нову версію запису, пересуває вказівник публікації
+            Note over S,D: persists entry version і publication log з можливістю відкату
+        else відхилити з причиною
+            S->>D: Закриває report з причиною, запис не змінюється
+        else відсутній запис додати до кандидатів
+            S->>D: Додає лему в статусі draft і закриває report
+        end
+        S->>D: Закриває report і ставить результат у підсумок learner
+        Note over S,D: persists report outcome
+        D-->>S: Збережено
+        S-->>UI: Рішення застосовано
+        UI-->>U: Показує оновлену чергу
+    end
+    Note over U,UI: Postcondition - learner бачить оновлений переклад, а його історія й word status для слова зберігаються
+```
+
+### Coverage: US/AC → flows
+
+| ID | Realized by (§6 heading) | How | Note |
+|---|---|---|---|
+| US-01 | `Онбординг learner` | flow | |
+| US-02 | `Складання session`, `Картка нового слова й «Вже знаю»` | flow | |
+| US-03 | `Оцінка відповіді й статус слова`, `Critical flow 1: відповідь на вправу пригадування`, `«Моя відповідь теж правильна»` | flow | |
+| US-04 | `Картка нового слова й «Вже знаю»`, `Оцінка відповіді й статус слова` | flow | |
+| US-05 | `Продовження session і межа доби` | flow | |
+| US-06 | `Critical flow 2: щоденне нагадування`, `Налаштування темпу, поясу й нагадувань` | flow | |
+| US-07 | `Екран «Сьогодні»` | flow | |
+| US-08 | `Пошук у словнику` | flow | |
+| US-09 | `Content report і автоматична звірка`, `Щоденні підсумки й дайджест` | flow | |
+| US-10 | `Розгляд черги content editor`, `Щоденні підсумки й дайджест` | flow | |
+| US-11 | `Налаштування темпу, поясу й нагадувань` | flow | |
+| AC-01 | `Онбординг learner` | flow | |
+| AC-02 | `Онбординг learner` | branch | `alt learner налаштовує нагадування без жодного дня тижня` |
+| AC-03 | `Складання session` | flow | |
+| AC-04 | `Складання session` | branch | `alt повторень 20 або більше` |
+| AC-05 | `Складання session` | branch | `else є вільні місця` |
+| AC-06 | `Складання session` | branch | `else денний ліміт вичерпано або порцію видано за попереднім поясом` |
+| AC-07 | `Складання session` | branch | `else денний ліміт вичерпано або порцію видано за попереднім поясом` |
+| AC-08 | `Складання session` | branch | `alt повторень 20 або більше` + нотатка про пропущені доби |
+| AC-09 | `Складання session` | branch | `else є вільні місця` (чергування квот) |
+| AC-10 | `Складання session` | branch | `else base course завершено` |
+| AC-11 | `Картка нового слова й «Вже знаю»` | flow | |
+| AC-12 | `Оцінка відповіді й статус слова` | branch | `alt збіг після нормалізації` |
+| AC-13 | `Оцінка відповіді й статус слова` | branch | `alt відповідь порожня` |
+| AC-14 | `Оцінка відповіді й статус слова` | branch | `else «Не знаю»` |
+| AC-15 | `Оцінка відповіді й статус слова` | branch | `else відмінність лише в діакритиці` |
+| AC-16 | `Оцінка відповіді й статус слова` | branch | `else інша відповідь` |
+| AC-17 | `«Моя відповідь теж правильна»` | flow | |
+| AC-18 | `Оцінка відповіді й статус слова` | branch | `alt друга правильна поспіль у різних запланованих повтореннях` |
+| AC-19 | `Оцінка відповіді й статус слова` | branch | `else mistake для слова зі статусом «Вже пригадую»` |
+| AC-20 | `Картка нового слова й «Вже знаю»` | branch | `else learner натискає «Вже знаю», замін за добу менше 10` |
+| AC-21 | `Картка нового слова й «Вже знаю»` | branch | `else learner натискає «Вже знаю», замін за добу вже 10` |
+| AC-22 | `Оцінка відповіді й статус слова` | branch | `else control repetition з mistake` |
+| AC-23 | `Оцінка відповіді й статус слова` | branch | `else control repetition правильно` |
+| AC-24 | `Продовження session і межа доби` | branch | `alt зараз раніше за кінець доби session` |
+| AC-25 | `Продовження session і межа доби` | branch | `else доба session минула` |
+| AC-26 | `Critical flow 2: щоденне нагадування` | flow | |
+| AC-27 | `Налаштування темпу, поясу й нагадувань` | branch | `else нагадування без вибраного поясу` |
+| AC-28 | `Екран «Сьогодні»` | flow | |
+| AC-29 | — | N/A | learner id береться лише з перевірених підписаних даних запуску, тож запит до чужого прогресу неможливо сформувати — забезпечує автентифікація (ADR-0005), не runtime-гілка |
+| AC-30 | `Пошук у словнику` | flow | |
+| AC-31 | `Пошук у словнику` | branch | `alt збігів немає` |
+| AC-32 | `Пошук у словнику`, `Складання session` | flow | фільтр лише за опублікованими `approved`-версіями |
+| AC-33 | `Пошук у словнику` | flow | постумова: запис без approved не знаходиться (вказівник публікації знято) |
+| AC-34 | `Content report і автоматична звірка` | flow | |
+| AC-35 | `Content report і автоматична звірка` | branch | `alt значення підтверджено й нова версія проходить перевірки для approved` |
+| AC-36 | `Content report і автоматична звірка` | branch | `else польська форма, приклад, відсутній запис або без запропонованого значення` |
+| AC-37 | `Щоденні підсумки й дайджест` | branch | `alt підсумок для learner і за минулу добу є закриті reports` |
+| AC-38 | `Розгляд черги content editor` | branch | `alt схвалити зміну` |
+| AC-39 | `Розгляд черги content editor` | branch | `else відхилити з причиною` |
+| AC-40 | `Розгляд черги content editor` | branch | `else відсутній запис додати до кандидатів` |
+| AC-41 | `Розгляд черги content editor` | branch | `alt користувач без ролі content editor` |
+| AC-42 | `Розгляд черги content editor`, `Оцінка відповіді й статус слова` | flow | постумова черги + читання опублікованої версії під час оцінки |
+| AC-43 | `Щоденні підсумки й дайджест` | branch | `else дайджест і є reports без рішення` |
+| AC-44 | `Налаштування темпу, поясу й нагадувань` | branch | `else дані коректні` |
+| AC-45 | `Налаштування темпу, поясу й нагадувань` | branch | `alt ліміт не 3, 5 або 10` |
+
+Coverage: 11/11 user stories · 45/45 ACs — 1 non-runtime N/A.
+
+**Flags:**
+- `message-bus` у потоці «Content report і автоматична звірка» реалізує черга задач у PostgreSQL з пропуском заблокованих рядків (ADR-0011), окремого брокера §5 не має — уточнити в `generate-data-model`.
+- Учасники підписані `user`, `ui`, `service`, `data-store`, `external-system`, `message-bus`, `client` без кутових дужок, щоб рендерер Mermaid не прибрав їх як HTML-теги.
+- Дві чорнові діаграми від `architecture-design` (`Critical flow 1`, `Critical flow 2`) лишено без змін; вони використовують конкретні назви контейнерів.
+- Ліміт 20 content reports на добу (§6.1 PRD) показано в потоці звірки, але окремого AC для перевищення ліміту немає — кандидат для `clarify-prd`.
+
 ## 7. Deployment view
 
 Один образ Docker: multi-stage збірка спершу будує Mini App (Node 22), копіює її в `wwwroot`, потім публікує бекенд; build context розширюється до кореня репозиторію. У k8s — один Deployment з `replicas: 1` і PostgreSQL; Mini App і API обслуговуються з одного HTTPS-домену, який також є адресою webhook. Фонові тики (нагадування, дайджести, звірка) працюють у тому самому процесі.
