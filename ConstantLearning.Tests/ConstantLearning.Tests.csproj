@@ -10,16 +10,20 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="FluentAssertions" Version="7.2.0" />
+    <PackageReference Include="JsonSchema.Net" Version="9.6.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="NetArchTest.Rules" Version="1.3.2" />
+    <PackageReference Include="NodaTime.Testing" Version="3.3.7" />
+    <PackageReference Include="Testcontainers.PostgreSql" Version="4.16.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +32,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ConstantLearning\ConstantLearning.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\docs\features\personal-trainer-mvp\contracts\openapi.yaml" Link="Contracts\openapi.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\docs\features\personal-trainer-mvp\contracts\events.md" Link="Contracts\events.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
