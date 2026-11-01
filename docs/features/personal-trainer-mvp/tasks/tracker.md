@@ -9,7 +9,7 @@
 
 | # | Task | Layer | Owner | Estimate | Blocked by | Status |
 |---|---|---|---|---|---|---|
-| [T01](./T01-module-skeleton.md) | Створити каркас feature-модулів, Platform і NodaTime | wiring | Viacheslav Melnichenko | M | — | todo |
+| [T01](./T01-module-skeleton.md) | Створити каркас feature-модулів, Platform і NodaTime | wiring | Viacheslav Melnichenko | M | — | done |
 | [T02](./T02-test-harness.md) | Додати інтеграційні тести на PostgreSQL з FakeClock і фікстурами | tests | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | todo |
 | [T03](./T03-migrate-identity.md) | Перенести міграції learner і нагадувань | migration | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | todo |
 | [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | todo |
@@ -60,3 +60,7 @@
 | [T49](./T49-load-test.md) | Перевірити бюджети латентності під навантаженням | tests | Viacheslav Melnichenko | M | [T45](T45-deployment-fixes.md), [T17](T17-answer-item.md), [T19](T19-today-api.md), [T22](T22-dictionary-search-api.md), [T30](T30-reminders.md), [T33](T33-client-telemetry.md), [T36](T36-ui-today.md) | todo |
 
 **Total:** 49 tasks, ~26.75 person-days.
+
+## Результати перевірок
+
+- [T01](T01-module-skeleton.md): Release build успішний; 39/39 тестів; навмисна залежність Learning від внутрішнього типу Content спричинила падіння архітектурного тесту, після вилучення — зелений прогін. Нова модель використовує snake_case і NodaTime; runtime/design-time snapshot без змін legacy-схеми. Форматування нових файлів і перевірка markdown-посилань проходять. Залишилися початкові 2 NU1903 та 49 WHITESPACE у старих файлах.

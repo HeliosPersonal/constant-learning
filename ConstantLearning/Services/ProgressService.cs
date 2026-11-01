@@ -1,4 +1,4 @@
-﻿using ConstantLearning.Data;
+using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.Services;

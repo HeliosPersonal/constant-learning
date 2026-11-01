@@ -1,9 +1,13 @@
 using ConstantLearning.Configuration;
-using ConstantLearning.Data;
+using ConstantLearning.Features.Bot;
+using ConstantLearning.Features.Content;
+using ConstantLearning.Features.Identity;
+using ConstantLearning.Features.Learning;
+using ConstantLearning.Features.Notifications;
 using ConstantLearning.HostedServices;
 using ConstantLearning.Jobs;
+using ConstantLearning.Platform;
 using ConstantLearning.Services;
-using Microsoft.EntityFrameworkCore;
 using Quartz;
 using Telegram.Bot;
 
@@ -24,12 +28,12 @@ public static class Program
 
         builder.Configuration.AddJsonFile("Resources/BotMessages.json", optional: false, reloadOnChange: true);
 
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                               ?? throw new InvalidOperationException(
-                                   "Connection string 'DefaultConnection' not found");
-
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        builder.Services.AddPlatform(builder.Configuration);
+        builder.Services.AddIdentity();
+        builder.Services.AddLearning();
+        builder.Services.AddContent();
+        builder.Services.AddNotifications();
+        builder.Services.AddBot();
 
         var telegramOptions = builder
                                   .Configuration

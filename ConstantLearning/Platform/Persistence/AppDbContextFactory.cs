@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace ConstantLearning.Data;
+namespace ConstantLearning.Platform.Persistence;
 
 public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
@@ -9,7 +9,8 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        optionsBuilder.UseNpgsql("Host=localhost;Database=constantlearning;Username=postgres;Password=postgres");
+        PersistenceOptions.Configure(optionsBuilder,
+            "Host=localhost;Database=constantlearning;Username=postgres;Password=postgres");
 
         return new AppDbContext(optionsBuilder.Options);
     }
