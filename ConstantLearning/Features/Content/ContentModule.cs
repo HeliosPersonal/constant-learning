@@ -1,4 +1,5 @@
 using ConstantLearning.Features.Content.Import;
+using ConstantLearning.Features.Content.Notifications;
 using ConstantLearning.Features.Content.Publishing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -11,6 +12,7 @@ public static class ContentModule
         services.AddSingleton<DictionaryImportReader>();
         services.AddScoped<DictionaryImportService>();
         services.AddScoped<ContentPublicationService>();
+        services.AddReportSummaryDispatch();
         services.TryAddScoped<IPublicationProjection, NoOpPublicationProjection>();
         return services;
     }

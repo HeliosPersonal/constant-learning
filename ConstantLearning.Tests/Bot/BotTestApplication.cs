@@ -97,6 +97,9 @@ internal sealed class StubTelegramClient : ITelegramClient
 
 internal sealed class StubMessagingPermissionService : IMessagingPermissionService
 {
+    public Task<bool?> GetCanMessageAsync(long telegramUserId, CancellationToken cancellationToken) =>
+        Task.FromResult<bool?>(null);
+
     public List<(long TelegramUserId, bool CanMessage)> Changes { get; } = [];
 
     public Task SetCanMessageAsync(long telegramUserId, bool canMessage, CancellationToken cancellationToken)

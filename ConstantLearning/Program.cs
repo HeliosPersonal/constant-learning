@@ -4,6 +4,7 @@ using ConstantLearning.Features.Content;
 using ConstantLearning.Features.Identity;
 using ConstantLearning.Features.Learning;
 using ConstantLearning.Features.Notifications;
+using ConstantLearning.Features.Notifications.Dispatch;
 using ConstantLearning.HostedServices;
 using ConstantLearning.Jobs;
 using ConstantLearning.Platform;
@@ -48,6 +49,11 @@ public static class Program
 
         builder.Services.AddQuartz(q =>
         {
+            var dispatcherJobKey = new JobKey("NotificationDispatcher");
+            q.AddJob<NotificationDispatcherJob>(opts => opts.WithIdentity(dispatcherJobKey));
+            q.AddTrigger(opts => opts.ForJob(dispatcherJobKey)
+                .WithIdentity("NotificationDispatcher-trigger")
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(30).RepeatForever()));
 
             var repetitionJobKey = new JobKey("RepetitionJob");
             q.AddJob<RepetitionJob>(opts => opts.WithIdentity(repetitionJobKey));
