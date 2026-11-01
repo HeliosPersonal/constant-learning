@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Security.Claims;
 using ConstantLearning.Features.Identity;
 using ConstantLearning.Features.Identity.Auth;
+using ConstantLearning.Features.Learning;
 using ConstantLearning.Features.Learning.Telemetry;
 using ConstantLearning.Platform;
 using ConstantLearning.Platform.Persistence;
@@ -45,6 +46,7 @@ internal sealed class AuthTestApplication(WebApplication app, HttpClient client,
         builder.Services.AddSingleton(clock);
         builder.Services.AddPlatform(builder.Configuration);
         builder.Services.AddIdentity(builder.Configuration);
+        builder.Services.AddLearning();
         builder.Services.AddControllers().AddApplicationPart(typeof(ClientTimingController).Assembly);
 
         var application = builder.Build();
