@@ -3,6 +3,7 @@ using ConstantLearning.Features.Content.Notifications;
 using ConstantLearning.Features.Content.Publishing;
 using ConstantLearning.Features.Content.Search.Forms;
 using ConstantLearning.Features.Content.Search.Api;
+using ConstantLearning.Features.Content.Reports;
 
 namespace ConstantLearning.Features.Content;
 
@@ -19,6 +20,7 @@ public static class ContentModule
         services.AddScoped<SearchFormsMaintenance>();
         services.AddReportSummaryDispatch();
         services.AddDictionarySearch();
+        services.AddContentReports();
         return services;
     }
 }

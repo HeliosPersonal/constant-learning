@@ -1,4 +1,5 @@
 using ConstantLearning.Configuration;
+using ConstantLearning.Features.Identity.Aliases;
 using ConstantLearning.Features.Identity.Auth;
 using ConstantLearning.Features.Identity.Onboarding;
 using ConstantLearning.Features.Identity.Messaging;
@@ -16,6 +17,8 @@ public static class IdentityModule
         services.Configure<IdentityOptions>(configuration.GetSection(IdentityOptions.SectionName));
         services.AddSingleton<TelegramInitDataValidator>();
         services.AddScoped<OnboardingService>();
+        services.AddSingleton<IReporterAliasGenerator, RandomReporterAliasGenerator>();
+        services.AddScoped<IReporterAliasService, ReporterAliasService>();
         services.AddScoped<ILearnerDayStateService, LearnerDayStateService>();
         services.AddScoped<LearnerSettingsService>();
         services.AddScoped<IMessagingPermissionService, MessagingPermissionService>();
