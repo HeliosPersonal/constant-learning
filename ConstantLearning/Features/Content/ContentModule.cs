@@ -2,6 +2,7 @@ using ConstantLearning.Features.Content.Import;
 using ConstantLearning.Features.Content.Notifications;
 using ConstantLearning.Features.Content.Publishing;
 using ConstantLearning.Features.Content.Search.Forms;
+using ConstantLearning.Features.Content.References;
 using ConstantLearning.Features.Content.Search.Api;
 using ConstantLearning.Features.Content.Reports;
 
@@ -19,6 +20,7 @@ public static class ContentModule
         services.AddScoped<PolishMorphologyImporter>();
         services.AddScoped<SearchFormsMaintenance>();
         services.AddReportSummaryDispatch();
+        services.AddReferenceSources();
         services.AddDictionarySearch();
         services.AddContentReports();
         return services;

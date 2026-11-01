@@ -24,6 +24,8 @@ status: "todo"
 
 Файли: `ConstantLearning/Features/Content/References/`, `ConstantLearning.Tests/Content/References/`
 
+Контракт джерел, локальний імпорт, атрибуція та межі автоматичної звірки описані в [довідкових знімках](../reference-snapshots.md).
+
 ## Definition of Done
 
 - [ ] тести адаптера на зафіксованих зразках вікітексту зелені
