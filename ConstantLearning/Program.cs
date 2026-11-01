@@ -30,7 +30,7 @@ public static class Program
         builder.Configuration.AddJsonFile("Resources/BotMessages.json", optional: false, reloadOnChange: true);
 
         builder.Services.AddPlatform(builder.Configuration);
-        builder.Services.AddIdentity();
+        builder.Services.AddIdentity(builder.Configuration);
         builder.Services.AddLearning();
         builder.Services.AddContent();
         builder.Services.AddNotifications();
@@ -93,6 +93,7 @@ public static class Program
 
         app.UseRouting();
         app.UseMiddleware<ServerTimingMiddleware>();
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();
