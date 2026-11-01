@@ -40,6 +40,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Include="..\docs\dictionary\course.csv;..\docs\dictionary\evidence.jsonl;..\docs\dictionary\readiness.json"
+               Link="Resources\Dictionary\%(Filename)%(Extension)"
+               CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
       <Folder Include="Migrations\" />
     </ItemGroup>
 

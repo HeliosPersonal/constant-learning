@@ -1,5 +1,5 @@
 using ConstantLearning.Platform.Persistence;
-using ConstantLearning.Services;
+using ConstantLearning.Features.Content.Import;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.HostedServices;
@@ -13,20 +13,20 @@ public class DatabaseInitializationService(
     {
         using var scope = serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var importService = scope.ServiceProvider.GetRequiredService<IWordImportService>();
+        var importService = scope.ServiceProvider.GetRequiredService<DictionaryImportService>();
 
         try
         {
-            logger.LogInformation("Running database migrations");
+            logger.LogInformation("Виконуємо міграції бази даних");
             await context.Database.MigrateAsync(cancellationToken);
 
-            await importService.ImportFromCsvAsync();
+            await importService.ImportPackagedAsync(cancellationToken);
 
-            logger.LogInformation("Database initialization completed");
+            logger.LogInformation("Ініціалізацію бази даних завершено");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error during database initialization");
+            logger.LogError(ex, "Помилка ініціалізації бази даних");
             throw;
         }
     }
