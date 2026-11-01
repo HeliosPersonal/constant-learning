@@ -18,7 +18,7 @@
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | done |
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
-| [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | in_progress |
+| [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | done |
 | [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
 | [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | done |
 | [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | done |
@@ -115,3 +115,5 @@
 - Рішення користувача від 2026-11-01: для [T10](T10-review-scheduler.md) стеля інтервалу лишається 180 діб, нижня межа — min(180, max(2, prev+1)); для [T35](T35-ui-onboarding.md) погоджено контакт melnichenkoviatcheslav@gmail.com. Обидві задачі повернуто в роботу; завершення потребує зміни коду й перевірок.
 
 - [T35](T35-ui-onboarding.md): блокер знято рішенням користувача від 2026-11-01. Контакт mailto:melnichenkoviatcheslav@gmail.com додано як публічне значення за замовчуванням; явний VITE override лишається. Переглянуто вузьку правку; незалежно lint, typecheck і 59/59 тестів зелені (35 цільових для онбордингу). Попередні build і 6/6 візуальних перевірок обох тем залишаються чинними; synthetic fixtures не замінено реальною адресою.
+
+- [T10](T10-review-scheduler.md): погоджене насичення межі 180 діб застосовано в коді, [PRD](../PRD.md#5-acceptance-criteria) та [ADR-0009](../adr/0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md). Незалежно переглянуто diff і пройдено 52/52 Scheduling-тести; перевірено тривалі перерви, послідовні інтервали на стелі й replay після нейтралізації. Release build успішний, scoped format і docs links зелені; лише початковий NU1903. Блокер усунуто.

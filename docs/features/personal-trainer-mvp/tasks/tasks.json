@@ -297,7 +297,7 @@
         "AC-22",
         "AC-23"
       ],
-      "dod": "property-тест: інтервал після правильної відповіді завжди в межах [max(2, prev+1); min(3·prev, 180)]; unit-тести AC-18, AC-19, AC-22, AC-23 зелені; пропущені доби не створюють mistake (AC-08)",
+      "dod": "property-тест: інтервал після правильної відповіді завжди в межах [min(180, max(2, prev+1)); min(3·prev, 180)]; за фактичного prev >= 180 — рівно 180 діб від відповіді, зокрема після тривалої перерви й на послідовних повтореннях; unit-тести AC-18, AC-19, AC-22, AC-23 зелені; пропущені доби не створюють mistake (AC-08)",
       "files_hint": [
         "ConstantLearning/Features/Learning/Domain/Scheduling/",
         "ConstantLearning.Tests/Learning/Domain/Scheduling/"

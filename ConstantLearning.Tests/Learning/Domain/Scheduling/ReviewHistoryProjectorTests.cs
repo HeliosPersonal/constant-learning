@@ -72,7 +72,6 @@ public class ReviewHistoryProjectorTests
             var random = new Random(seed);
             for (var index = 1; index <= 50; index++)
             {
-                // Регулярні помилки обмежують історії областю несуперечливих інтервалів PRD.
                 var outcome = index % 4 == 0 ? AnswerOutcome.DontKnow
                     : random.Next(3) == 0 ? AnswerOutcome.Synonym : AnswerOutcome.Correct;
                 var day = state.DueOn.PlusDays(random.Next(3));
@@ -88,6 +87,31 @@ public class ReviewHistoryProjectorTests
 
             Assert.Equal(state, new ReviewHistoryProjector(new MemorizeReviewScheduler()).Project(initial, history));
         }
+    }
+
+    [Fact]
+    public void ReplayPreservesCappedIntervalsAfterLongAbsencesAndNeutralization()
+    {
+        var initial = _scheduler.Introduce(Start);
+        var first = new RecordedReviewAnswer(Answer(Start.PlusDays(180)), initial);
+        var afterFirst = _scheduler.Apply(initial, first.Answer);
+        var second = new RecordedReviewAnswer(Answer(first.Answer.LearnerDay.PlusDays(365), id: 2), afterFirst);
+        var afterSecond = _scheduler.Apply(afterFirst, second.Answer);
+        var mistake = new RecordedReviewAnswer(Answer(afterSecond.DueOn, AnswerOutcome.MistakeTypo, 3), afterSecond);
+        var neutralized = new NeutralizedReviewAnswer(EventId(4), mistake.Answer.LearnerDay, mistake.Answer.Id);
+        var projector = new ReviewHistoryProjector(_scheduler);
+        var restored = projector.Project(initial, [first, second, mistake, neutralized]);
+        var third = new RecordedReviewAnswer(Answer(mistake.Answer.LearnerDay.PlusDays(1), id: 5), restored);
+
+        var result = projector.Project(initial, [first, second, mistake, neutralized, third]);
+
+        Assert.Equal(180, afterFirst.IntervalDays);
+        Assert.Equal(180, afterSecond.IntervalDays);
+        Assert.Equal(180, result.IntervalDays);
+        Assert.Equal(third.Answer.LearnerDay.PlusDays(180), result.DueOn);
+        Assert.Equal(ReviewWordStatus.Recalled, result.Status);
+        Assert.Equal(0, result.Lapses);
+        Assert.Equal(afterSecond.ForgettingRate * 0.7, result.ForgettingRate, 12);
     }
 
     [Fact]

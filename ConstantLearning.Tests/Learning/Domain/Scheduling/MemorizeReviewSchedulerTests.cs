@@ -177,17 +177,18 @@ public class MemorizeReviewSchedulerTests
     }
 
     [Fact]
-    public void Property_EveryFeasiblePreviousIntervalAndManySeedsRespectBothPrdBounds()
+    public void Property_PreviousIntervalsAndManySeedsRespectSaturatingPrdBounds()
     {
         var initial = _scheduler.Introduce(Start);
-        for (var previous = 1; previous < 180; previous++)
+        var previousIntervals = Enumerable.Range(1, 365).Concat([1000, 10000, 100000, 1000000]);
+        foreach (var previous in previousIntervals)
         {
             for (var seed = 1; seed <= 64; seed++)
             {
                 var day = Start.PlusDays(previous);
                 var result = _scheduler.Apply(initial, Answer(day, id: seed));
 
-                Assert.InRange(result.IntervalDays, Math.Max(2, previous + 1), Math.Min(3 * previous, 180));
+                Assert.InRange(result.IntervalDays, Math.Min(180, Math.Max(2, previous + 1)), Math.Min(3 * previous, 180));
                 Assert.Equal(day.PlusDays(result.IntervalDays), result.DueOn);
                 Assert.True(double.IsFinite(result.ForgettingRate));
             }
@@ -253,14 +254,53 @@ public class MemorizeReviewSchedulerTests
     [InlineData(180)]
     [InlineData(181)]
     [InlineData(365)]
-    public void ContradictoryPrdBoundsFailExplicitlyWithoutMutatingState(int previous)
+    [InlineData(1000000)]
+    public void CorrectAnswerAfterLongAbsenceSchedulesExactly180DaysFromActualAnswer(int previous)
     {
         var initial = _scheduler.Introduce(Start);
-        var exception = Assert.Throws<ReviewIntervalConflictException>(() =>
-            _scheduler.Apply(initial, Answer(Start.PlusDays(previous))));
+        var answeredOn = Start.PlusDays(previous);
+        var result = _scheduler.Apply(initial, Answer(answeredOn));
 
-        Assert.Equal(previous, exception.PreviousIntervalDays);
+        Assert.Equal(180, result.IntervalDays);
+        Assert.Equal(answeredOn.PlusDays(180), result.DueOn);
+        Assert.Equal(answeredOn, result.LastReviewDay);
+        Assert.Equal(1, result.ConsecutiveScheduledCorrect);
+        Assert.Equal(0, result.Lapses);
+        Assert.Equal(initial.ForgettingRate * 0.7, result.ForgettingRate, 12);
         Assert.Null(initial.LastReviewDay);
+    }
+
+    [Fact]
+    public void RepeatedCorrectAnswersAtCapPreserveRecallAndNeverExceed180Days()
+    {
+        var state = _scheduler.Apply(_scheduler.Introduce(Start), Answer(Start.PlusDays(179)));
+        Assert.Equal(180, state.IntervalDays);
+
+        for (var id = 2; id <= 10; id++)
+        {
+            var answeredOn = state.DueOn;
+            state = _scheduler.Apply(state, Answer(answeredOn, id: id));
+
+            Assert.Equal(180, state.IntervalDays);
+            Assert.Equal(answeredOn.PlusDays(180), state.DueOn);
+            Assert.Equal(ReviewWordStatus.Recalled, state.Status);
+            Assert.Equal(0, state.Lapses);
+        }
+    }
+
+    [Fact]
+    public void OverdueRecalledWordStaysRecalledWithoutPenaltiesForMissedDays()
+    {
+        var first = _scheduler.Apply(_scheduler.Introduce(Start), Answer(Start.PlusDays(1)));
+        var recalled = _scheduler.Apply(first, Answer(first.DueOn, id: 2));
+        var answeredOn = recalled.LastReviewDay!.Value.PlusDays(365);
+        var result = _scheduler.Apply(recalled, Answer(answeredOn, id: 3));
+
+        Assert.Equal(180, result.IntervalDays);
+        Assert.Equal(answeredOn.PlusDays(180), result.DueOn);
+        Assert.Equal(ReviewWordStatus.Recalled, result.Status);
+        Assert.Equal(recalled.Lapses, result.Lapses);
+        Assert.Equal(recalled.ForgettingRate * 0.7, result.ForgettingRate, 12);
     }
 
     [Fact]

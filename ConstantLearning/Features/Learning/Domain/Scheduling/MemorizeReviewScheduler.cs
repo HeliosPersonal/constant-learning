@@ -78,12 +78,8 @@ public sealed class MemorizeReviewScheduler : IReviewScheduler
 
     private static int SampleInterval(Guid seed, double forgettingRate, int previousInterval)
     {
-        var minimum = Math.Max(2, previousInterval + 1);
+        var minimum = Math.Min(180, Math.Max(2, previousInterval + 1));
         var maximum = Math.Min(3 * previousInterval, 180);
-        if (minimum > maximum)
-        {
-            throw new ReviewIntervalConflictException(previousInterval);
-        }
 
         // SHA-256 і явний порядок байтів забезпечують відтворюваність незалежно від реалізації Random.
         var digest = SHA256.HashData(seed.ToByteArray());
