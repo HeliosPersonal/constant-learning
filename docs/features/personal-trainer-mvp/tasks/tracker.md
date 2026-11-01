@@ -19,7 +19,7 @@
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | done |
-| [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | in_progress |
+| [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | done |
 | [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | done |
 | [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | done |
 | [T14](./T14-settings-api.md) | Реалізувати зміну ліміту, поясу й нагадувань | app | Viacheslav Melnichenko | M | [T13](T13-onboarding-api.md), [T08](T08-learner-day.md) | done |
@@ -129,3 +129,5 @@
 - [T43](T43-retire-group-code.md): blocked через [T44](T44-migrate-drop-group-model.md). За погодженим планом EF-сутності прибираються разом із синхронізацією snapshot у міграції видалення; окреме вилучення зараз створить pending model changes і порушить DoD зелених PostgreSQL-тестів. Користувач підтвердив відсутність backup/restore; код групової моделі поки не видаляли. Після зняття операційного блокера обидві зміни мають бути в одному релізі за [ADR-0004](../adr/0004-retire-the-group-model-without-data-migration.md).
 
 - [T41](T41-ui-settings.md): переглянуто PATCH лише змінених полів, підтвердження поясу, pending limit, навігацію й помилки. Незалежно lint/typecheck/build і 90/90 Vitest зелені; виконавець пройшов 8/8 Playwright, координатор переглянув темний екран і світлий portal. Тема зберігає ввід/кеш заняття без PATCH, lazy Settings 4.07 kB gzip. Перевірки локальні; CI не змінено.
+
+- [T11](T11-session-composition.md): переглянуто чисту композицію й повний знімок курсу, overdue ratio, цілочисельне порівняння часток квот, щоденні лічильники. Незалежно 41/41 тест у Debug і Release, Release build успішний; scoped format зелений, лише початкові NU1903. План має максимум 20 слів; перші 10 «Вже знаю» звільняють ліміт, рівність часток віддає everyday, дефіцит квоти перерозподіляється. Планування не зараховує покази; persisted counters і повідомлення про поповнення реалізуються залежними app-задачами.
