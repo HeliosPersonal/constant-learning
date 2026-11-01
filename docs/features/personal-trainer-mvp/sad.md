@@ -72,23 +72,28 @@ trainer обслуговує україномовних learner, які вивч
 | Telegram Bot API | System (external) | Webhook з оновленнями; доставка повідомлень бота; запуск Mini App з підписаними даними ідентичності |
 | Wikisłownik / WSJP PAN / офіційні урядові сторінки | System (external) | Довідкові джерела для автоматичної звірки контенту (дамп і точкові запити) |
 
-**C4 Context (L1):**
+**C4 Context (L1):** нотація C4 у `flowchart` — рендерер `C4Context` у Mermaid розкладає елементи хаотично. Темно-синій — люди, синій — система фічі, сірий — зовнішні системи.
 
 ```mermaid
-C4Context
-    title personal-trainer-mvp — System Context
+flowchart TB
+    learner["<b>learner</b><br/><i>[Person]</i><br/>Вивчає польську<br/>через щоденні заняття"]
+    editor["<b>content editor</b><br/><i>[Person]</i><br/>Розглядає непідтверджені<br/>content reports"]
+    telegram["<b>Telegram</b><br/><i>[External System]</i><br/>Клієнт, Bot API,<br/>запуск Mini App"]
+    trainer["<b>trainer</b><br/><i>[Software System]</i><br/>Mini App і бот: заняття,<br/>словник, черга редактора"]
+    refs["<b>Довідкові джерела</b><br/><i>[External System]</i><br/>Wikisłownik, WSJP PAN,<br/>урядові сторінки"]
 
-    Person(learner, "learner", "Вивчає польську через щоденні заняття")
-    Person(editor, "content editor", "Розглядає непідтверджені content reports")
-    System(trainer, "trainer", "Персональний тренер польських слів: Mini App і бот")
-    System_Ext(telegram, "Telegram", "Клієнт Telegram, Bot API, запуск Mini App")
-    System_Ext(refs, "Довідкові джерела", "Wikisłownik, WSJP PAN, урядові сторінки")
+    learner -- "Відкриває Mini App,<br/>отримує нагадування" --> telegram
+    editor -- "Відкриває чергу розгляду" --> telegram
+    telegram -- "Webhook і запити Mini App<br/>з initData <i>[HTTPS]</i>" --> trainer
+    trainer -- "Повідомлення бота<br/><i>[HTTPS]</i>" --> telegram
+    trainer -- "Звірка контенту<br/><i>[HTTPS або дамп]</i>" --> refs
 
-    Rel(learner, telegram, "Відкриває Mini App, отримує нагадування")
-    Rel(editor, telegram, "Відкриває чергу розгляду")
-    Rel(telegram, trainer, "Webhook і запити Mini App з initData", "HTTPS")
-    Rel(trainer, telegram, "Повідомлення бота", "HTTPS")
-    Rel(trainer, refs, "Звірка контенту", "HTTPS або дамп")
+    classDef person fill:#08427b,stroke:#052e56,color:#ffffff
+    classDef system fill:#1168bd,stroke:#0b4884,color:#ffffff
+    classDef external fill:#8a8a8a,stroke:#5e5e5e,color:#ffffff
+    class learner,editor person
+    class trainer system
+    class telegram,refs external
 ```
 
 ## 4. Solution strategy
