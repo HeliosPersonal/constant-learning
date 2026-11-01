@@ -165,6 +165,275 @@ namespace ConstantLearning.Migrations
                     b.ToTable("Words", (string)null);
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.DictionaryEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("CoursePosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("course_position");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Domain")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("domain");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("external_id");
+
+                    b.Property<Guid?>("PublishedVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("published_version_id");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("dictionary_entries_pkey");
+
+                    b.HasIndex("CoursePosition")
+                        .HasDatabaseName("ix_dictionary_entries_course_position")
+                        .HasFilter("published_version_id IS NOT NULL");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_dictionary_entries_external_id");
+
+                    b.HasIndex("PublishedVersionId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_dictionary_entries_published_version_id");
+
+                    b.ToTable("dictionary_entries", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.EntryVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AspectPairId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("aspect_pair_id");
+
+                    b.Property<Guid?>("BasedOnVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("based_on_version_id");
+
+                    b.Property<string>("ContentHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("content_hash");
+
+                    b.Property<Guid?>("ContentReportId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_report_id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("CreatedByKind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("created_by_kind");
+
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_id");
+
+                    b.Property<string>("ExamplePl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("example_pl");
+
+                    b.Property<string>("ExampleUk")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("example_uk");
+
+                    b.Property<int?>("FrequencyRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("frequency_rank");
+
+                    b.Property<string>("Gender")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)")
+                        .HasColumnName("gender");
+
+                    b.Property<string>("GenderPairId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("gender_pair_id");
+
+                    b.Property<string>("LegalizationStage")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("legalization_stage");
+
+                    b.Property<string>("LemmaPl")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("lemma_pl");
+
+                    b.Property<string>("PartOfSpeech")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("part_of_speech");
+
+                    b.Property<string>("PronunciationUk")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("pronunciation_uk");
+
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("review_note");
+
+                    b.Property<bool>("ShowContextBefore")
+                        .HasColumnType("boolean")
+                        .HasColumnName("show_context_before");
+
+                    b.Property<string>("Topic")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("topic");
+
+                    b.Property<int?>("UtilityRank")
+                        .HasColumnType("integer")
+                        .HasColumnName("utility_rank");
+
+                    b.Property<string>("ValidationStatus")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("validation_status");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("entry_versions_pkey");
+
+                    b.HasIndex("BasedOnVersionId")
+                        .HasDatabaseName("ix_entry_versions_based_on_version_id");
+
+                    b.HasIndex("ContentReportId")
+                        .HasDatabaseName("ix_entry_versions_content_report_id");
+
+                    b.HasIndex("EntryId", "CreatedAt")
+                        .HasDatabaseName("ix_entry_versions_entry_id");
+
+                    b.ToTable("entry_versions", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionAcceptedAnswer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("IsCanonical")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_canonical");
+
+                    b.Property<string>("TextPl")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("text_pl");
+
+                    b.Property<Guid>("VersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version_id");
+
+                    b.HasKey("Id")
+                        .HasName("version_accepted_answers_pkey");
+
+                    b.HasIndex("VersionId", "TextPl")
+                        .IsUnique()
+                        .HasDatabaseName("ux_version_accepted_answers_version_text");
+
+                    b.ToTable("version_accepted_answers", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionTranslation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<short>("Position")
+                        .HasColumnType("smallint")
+                        .HasColumnName("position");
+
+                    b.Property<string>("TextUk")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("text_uk");
+
+                    b.Property<Guid>("VersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version_id");
+
+                    b.HasKey("Id")
+                        .HasName("version_translations_pkey");
+
+                    b.HasIndex("VersionId", "Position")
+                        .IsUnique()
+                        .HasDatabaseName("ux_version_translations_version_position");
+
+                    b.ToTable("version_translations", (string)null);
+                });
+
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.Learner", b =>
                 {
                     b.Property<Guid>("Id")
@@ -287,6 +556,61 @@ namespace ConstantLearning.Migrations
                         .HasConstraintName("FK_LearnedWords_Words_WordId");
 
                     b.Navigation("Word");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.DictionaryEntry", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", "PublishedVersion")
+                        .WithMany()
+                        .HasForeignKey("PublishedVersionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("fk_dictionary_entries_published_version");
+
+                    b.Navigation("PublishedVersion");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.EntryVersion", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", "BasedOnVersion")
+                        .WithMany()
+                        .HasForeignKey("BasedOnVersionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("entry_versions_based_on_version_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", "Entry")
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("entry_versions_entry_id_fkey");
+
+                    b.Navigation("BasedOnVersion");
+
+                    b.Navigation("Entry");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionAcceptedAnswer", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", "Version")
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("version_accepted_answers_version_id_fkey");
+
+                    b.Navigation("Version");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionTranslation", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", "Version")
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("version_translations_version_id_fkey");
+
+                    b.Navigation("Version");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.ReminderSchedule", b =>

@@ -12,7 +12,7 @@
 | [T01](./T01-module-skeleton.md) | Створити каркас feature-модулів, Platform і NodaTime | wiring | Viacheslav Melnichenko | M | — | done |
 | [T02](./T02-test-harness.md) | Додати інтеграційні тести на PostgreSQL з FakeClock і фікстурами | tests | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T03](./T03-migrate-identity.md) | Перенести міграції learner і нагадувань | migration | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
-| [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | in_progress |
+| [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
 | [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | todo |
 | [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | todo |
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | todo |
@@ -55,7 +55,7 @@
 | [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | todo |
 | [T43](./T43-retire-group-code.md) | Видалити код групової моделі | wiring | Viacheslav Melnichenko | M | [T32](T32-bot-webhook.md), [T07](T07-migrate-search-jobs-dispatches.md), [T20](T20-dictionary-import.md), [T34](T34-miniapp-skeleton.md) | todo |
 | [T44](./T44-migrate-drop-group-model.md) | Перенести міграцію видалення таблиць групової моделі | migration | Viacheslav Melnichenko | S | [T43](T43-retire-group-code.md), [T07](T07-migrate-search-jobs-dispatches.md) | todo |
-| [T45](./T45-deployment-fixes.md) | Оновити збірку й маніфести розгортання | wiring | Viacheslav Melnichenko | S | [T34](T34-miniapp-skeleton.md) | todo |
+| [T45](./T45-deployment-fixes.md) | Оновити збірку й маніфести розгортання | wiring | Viacheslav Melnichenko | S | [T34](T34-miniapp-skeleton.md) | in_progress |
 | [T46](./T46-e2e-critical-flows.md) | Покрити наскрізними тестами критичні потоки через UI | tests | Viacheslav Melnichenko | M | [T35](T35-ui-onboarding.md), [T38](T38-ui-recall.md), [T40](T40-ui-content-report.md), [T41](T41-ui-settings.md), [T45](T45-deployment-fixes.md) | todo |
 | [T49](./T49-load-test.md) | Перевірити бюджети латентності під навантаженням | tests | Viacheslav Melnichenko | M | [T45](T45-deployment-fixes.md), [T17](T17-answer-item.md), [T19](T19-today-api.md), [T22](T22-dictionary-search-api.md), [T30](T30-reminders.md), [T33](T33-client-telemetry.md), [T36](T36-ui-today.md) | todo |
 
@@ -80,3 +80,5 @@
 - [T33](T33-client-telemetry.md): переглянуто controller, валідацію, гістограми й middleware; незалежно 43/43 HTTP/metrics/architecture тестів. Невідомі метрики й невалідний payload дають telemetry.invalid_metric, endpoint потребує автентифікації за контрактом. Development loopback /metrics показує гістограми today/answer/search без персональних даних; Program wiring підключено. Release build і scoped format проходять, залишилися початкові NU1903.
 
 - [T34](T34-miniapp-skeleton.md): переглянуто тему, адаптер Telegram/UI kit, типізований API-клієнт, bootstrap і smoke host та знімки обох тем. Незалежно build/lint/typecheck, 24/24 Vitest і 4/4 Playwright зелені. Справжній Kestrel + PostgreSQL 16 віддав SPA/root/deepLink/JS та API404; візуальні еталони перевірено, навмисна зміна CSS дала red, відновлення green. Ранню тему, затриманий Telegram, portal, manual precedence, localStorage fallback і контраст покрито локально; frontend CI не додано.
+
+- [T04](T04-migrate-content-core.md): переглянуто чотири сутності, конфігурації, п’ять міграцій, lifecycle-тести й snapshot (324 додані рядки без зміни інших моделей). 10 SQL-блоків відповідають staged; Check порожня. PostgreSQL перевіряє up/down/повторний up, catalog, FK, індекси, версії, pointer, cascade та xmin. 19/19 цільових, незалежно 329/329 повних Release-тестів без пропусків; build/format/diff check успішні з початковими NU1903.

@@ -1,4 +1,5 @@
 using ConstantLearning.Data.Entities;
+using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Features.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,12 +12,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ChatRegistration> ChatRegistrations => Set<ChatRegistration>();
     public DbSet<Learner> Learners => Set<Learner>();
     public DbSet<ReminderSchedule> ReminderSchedules => Set<ReminderSchedule>();
+    public DbSet<DictionaryEntry> DictionaryEntries => Set<DictionaryEntry>();
+    public DbSet<EntryVersion> EntryVersions => Set<EntryVersion>();
+    public DbSet<VersionTranslation> VersionTranslations => Set<VersionTranslation>();
+    public DbSet<VersionAcceptedAnswer> VersionAcceptedAnswers => Set<VersionAcceptedAnswer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new LearnerConfiguration());
         modelBuilder.ApplyConfiguration(new ReminderScheduleConfiguration());
+        modelBuilder.ApplyConfiguration(new DictionaryEntryConfiguration());
+        modelBuilder.ApplyConfiguration(new EntryVersionConfiguration());
+        modelBuilder.ApplyConfiguration(new VersionTranslationConfiguration());
+        modelBuilder.ApplyConfiguration(new VersionAcceptedAnswerConfiguration());
 
         modelBuilder.Entity<Word>(entity =>
         {
