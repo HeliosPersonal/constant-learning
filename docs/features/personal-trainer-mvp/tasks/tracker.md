@@ -36,7 +36,7 @@
 | [T23](./T23-content-report-api.md) | Реалізувати надсилання content report з лімітом і дедуплікацією | app | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md), [T07](T07-migrate-search-jobs-dispatches.md), [T12](T12-initdata-auth.md) | done |
 | [T24](./T24-answer-dispute.md) | Реалізувати «Моя відповідь теж правильна» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T23](T23-content-report-api.md) | todo |
 | [T25](./T25-reference-snapshots.md) | Завантажити довідкові знімки для звірки | infra | Viacheslav Melnichenko | L | [T07](T07-migrate-search-jobs-dispatches.md) | done |
-| [T26](./T26-auto-verification.md) | Реалізувати фонову звірку content reports | app | Viacheslav Melnichenko | M | [T23](T23-content-report-api.md), [T25](T25-reference-snapshots.md), [T20](T20-dictionary-import.md), [T21](T21-search-forms.md) | todo |
+| [T26](./T26-auto-verification.md) | Реалізувати фонову звірку content reports | app | Viacheslav Melnichenko | M | [T23](T23-content-report-api.md), [T25](T25-reference-snapshots.md), [T20](T20-dictionary-import.md), [T21](T21-search-forms.md) | in_progress |
 | [T27](./T27-editor-queue.md) | Реалізувати чергу й рішення content editor | app | Viacheslav Melnichenko | M | [T23](T23-content-report-api.md), [T20](T20-dictionary-import.md), [T21](T21-search-forms.md) | todo |
 | [T28](./T28-applied-changes-rollback.md) | Реалізувати список застосованих змін і відкат | app | Viacheslav Melnichenko | M | [T27](T27-editor-queue.md) | todo |
 | [T29](./T29-notification-dispatcher.md) | Реалізувати dispatcher таблиці відправлень | infra | Viacheslav Melnichenko | M | [T07](T07-migrate-search-jobs-dispatches.md), [T02](T02-test-harness.md), [T32](T32-bot-webhook.md) | done |
@@ -49,9 +49,9 @@
 | [T36](./T36-ui-today.md) | Зробити екран «Сьогодні» | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T19](T19-today-api.md), [T33](T33-client-telemetry.md) | todo |
 | [T37](./T37-ui-session-shell.md) | Зробити каркас заняття, картку нового слова й підсумок | ui | Viacheslav Melnichenko | L | [T36](T36-ui-today.md), [T18](T18-new-word-card.md) | todo |
 | [T38](./T38-ui-recall.md) | Зробити вправу пригадування, результат і оскарження | ui | Viacheslav Melnichenko | L | [T37](T37-ui-session-shell.md), [T17](T17-answer-item.md), [T24](T24-answer-dispute.md) | todo |
-| [T39](./T39-ui-dictionary.md) | Зробити пошук у словнику й картку запису | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T22](T22-dictionary-search-api.md) | todo |
+| [T39](./T39-ui-dictionary.md) | Зробити пошук у словнику й картку запису | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T22](T22-dictionary-search-api.md) | in_progress |
 | [T40](./T40-ui-content-report.md) | Зробити форму content report | ui | Viacheslav Melnichenko | M | [T39](T39-ui-dictionary.md), [T23](T23-content-report-api.md) | todo |
-| [T41](./T41-ui-settings.md) | Зробити екран налаштувань | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T14](T14-settings-api.md) | in_progress |
+| [T41](./T41-ui-settings.md) | Зробити екран налаштувань | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T14](T14-settings-api.md) | done |
 | [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | todo |
 | [T43](./T43-retire-group-code.md) | Видалити код групової моделі | wiring | Viacheslav Melnichenko | M | [T32](T32-bot-webhook.md), [T07](T07-migrate-search-jobs-dispatches.md), [T20](T20-dictionary-import.md), [T34](T34-miniapp-skeleton.md) | blocked |
 | [T44](./T44-migrate-drop-group-model.md) | Перенести міграцію видалення таблиць групової моделі | migration | Viacheslav Melnichenko | S | [T43](T43-retire-group-code.md), [T07](T07-migrate-search-jobs-dispatches.md) | blocked |
@@ -127,3 +127,5 @@
 - [T44](T44-migrate-drop-group-model.md): blocked. Користувач підтвердив 2026-11-01, що резервну копію поза кластером і пробу відновлення в окрему БД ще не виконували. Передумова [ADR-0004](../adr/0004-retire-the-group-model-without-data-migration.md) та пряме обмеження користувача не виконані. Міграцію видалення не переносили, робочу БД і розгортання не запускали; потрібне підтвердження успішного backup/restore.
 
 - [T43](T43-retire-group-code.md): blocked через [T44](T44-migrate-drop-group-model.md). За погодженим планом EF-сутності прибираються разом із синхронізацією snapshot у міграції видалення; окреме вилучення зараз створить pending model changes і порушить DoD зелених PostgreSQL-тестів. Користувач підтвердив відсутність backup/restore; код групової моделі поки не видаляли. Після зняття операційного блокера обидві зміни мають бути в одному релізі за [ADR-0004](../adr/0004-retire-the-group-model-without-data-migration.md).
+
+- [T41](T41-ui-settings.md): переглянуто PATCH лише змінених полів, підтвердження поясу, pending limit, навігацію й помилки. Незалежно lint/typecheck/build і 90/90 Vitest зелені; виконавець пройшов 8/8 Playwright, координатор переглянув темний екран і світлий portal. Тема зберігає ввід/кеш заняття без PATCH, lazy Settings 4.07 kB gzip. Перевірки локальні; CI не змінено.
