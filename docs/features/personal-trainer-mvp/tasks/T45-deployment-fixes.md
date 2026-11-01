@@ -26,6 +26,8 @@ Dockerfile збирає Mini App у `wwwroot`; probes на правильний 
 
 Файли: `ConstantLearning/Dockerfile`, `k8s/`, `.github/workflows/`
 
+Операційні процедури та локальна перевірка образу: [інструкція пілоту](../pilot-runbook.md).
+
 ## Definition of Done
 
 - [ ] образ збирається локально й відповідає на probe

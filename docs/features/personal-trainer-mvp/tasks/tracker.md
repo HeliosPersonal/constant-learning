@@ -14,7 +14,7 @@
 | [T03](./T03-migrate-identity.md) | Перенести міграції learner і нагадувань | migration | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
 | [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
 | [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | done |
-| [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | todo |
+| [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | in_progress |
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | todo |
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
@@ -42,7 +42,7 @@
 | [T29](./T29-notification-dispatcher.md) | Реалізувати dispatcher таблиці відправлень | infra | Viacheslav Melnichenko | M | [T07](T07-migrate-search-jobs-dispatches.md), [T02](T02-test-harness.md), [T32](T32-bot-webhook.md) | todo |
 | [T30](./T30-reminders.md) | Реалізувати планування й умови нагадувань | app | Viacheslav Melnichenko | M | [T29](T29-notification-dispatcher.md), [T08](T08-learner-day.md), [T14](T14-settings-api.md), [T16](T16-session-continuation.md) | todo |
 | [T31](./T31-summaries-digest.md) | Реалізувати щоденний підсумок learner і дайджест редактора | app | Viacheslav Melnichenko | M | [T29](T29-notification-dispatcher.md), [T23](T23-content-report-api.md) | todo |
-| [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | todo |
+| [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | in_progress |
 | [T33](./T33-client-telemetry.md) | Приймати клієнтську телеметрію й публікувати серверні метрики | ports | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
 | [T34](./T34-miniapp-skeleton.md) | Створити каркас Mini App, що його роздає бекенд | ui | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | todo |
@@ -55,7 +55,7 @@
 | [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | todo |
 | [T43](./T43-retire-group-code.md) | Видалити код групової моделі | wiring | Viacheslav Melnichenko | M | [T32](T32-bot-webhook.md), [T07](T07-migrate-search-jobs-dispatches.md), [T20](T20-dictionary-import.md), [T34](T34-miniapp-skeleton.md) | todo |
 | [T44](./T44-migrate-drop-group-model.md) | Перенести міграцію видалення таблиць групової моделі | migration | Viacheslav Melnichenko | S | [T43](T43-retire-group-code.md), [T07](T07-migrate-search-jobs-dispatches.md) | todo |
-| [T45](./T45-deployment-fixes.md) | Оновити збірку й маніфести розгортання | wiring | Viacheslav Melnichenko | S | [T34](T34-miniapp-skeleton.md) | in_progress |
+| [T45](./T45-deployment-fixes.md) | Оновити збірку й маніфести розгортання | wiring | Viacheslav Melnichenko | S | [T34](T34-miniapp-skeleton.md) | done |
 | [T46](./T46-e2e-critical-flows.md) | Покрити наскрізними тестами критичні потоки через UI | tests | Viacheslav Melnichenko | M | [T35](T35-ui-onboarding.md), [T38](T38-ui-recall.md), [T40](T40-ui-content-report.md), [T41](T41-ui-settings.md), [T45](T45-deployment-fixes.md) | todo |
 | [T49](./T49-load-test.md) | Перевірити бюджети латентності під навантаженням | tests | Viacheslav Melnichenko | M | [T45](T45-deployment-fixes.md), [T17](T17-answer-item.md), [T19](T19-today-api.md), [T22](T22-dictionary-search-api.md), [T30](T30-reminders.md), [T33](T33-client-telemetry.md), [T36](T36-ui-today.md) | todo |
 
@@ -88,3 +88,5 @@
 - [T05](T05-migrate-learning.md): переглянуто Learning-модель, сім міжмодульних FK у Platform, чотири міграції й тести. 8 SQL-блоків відповідають staged; snapshot +398 без зміни попередніх моделей; Check порожня. PostgreSQL перевіряє up/down/повторний up, 48 колонок, 18 індексів, 13 constraints, JSONB, дати, унікальність, cascade/SET NULL та xmin. 36/36 цільових і незалежні 351/351 спільних Release-тестів без пропусків; build/format/diff check успішні з початковими NU1903.
 
 - [T13](T13-onboarding-api.md): переглянуто DTO, controller, сервіс і повторно виправлені сценарії incomplete-профілю/CanMessage. 10 інтеграційних тестів real HMAC + PostgreSQL + ContractAssert, незалежний спільний Release-прогін 351/351 без пропусків. Новий онбординг201/повтор200 і конкурентність не перезаписують завершений профіль; fallback Warsawfalse та reminder/limit validation перевірені. Build, scoped format і diff check проходять із початковими NU1903.
+
+- [T45](T45-deployment-fixes.md): переглянуто Dockerfile, CI, маніфести, isolated helper та [інструкцію пілоту](../pilot-runbook.md). Production image зібрано; незалежно повторено smoke на PostgreSQL16 у внутрішній мережі: probe, SPA, ICU pl-PL, Warsaw+1/+2 і Tokyo+9. Перевірено UID1654, wwwroot та відсутність helper/Mvc.Testing у production; kustomize render, actionlint, Docker check і syntax проходять. Спільні Release build і351/351 тестів зелені; наявний NU1903 не приховано. Копії/restore/видалення/зовнішній моніторинг описані як ще потрібні операції до пілоту, не як виконані. Контейнери/томи/мережі smoke прибрані; розгортань не було.
