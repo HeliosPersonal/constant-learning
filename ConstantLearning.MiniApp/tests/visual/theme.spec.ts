@@ -18,7 +18,7 @@ test('повільний Telegram визначає тему до першого 
     await route.fulfill({ contentType: 'text/javascript', body: 'window.Telegram={WebApp:{colorScheme:"dark",version:"6.0"}};' });
   });
   const scriptRequested = page.waitForRequest('https://telegram.org/js/telegram-web-app.js');
-  const navigation = page.goto('/');
+  const navigation = page.goto('/dev/components');
   await scriptRequested;
   await expect(page.locator('#root')).toHaveCount(0);
   release();
@@ -55,7 +55,7 @@ for (const theme of ['light', 'dark'] as const) {
       });
       observer.observe(document, { childList: true, subtree: true });
     }, theme);
-    await page.goto('/');
+    await page.goto('/dev/components');
     await expect(page.getByRole('heading', { name: 'Знайдіть свій ритм.' })).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-first-visible-theme', theme);
     if (process.env.MINIAPP_BASE_URL) await page.screenshot({ path: `artifacts/backend-${theme}-shell.png`, fullPage: true });

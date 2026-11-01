@@ -1,13 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { App } from '../src/App';
+import { ComponentPreview } from '../src/components/ComponentPreview';
 import { ThemeProvider } from '../src/theme/ThemeProvider';
 import { createQueryClient } from '../src/api/query';
 
 it('ручна тема зберігає відповідь, картку й portal, не надсилаючи запитів', () => {
   const network = vi.spyOn(globalThis, 'fetch');
-  render(<QueryClientProvider client={createQueryClient()}><ThemeProvider><App /></ThemeProvider></QueryClientProvider>);
+  render(<QueryClientProvider client={createQueryClient()}><ThemeProvider><ComponentPreview /></ThemeProvider></QueryClientProvider>);
   fireEvent.change(screen.getByLabelText('Ваш варіант польською'), { target: { value: 'spokój' } });
   fireEvent.click(screen.getByRole('button', { name: 'Про оформлення' }));
   expect(screen.getByRole('dialog')).toBeVisible();

@@ -15,14 +15,14 @@
 | [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
 | [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | done |
 | [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | done |
-| [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | todo |
+| [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | in_progress |
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | blocked |
 | [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
 | [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | done |
 | [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | done |
-| [T14](./T14-settings-api.md) | Реалізувати зміну ліміту, поясу й нагадувань | app | Viacheslav Melnichenko | M | [T13](T13-onboarding-api.md), [T08](T08-learner-day.md) | todo |
+| [T14](./T14-settings-api.md) | Реалізувати зміну ліміту, поясу й нагадувань | app | Viacheslav Melnichenko | M | [T13](T13-onboarding-api.md), [T08](T08-learner-day.md) | in_progress |
 | [T15](./T15-start-session.md) | Реалізувати старт session з персистенцією карток | app | Viacheslav Melnichenko | M | [T11](T11-session-composition.md), [T05](T05-migrate-learning.md), [T04](T04-migrate-content-core.md), [T12](T12-initdata-auth.md) | todo |
 | [T47](./T47-session-limits-quotas.md) | Застосувати денний ліміт, зміну поясу й квоти під час старту session | app | Viacheslav Melnichenko | M | [T15](T15-start-session.md), [T08](T08-learner-day.md) | todo |
 | [T16](./T16-session-continuation.md) | Реалізувати продовження session і закриття на межі доби | app | Viacheslav Melnichenko | M | [T15](T15-start-session.md) | todo |
@@ -30,7 +30,7 @@
 | [T48](./T48-word-status-transitions.md) | Застосувати переходи word status і control repetition у відповіді | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md) | todo |
 | [T18](./T18-new-word-card.md) | Реалізувати картку нового слова, «Далі» і «Вже знаю» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T10](T10-review-scheduler.md) | todo |
 | [T19](./T19-today-api.md) | Реалізувати екран «Сьогодні» на сервері | app | Viacheslav Melnichenko | S | [T16](T16-session-continuation.md) | todo |
-| [T20](./T20-dictionary-import.md) | Імпортувати редакторський CSV у версійований словник | infra | Viacheslav Melnichenko | L | [T04](T04-migrate-content-core.md), [T06](T06-migrate-reports-publication.md) | todo |
+| [T20](./T20-dictionary-import.md) | Імпортувати редакторський CSV у версійований словник | infra | Viacheslav Melnichenko | L | [T04](T04-migrate-content-core.md), [T06](T06-migrate-reports-publication.md) | in_progress |
 | [T21](./T21-search-forms.md) | Генерувати форми пошуку для опублікованих версій | infra | Viacheslav Melnichenko | M | [T20](T20-dictionary-import.md), [T07](T07-migrate-search-jobs-dispatches.md) | todo |
 | [T22](./T22-dictionary-search-api.md) | Реалізувати пошук у словнику й картку запису | ports | Viacheslav Melnichenko | M | [T21](T21-search-forms.md), [T12](T12-initdata-auth.md) | todo |
 | [T23](./T23-content-report-api.md) | Реалізувати надсилання content report з лімітом і дедуплікацією | app | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md), [T07](T07-migrate-search-jobs-dispatches.md), [T12](T12-initdata-auth.md) | todo |
@@ -45,7 +45,7 @@
 | [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
 | [T33](./T33-client-telemetry.md) | Приймати клієнтську телеметрію й публікувати серверні метрики | ports | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
 | [T34](./T34-miniapp-skeleton.md) | Створити каркас Mini App, що його роздає бекенд | ui | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
-| [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | in_progress |
+| [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | blocked |
 | [T36](./T36-ui-today.md) | Зробити екран «Сьогодні» | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T19](T19-today-api.md), [T33](T33-client-telemetry.md) | todo |
 | [T37](./T37-ui-session-shell.md) | Зробити каркас заняття, картку нового слова й підсумок | ui | Viacheslav Melnichenko | L | [T36](T36-ui-today.md), [T18](T18-new-word-card.md) | todo |
 | [T38](./T38-ui-recall.md) | Зробити вправу пригадування, результат і оскарження | ui | Viacheslav Melnichenko | L | [T37](T37-ui-session-shell.md), [T17](T17-answer-item.md), [T24](T24-answer-dispute.md) | todo |
@@ -96,3 +96,8 @@
 - [T06](T06-migrate-reports-publication.md): переглянуто чотири сутності, конфігурації, п’ять міграцій і snapshot (+359 без переписування попередніх моделей). 10 SQL-блоків відповідають staged, Check порожня. PostgreSQL: 38 колонок, 18 індексів, 17 constraints, up/down/reapply, зв’язки report/version, нейтралізація без зміни JSONB-знімка, докази й журнал. 47/47 цільових і незалежні 376/376 спільних Release-тестів без пропусків; build/scoped format/diff check успішні, початкові NU1903 збережені.
 
 - [T32](T32-bot-webhook.md): переглянуто wrapper, webhook/secret, Identity-порт can_message, конфігурацію й сумісну адаптацію legacy-сервісу. 14/14 цільових і незалежні 376/376 спільних Release-тестів без пропусків; build, scoped format нових каталогів і docs links проходять. Невірний секрет401 перевіряється до JSON; /start має Mini App кнопку, блокування змінює лише дозвіл, StopAsync не видаляє webhook. HTTP-логування URL із token і автоматичні повтори SDK вимкнені; зовнішніх Telegram-викликів не було. Додано ключі SecretToken/MiniAppUrl у шаблон секрету та runbook.
+
+- [T14](T14-settings-api.md): аналіз підтвердив відсутність durable-знімка доби для повторних змін поясу. Після [T07](T07-migrate-search-jobs-dispatches.md) додамо окрему additive EF-міграцію з п’ятьма nullable current_day_* полями й app-side перевіркою цілісності; staged SQL лишається незмінним. До передачі migration lane код не змінюється.
+
+
+- [T35](T35-ui-onboarding.md): код, generated client і обидві теми переглянуто; незалежно build/lint/typecheck, 58/58 Vitest і 6/6 Playwright зелені. Форма перевіряє дні/пояс, зберігає ввід після помилки, захищає pending, GET/POST200/201 ведуть на перехід до екрана Сьогодні. Зображення мають synthetic contact лише в тестовому сервері. Blocker: користувач ще не задав реальний контакт для видалення; VITE_PRIVACY_CONTACT_URL порожній і завершення форми недоступне. Частковий результат зафіксовано, повний DoD не виконано.
