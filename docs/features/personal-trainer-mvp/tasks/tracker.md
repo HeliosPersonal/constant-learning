@@ -12,7 +12,7 @@
 | [T01](./T01-module-skeleton.md) | Створити каркас feature-модулів, Platform і NodaTime | wiring | Viacheslav Melnichenko | M | — | done |
 | [T02](./T02-test-harness.md) | Додати інтеграційні тести на PostgreSQL з FakeClock і фікстурами | tests | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T03](./T03-migrate-identity.md) | Перенести міграції learner і нагадувань | migration | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
-| [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | todo |
+| [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | in_progress |
 | [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | todo |
 | [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | todo |
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | todo |
@@ -43,7 +43,7 @@
 | [T30](./T30-reminders.md) | Реалізувати планування й умови нагадувань | app | Viacheslav Melnichenko | M | [T29](T29-notification-dispatcher.md), [T08](T08-learner-day.md), [T14](T14-settings-api.md), [T16](T16-session-continuation.md) | todo |
 | [T31](./T31-summaries-digest.md) | Реалізувати щоденний підсумок learner і дайджест редактора | app | Viacheslav Melnichenko | M | [T29](T29-notification-dispatcher.md), [T23](T23-content-report-api.md) | todo |
 | [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | todo |
-| [T33](./T33-client-telemetry.md) | Приймати клієнтську телеметрію й публікувати серверні метрики | ports | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | in_progress |
+| [T33](./T33-client-telemetry.md) | Приймати клієнтську телеметрію й публікувати серверні метрики | ports | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
 | [T34](./T34-miniapp-skeleton.md) | Створити каркас Mini App, що його роздає бекенд | ui | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | in_progress |
 | [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | todo |
 | [T36](./T36-ui-today.md) | Зробити екран «Сьогодні» | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T19](T19-today-api.md), [T33](T33-client-telemetry.md) | todo |
@@ -76,3 +76,5 @@
 - [T10](T10-review-scheduler.md): переглянуто порт, MEMORIZE і проєкцію журналу; незалежні 48/48 тестів зелені, scoped format успішний. Часткову реалізацію зафіксовано; для prev≥180 повертається явний ReviewIntervalConflictException до рішення користувача. Повний DoD не виконано; залежні задачі не розблоковано.
 
 - [T03](T03-migrate-identity.md): переглянуто сутності, конфігурації, обидві SQL-міграції та generated snapshot; SQL відповідає staged-парам. Незалежно Release build успішний, 10/10 цільових тестів на PostgreSQL 16 без пропусків: чиста БД → up → down0 без залишків → up, схема, NodaTime, унікальність, cascade і xmin. Check-міграція порожня; scoped format та diff check успішні, початкові NU1903 зберігаються.
+
+- [T33](T33-client-telemetry.md): переглянуто controller, валідацію, гістограми й middleware; незалежно 43/43 HTTP/metrics/architecture тестів. Невідомі метрики й невалідний payload дають telemetry.invalid_metric, endpoint потребує автентифікації за контрактом. Development loopback /metrics показує гістограми today/answer/search без персональних даних; Program wiring підключено. Release build і scoped format проходять, залишилися початкові NU1903.

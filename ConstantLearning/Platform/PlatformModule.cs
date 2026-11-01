@@ -1,3 +1,4 @@
+using ConstantLearning.Platform.Metrics;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using NodaTime;
@@ -13,6 +14,7 @@ public static class PlatformModule
                                    "Не знайдено рядок підключення 'DefaultConnection'.");
 
         services.TryAddSingleton<IClock>(SystemClock.Instance);
+        services.TryAddSingleton<TrainerMetrics>();
         services.AddDbContext<AppDbContext>(options => PersistenceOptions.Configure(options, connectionString));
 
         return services;

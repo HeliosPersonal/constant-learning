@@ -7,6 +7,7 @@ using ConstantLearning.Features.Notifications;
 using ConstantLearning.HostedServices;
 using ConstantLearning.Jobs;
 using ConstantLearning.Platform;
+using ConstantLearning.Platform.Metrics;
 using ConstantLearning.Services;
 using Quartz;
 using Telegram.Bot;
@@ -87,9 +88,12 @@ public static class Program
             app.MapOpenApi();
         }
 
+        app.UseRouting();
+        app.UseMiddleware<ServerTimingMiddleware>();
         app.UseAuthorization();
 
         app.MapControllers();
+        app.MapLocalMetrics();
 
         app.Run();
     }
