@@ -40,6 +40,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Content Update="Resources\Morphology\manifest.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+      <None Update="Resources\Morphology\*.gz;Resources\Morphology\*.md" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
       <Content Include="..\docs\dictionary\course.csv;..\docs\dictionary\evidence.jsonl;..\docs\dictionary\readiness.json"
                Link="Resources\Dictionary\%(Filename)%(Extension)"
                CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

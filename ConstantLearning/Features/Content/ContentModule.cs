@@ -1,7 +1,7 @@
 using ConstantLearning.Features.Content.Import;
 using ConstantLearning.Features.Content.Notifications;
 using ConstantLearning.Features.Content.Publishing;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using ConstantLearning.Features.Content.Search.Forms;
 
 namespace ConstantLearning.Features.Content;
 
@@ -12,8 +12,11 @@ public static class ContentModule
         services.AddSingleton<DictionaryImportReader>();
         services.AddScoped<DictionaryImportService>();
         services.AddScoped<ContentPublicationService>();
+        services.AddScoped<SearchFormsProjection>();
+        services.AddScoped<IPublicationProjection>(provider => provider.GetRequiredService<SearchFormsProjection>());
+        services.AddScoped<PolishMorphologyImporter>();
+        services.AddScoped<SearchFormsMaintenance>();
         services.AddReportSummaryDispatch();
-        services.TryAddScoped<IPublicationProjection, NoOpPublicationProjection>();
         return services;
     }
 }

@@ -1,5 +1,6 @@
 using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Features.Content.Import;
+using ConstantLearning.Features.Content.Search.Forms;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.HostedServices;
@@ -21,6 +22,7 @@ public class DatabaseInitializationService(
             await context.Database.MigrateAsync(cancellationToken);
 
             await importService.ImportPackagedAsync(cancellationToken);
+            await scope.ServiceProvider.GetRequiredService<SearchFormsMaintenance>().InitializeAsync(cancellationToken);
 
             logger.LogInformation("Ініціалізацію бази даних завершено");
         }
