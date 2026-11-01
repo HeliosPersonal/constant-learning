@@ -1,4 +1,5 @@
 using ConstantLearning.Data.Entities;
+using ConstantLearning.Features.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.Platform.Persistence;
@@ -8,10 +9,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Word> Words => Set<Word>();
     public DbSet<LearnedWord> LearnedWords => Set<LearnedWord>();
     public DbSet<ChatRegistration> ChatRegistrations => Set<ChatRegistration>();
+    public DbSet<Learner> Learners => Set<Learner>();
+    public DbSet<ReminderSchedule> ReminderSchedules => Set<ReminderSchedule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new LearnerConfiguration());
+        modelBuilder.ApplyConfiguration(new ReminderScheduleConfiguration());
 
         modelBuilder.Entity<Word>(entity =>
         {
