@@ -26,5 +26,7 @@ US-09 у [PRD](../PRD.md); потік «Content report і автоматична
 
 ## Definition of Done
 
+- [ ] екран і його стани використовують токени [Everforest](../design-system.md) та коректно відображаються у світлій і темній темах
+
 - [ ] компонентні тести AC-34, AC-46, AC-51 зелені
 - [ ] `npm run lint`, `npm run typecheck` і `npm test` зелені

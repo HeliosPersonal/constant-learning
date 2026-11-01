@@ -26,6 +26,8 @@ US-08 у [PRD](../PRD.md); [ADR-0012](../adr/0012-search-via-a-precomputed-table
 
 ## Definition of Done
 
+- [ ] екран і його стани використовують токени [Everforest](../design-system.md) та коректно відображаються у світлій і темній темах
+
 - [ ] компонентні тести AC-30, AC-31 зелені
 - [ ] застарілий запит скасовується
 - [ ] `npm run lint`, `npm run typecheck` і `npm test` зелені

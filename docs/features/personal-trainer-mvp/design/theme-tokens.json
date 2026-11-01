@@ -1,0 +1,78 @@
+{
+  "status": "accepted",
+  "palette": "everforest",
+  "version": 1,
+  "accepted_at": "2026-11-01",
+  "source": "https://github.com/sainnhe/everforest/blob/master/palette.md",
+  "adaptations": "Світла кнопка #52652f та muted #657166 адаптовані; світла картка бере bg0 hard. Danger в обох темах і muted темної теми адаптовані.",
+  "themes": {
+    "light": {
+      "background": "#fdf6e3",
+      "surface": "#fffbef",
+      "text": "#5c6a72",
+      "muted": "#657166",
+      "accent": "#52652f",
+      "onAccent": "#fffbef",
+      "border": "#bdc3af",
+      "danger": "#ad4250"
+    },
+    "dark": {
+      "background": "#2d353b",
+      "surface": "#343f44",
+      "text": "#d3c6aa",
+      "muted": "#a7b2a8",
+      "accent": "#a7c080",
+      "onAccent": "#2d353b",
+      "border": "#56635f",
+      "danger": "#f29c9d"
+    }
+  },
+  "aliases": {
+    "controlBorder": "muted",
+    "focusRing": "accent",
+    "success": "accent"
+  },
+  "typography": {
+    "fontFamily": "system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    "body": {
+      "fontSizePx": 16,
+      "lineHeightPx": 24
+    },
+    "secondary": {
+      "fontSizePx": 14,
+      "lineHeightPx": 20
+    },
+    "heading": {
+      "fontSizePx": 24,
+      "lineHeightPx": 32
+    }
+  },
+  "spacingPx": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32
+  ],
+  "radiiPx": {
+    "control": 12,
+    "card": 16
+  },
+  "touchTargetMinPx": 44,
+  "preference": {
+    "values": [
+      "light",
+      "dark"
+    ],
+    "storage": "localStorage",
+    "key": "constant-learning.theme.v1",
+    "initialPriority": [
+      "saved",
+      "telegram",
+      "prefers-color-scheme",
+      "light"
+    ],
+    "manualOverridesTelegram": true
+  }
+}

@@ -3,7 +3,7 @@ id: T34
 title: "Створити каркас Mini App, що його роздає бекенд"
 layer: "ui"
 deps: ["T01"]
-acs: []
+acs: ["AC-58"]
 files_hint: ["ConstantLearning.MiniApp/", "ConstantLearning/wwwroot/", "ConstantLearning/Program.cs"]
 owner: "Viacheslav Melnichenko"
 estimate: "M"
@@ -12,7 +12,7 @@ status: "todo"
 
 # T34 — Створити каркас Mini App, що його роздає бекенд
 
-**Шар:** `ui` · **Залежить від:** [T01](./T01-module-skeleton.md) · **AC:** — (технічна передумова) · **Оцінка:** M · **Фаза:** 2
+**Шар:** `ui` · **Залежить від:** [T01](./T01-module-skeleton.md) · **AC:** AC-58 · **Оцінка:** M · **Фаза:** 2
 
 ## Why
 
@@ -20,11 +20,15 @@ status: "todo"
 
 ## What
 
-Vite + React + TypeScript, `@telegram-apps/telegram-ui` поверх `--tg-theme-*`, TanStack Query, клієнт і TS-типи з `openapi.yaml`, `mockTelegramEnv` для локальної розробки, роздача з `wwwroot` з fallback на `index.html`; механізм visual-regression з еталонами у світлій і темній темі Telegram.
+Vite + React + TypeScript, `@telegram-apps/telegram-ui` із семантичними токенами Everforest, TanStack Query, клієнт і TS-типи з `openapi.yaml`, `mockTelegramEnv` для локальної розробки, роздача з `wwwroot` з fallback на `index.html`; механізм visual-regression з еталонами у світлій і темній темі Telegram.
 
 Файли: `ConstantLearning.MiniApp/`, `ConstantLearning/wwwroot/`, `ConstantLearning/Program.cs`
 
 ## Definition of Done
+
+- [ ] локальні перевірки AC-58 підтверджують раннє застосування теми, ручний пріоритет, повторне відкриття, fallback сховища та контраст токенів; modal/portal використовують ту саму тему
+
+- [ ] екран і його стани використовують токени [Everforest](../design-system.md) та коректно відображаються у світлій і темній темах
 
 - [ ] `npm run build` і `npm test` зелені
 - [ ] SPA відкривається з бекенду за кореневим шляхом
@@ -35,4 +39,7 @@ Vite + React + TypeScript, `@telegram-apps/telegram-ui` поверх `--tg-theme
 
 ## Notes
 
-Власної дизайн-системи в репозиторії немає — базовою є UI kit Telegram.
+Дизайн-система — [Everforest](../design-system.md), токени — [theme-tokens.json](../design/theme-tokens.json). UI kit Telegram залишається базою компонентів (ADR-0013).
+
+- Провайдер теми завантажує валідний локальний вибір до першого видимого рендера; за його відсутності використовує Telegram, ОС або світлу схему. Обробляє недоступне сховище, themeChanged та portal-компоненти.
+- Локальні перевірки AC-58: початкова тема, повторне відкриття, помилка сховища, ручний пріоритет, контраст токенів.

@@ -101,7 +101,7 @@ C4Context
 2. **Сервер — єдине джерело істини навчального стану** — session, оцінка відповіді, межі доби й планування повторень живуть на сервері; клієнт лише відмальовує стан і результат (ADR-0008, ADR-0009). Це закриває вимоги «0 втрачених відповідей» і «рівно одне зарахування» та не розкриває правильних відповідей клієнту.
 3. **Час learner як доменне поняття** — IANA-пояс learner і календарна доба з урахуванням DST моделюються явно; нагадування й дайджести йдуть через таблицю відправлень з унікальним ключем на дату (ADR-0006, ADR-0007).
 4. **Словник як версійований контент у БД** — незмінні версії записів, вказівник на опубліковану версію, асинхронна звірка content reports за довідковими знімками й попередньо обчислена таблиця форм для пошуку (ADR-0010, ADR-0011, ADR-0012).
-5. **UI-architecture: SPA, яку роздає бекенд** — React + TypeScript + Vite, Telegram UI kit поверх theme params, той самий origin, що й API; автентифікація через підписані `initData` у кожному запиті (ADR-0002, ADR-0005). Дизайн-системи в репозиторії немає (`architecture-map.md` §Frontend: N/A), тож UI-kit Telegram і є базовою дизайн-системою.
+5. **UI-architecture: SPA, яку роздає бекенд** — React + TypeScript + Vite, компоненти Telegram UI kit із семантичними токенами затвердженої [дизайн-системи Everforest](./design-system.md), той самий origin, що й API; автентифікація через підписані `initData` у кожному запиті (ADR-0002, ADR-0005, ADR-0013). Дві теми мають ручний вибір; Telegram задає початкову схему до першого ручного вибору.
 
 ## 5. Building block view
 
@@ -756,8 +756,23 @@ sequenceDiagram
 | AC-55 | `«Моя відповідь теж правильна»` | branch | `else mistake з дією в перевірці нового слова` |
 | AC-56 | `Оцінка відповіді й статус слова` | branch | `else лема іншого approved-запису з тим самим перекладом` |
 | AC-57 | `Оцінка відповіді й статус слова` | branch | `alt після нормалізації лишились кириличні літери` |
+| AC-58 | `Вибір теми Mini App` | flow | локальна тема, ручний вибір, повторне відкриття та fallback |
 
-Coverage: 12/12 user stories · 57/57 ACs — 1 non-runtime N/A.
+Coverage: 12/12 user stories · 58/58 ACs — 1 non-runtime N/A.
+
+### Вибір теми Mini App
+
+```mermaid
+flowchart LR
+    Open[Відкриття Mini App] --> Saved{Є збережений вибір?}
+    Saved -->|Так| Apply[Застосувати токени Everforest]
+    Saved -->|Ні| Initial[Схема Telegram, ОС або світла]
+    Initial --> Apply
+    Manual[Ручний вибір світлої або темної] --> Apply
+    Manual --> Store[Зберегти локально на пристрої]
+```
+
+Некоректне значення сховища прирівнюється до відсутнього. Недоступне сховище не блокує перемикання в поточному запуску; після ручного вибору themeChanged не змінює тему. Навчальний стан і введена відповідь зберігаються. Серверного запиту для вибору теми немає (AC-58).
 
 **Flags:**
 - `message-bus` у потоці «Content report і автоматична звірка» реалізує черга задач у PostgreSQL з пропуском заблокованих рядків (ADR-0011), окремого брокера §5 не має — уточнити в `generate-data-model`.
@@ -797,7 +812,7 @@ Coverage: 12/12 user stories · 57/57 ACs — 1 non-runtime N/A.
 | Time | NodaTime: `IClock`, IANA tzdb, `LocalDate` доби learner; тести з `FakeClock` | ADR-0006 |
 | Answer evaluation | Чистий доменний сервіс: NFC, обрізання й стискання пробілів, нижній регістр, без кінцевих `. , ! ? ; : …`, кириличні двійники `а е і о р с у х` → латиниця; явна мапа згортання діакритики (`ą ć ę ł ń ó ś ź ż`); синонім з іншого запису — нейтральний результат `synonym`; структурований diff з сервера | тут (AC-12–AC-17, AC-56, AC-57) |
 | ID strategy | UUID v7, генерується застосунком (`Guid.CreateVersion7()`) — дефолт курсу для нової схеми, старі `int`-таблиці видаляються (ADR-0004); Telegram user id — `long` з унікальним індексом | `data-model.md` |
-| UI / design system | `@telegram-apps/telegram-ui` поверх `--tg-theme-*`; власні кольори лише похідні від theme params; lazy-чанки для словника, налаштувань і черги редактора | тут |
+| UI / design system | `@telegram-apps/telegram-ui` із токенами Everforest; світла/темна тема, ручний вибір у localStorage, Telegram лише початкове джерело схеми; lazy-чанки для словника, налаштувань і черги редактора | [design-system.md](./design-system.md), ADR-0013 |
 | Data fetching | TanStack Query: кеш `/today`, відміна застарілих запитів пошуку, повтор мутацій з тим самим ключем картки | тут |
 | Search UX | Запит на кожен символ без debounce, відміна застарілого запиту, `CancellationToken` до EF-запиту | ADR-0012, AC-30 |
 | Bot webhook | `SetWebhook` з `secret_token` і перевіркою заголовка; явні `allowed_updates`; без видалення на зупинці; заблокований бот вимикає нагадування | тут |
@@ -820,6 +835,7 @@ Coverage: 12/12 user stories · 57/57 ACs — 1 non-runtime N/A.
 | 0010 | Version dictionary entries in Postgres with a published pointer | Accepted | §4 |
 | 0011 | Verify content reports asynchronously against reference snapshots | Accepted | §4 |
 | 0012 | Search via a precomputed table of folded word forms | Accepted | §8 |
+| 0013 | Використовувати Everforest із ручним вибором світлої та темної теми | Accepted | §4, §6, §8 |
 
 ADR files live under `docs/features/personal-trainer-mvp/adr/NNNN-<title>.md`.
 
@@ -853,7 +869,7 @@ ADR files live under `docs/features/personal-trainer-mvp/adr/NNNN-<title>.md`.
 | Немає машинного польсько-українського словника з відкритою ліцензією, крім Wikisłownik, — «другий словник» з AC-35 фактично недоступний | Medium | Автопідтвердження перекладу лише за Wikisłownik; решта йде content editor; частку автопідтверджень вимірювати на пілоті | Viacheslav Melnichenko |
 | Умови використання WSJP PAN невідомі | Medium | Лише точкові запити з обмеженням частоти до перевірки умов; без масового скрейпінгу | Viacheslav Melnichenko |
 | Парсер вікітексту Wikisłownik і конвертер IPA → кирилиця крихкі | Medium | Окремі адаптери за портом `IReferenceSource` з тестами на зразках; збій парсера переводить звірку в ручний режим | Backend |
-| `@telegram-apps/telegram-ui` фіксує проєкт на React 18 і розвивається повільно | Low | Тема прив'язана до `--tg-theme-*`, kit можна замінити власним CSS поступово | Frontend |
+| `@telegram-apps/telegram-ui` фіксує проєкт на React 18 і розвивається повільно | Low | Семантичні токени Everforest відокремлені від kit; адаптер компонентів перевіряється в обох темах, kit можна замінити поступово | Frontend |
 | Наявність `tzdata` та ICU в образі `aspnet:10.0` не перевірена | Medium | Перевірити під час скафолдингу; NodaTime несе власну tzdb | Backend |
 | Інтерфейс недоступний під час рестарту, бо UI й API в одному процесі | Low | Один короткий рестарт на реліз; webhook більше не видаляється на зупинці | Backend |
 | Немає процесу перевірки в реальному клієнті Telegram | Medium | Тестовий бот і HTTPS-тунель для ручної перевірки; `mockTelegramEnv` для локальної розробки | Frontend |

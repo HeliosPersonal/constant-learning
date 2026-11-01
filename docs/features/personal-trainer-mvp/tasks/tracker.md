@@ -1,5 +1,7 @@
 # Tracker — personal-trainer-mvp
 
+Рекомендовані Agency-агенти й моделі: [agent-routing.md](../agent-routing.md). Машинні призначення — `execution` у [tasks.json](./tasks.json).
+
 > Статус кожної задачі епіку. `implement-tasks` оновлює `done`, коли комітить задачу.
 > Стани: `todo` · `in_progress` · `blocked` · `review` · `done`. Оцінка: S = 2 год, M = пів дня, L = день.
 

@@ -26,6 +26,8 @@ US-02, US-04, US-05 у [PRD](../PRD.md); потоки «Картка новог�
 
 ## Definition of Done
 
+- [ ] екран і його стани використовують токени [Everforest](../design-system.md) та коректно відображаються у світлій і темній темах
+
 - [ ] компонентні тести AC-11, AC-20, AC-24, AC-52 зелені
 - [ ] еталони visual-regression у світлій і темній темі затверджено
 - [ ] `npm run lint`, `npm run typecheck` і `npm test` зелені

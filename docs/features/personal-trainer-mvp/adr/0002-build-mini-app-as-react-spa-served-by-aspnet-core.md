@@ -35,6 +35,8 @@ ticket: "TBD"
 
 **Chosen:** Option 1. Бандл близько 150–200 KB gzip укладається в бюджет «Сьогодні», екосистема Telegram існує саме для React, а той самий origin прибирає CORS-preflight і розбіжність версій UI й API.
 
+Уточнення 2026-11-01: компоненти Telegram UI використовують токени Everforest, світлу й темну теми та ручний вибір за [ADR-0013](./0013-use-everforest-with-manual-light-dark-themes.md). Це не змінює рішення про React SPA і спільний origin.
+
 ## Consequences
 
 **Positive**
