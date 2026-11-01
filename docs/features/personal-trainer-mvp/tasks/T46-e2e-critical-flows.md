@@ -4,7 +4,7 @@ title: "Покрити наскрізними тестами критичні п
 layer: "tests"
 deps: ["T35", "T38", "T40", "T41", "T45"]
 acs: ["AC-01", "AC-03", "AC-12", "AC-17", "AC-34"]
-files_hint: ["ConstantLearning.MiniApp/e2e/", ".github/workflows/"]
+files_hint: ["ConstantLearning.MiniApp/e2e/"]
 owner: "Viacheslav Melnichenko"
 estimate: "M"
 status: "todo"
@@ -20,9 +20,9 @@ status: "todo"
 
 ## What
 
-Playwright з `mockTelegramEnv` і тестовим підписувачем `initData` (тестовий токен бота) проти локального бекенду на Testcontainers.
+Playwright з `mockTelegramEnv` і тестовим підписувачем `initData` (тестовий токен бота) проти локального бекенду на Testcontainers. Сценарії запускаються локально, не в CI. Перед пілотом виконується один ручний smoke test у Telegram з тестовим ботом і HTTPS-тунелем.
 
-Файли: `ConstantLearning.MiniApp/e2e/`, `.github/workflows/`
+Файли: `ConstantLearning.MiniApp/e2e/`
 
 ## Definition of Done
 
@@ -31,5 +31,6 @@ Playwright з `mockTelegramEnv` і тестовим підписувачем `in
 - [ ] сценарій AC-12: правильна відповідь зараховується
 - [ ] сценарій AC-17: оскарження знімає mistake
 - [ ] сценарій AC-34: content report показує «Дякуємо, передали на перевірку»
-- [ ] усі сценарії зелені в CI
+- [ ] усі сценарії проходять локально
+- [ ] перед пілотом один раз перевірено запуск Mini App у Telegram з тестовим ботом і HTTPS-тунелем
 - [ ] `dotnet build`, тести й лінтер без нових попереджень

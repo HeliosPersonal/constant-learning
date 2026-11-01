@@ -16,7 +16,7 @@ status: "todo"
 
 ## Why
 
-Схема з [data-model.md](../data-model.md); staged-пари в [migrations/](../migrations/). Пара `0022` іде одразу після `0020`, бо посилається на `notification_dispatches`; `0021` — окремий реліз (T44).
+Схема з [data-model.md](../data-model.md); staged-пари в [migrations/](../migrations/). Пара `0022` іде одразу після `0020`, бо посилається на `notification_dispatches`; `0021` залишається останньою міграцією й виходить разом із видаленням групового коду (T44).
 
 ## What
 

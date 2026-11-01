@@ -31,6 +31,7 @@ Vite + React + TypeScript, `@telegram-apps/telegram-ui` поверх `--tg-theme
 - [ ] типи клієнта генеруються з контракту однією командою
 - [ ] приклад visual-regression падає на навмисній зміні стилю й проходить з еталоном
 - [ ] `npm run lint`, `npm run typecheck` і `npm test` зелені
+- [ ] перевірки Mini App запускаються локально; додавання їх до CI не входить у цей епік
 
 ## Notes
 

@@ -2,7 +2,7 @@
 status: Draft
 owner: "Viacheslav Melnichenko"
 reviewers: ["Tech Lead"]
-updated_at: "2026-10-31"
+updated_at: "2026-11-01"
 feature_size: L
 stage: "04-05"
 ticket: "TBD"
@@ -55,7 +55,7 @@ target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by a
 - Свідоме відхилення від конвенції тестів: окрім InMemory-тестів сервісів, додаються інтеграційні тести на справжньому PostgreSQL (Testcontainers), бо InMemory-провайдер не перевіряє транзакції, `xmin` і захоплення рядків з пропуском заблокованих, на яких тримаються QG-1 і QG-3.
 
 **Regulatory / external.**
-- Персональні дані learner класифіковано як confidential (PRD §6.1); security review обов'язковий.
+- Персональні дані learner класифіковано як confidential (PRD §6.1). Окремий security review до пілоту свідомо скасовано рішенням від 2026-11-01; перевірки спираються на автоматизовані тести, залишковий ризик зафіксовано в PRD §6.1.
 - Ліцензії зовнішніх даних: Wikisłownik — CC BY-SA 4.0 (атрибуція), PoliMorf і Morfeusz 2 — 2-clause BSD, VESUM — CC BY-NC-SA 4.0 (див. §11).
 - Обмеження частоти запитів до Wikisłownik підтверджено пілотом (`docs/dictionary/wiktionary-validation-pilot.csv`).
 
@@ -770,6 +770,7 @@ Coverage: 12/12 user stories · 57/57 ACs — 1 non-runtime N/A.
 Один образ Docker: multi-stage збірка спершу будує Mini App (Node 22), копіює її в `wwwroot`, потім публікує бекенд; build context розширюється до кореня репозиторію. У k8s — один Deployment з `replicas: 1` і PostgreSQL; Mini App і API обслуговуються з одного HTTPS-домену, який також є адресою webhook. Фонові тики (нагадування, дайджести, звірка) працюють у тому самому процесі.
 
 **Monitoring:**
+- Зовнішній сервіс перевіряє доступність публічного health endpoint раз на хвилину й надсилає сповіщення власнику після трьох послідовних невдалих перевірок. Це єдиний активний сигнал моніторингу доступності в пілоті.
 - Журнал відправлень (`notification_dispatch`) — частка відправлень, надісланих у межах 2 хв від `due_at_utc`.
 - Серверні метрики latency для оцінки відповіді й пошуку; клієнтська телеметрія відкриття «Сьогодні» через окремий endpoint (`navigator.sendBeacon`).
 - Щоденна звірка журналу відповідей із картками session.
@@ -842,7 +843,7 @@ ADR files live under `docs/features/personal-trainer-mvp/adr/NNNN-<title>.md`.
 **QG-4. Доступність**
 - **When:** будь-який місяць пілоту.
 - **Then:** Availability 99.5% (PRD §6).
-- **How verify:** місячне SLO-вікно за health-probe.
+- **How verify:** місячне вікно обчислюється за зовнішніми перевірками health endpoint раз на хвилину; три послідовні невдалі перевірки створюють сповіщення власнику.
 
 ## 11. Risks and technical debt
 
@@ -868,6 +869,8 @@ ADR files live under `docs/features/personal-trainer-mvp/adr/NNNN-<title>.md`.
 - Нагадування мають семантику «не більше одного»: збій між надсиланням і позначкою втрачає нагадування, і це йде в бюджет 1% NFR.
 - Параметри MEMORIZE апріорні до перенастроювання за даними пілоту (PRD OQ-4).
 - Один екземпляр і автоміграції на старті; друга репліка потребує змін з §7.
+- Окремий security review відсутній; безпекові ризики покриваються лише запланованими автоматизованими тестами.
+- Перевірки Mini App і наскрізні E2E не запускаються в CI; їх виконують локально. Ручна перевірка в Telegram обмежена одним smoke test перед пілотом.
 
 ## 12. Glossary
 
