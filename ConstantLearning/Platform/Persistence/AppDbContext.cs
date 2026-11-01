@@ -1,6 +1,7 @@
 using ConstantLearning.Data.Entities;
 using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Features.Identity.Data;
+using ConstantLearning.Features.Learning.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.Platform.Persistence;
@@ -16,6 +17,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<EntryVersion> EntryVersions => Set<EntryVersion>();
     public DbSet<VersionTranslation> VersionTranslations => Set<VersionTranslation>();
     public DbSet<VersionAcceptedAnswer> VersionAcceptedAnswers => Set<VersionAcceptedAnswer>();
+    public DbSet<LearnerWord> LearnerWords => Set<LearnerWord>();
+    public DbSet<LearningSession> LearningSessions => Set<LearningSession>();
+    public DbSet<SessionItem> SessionItems => Set<SessionItem>();
+    public DbSet<AnswerEvent> AnswerEvents => Set<AnswerEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +31,38 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration(new EntryVersionConfiguration());
         modelBuilder.ApplyConfiguration(new VersionTranslationConfiguration());
         modelBuilder.ApplyConfiguration(new VersionAcceptedAnswerConfiguration());
+        modelBuilder.ApplyConfiguration(new LearnerWordConfiguration());
+        modelBuilder.Entity<LearnerWord>().HasOne<Learner>().WithMany()
+            .HasForeignKey(word => word.LearnerId)
+            .HasConstraintName("learner_words_learner_id_fkey")
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<LearnerWord>().HasOne<DictionaryEntry>().WithMany()
+            .HasForeignKey(word => word.EntryId)
+            .HasConstraintName("learner_words_entry_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.ApplyConfiguration(new LearningSessionConfiguration());
+        modelBuilder.Entity<LearningSession>().HasOne<Learner>().WithMany()
+            .HasForeignKey(session => session.LearnerId)
+            .HasConstraintName("learning_sessions_learner_id_fkey")
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.ApplyConfiguration(new SessionItemConfiguration());
+        modelBuilder.Entity<SessionItem>().HasOne<DictionaryEntry>().WithMany()
+            .HasForeignKey(item => item.EntryId)
+            .HasConstraintName("session_items_entry_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.ApplyConfiguration(new AnswerEventConfiguration());
+        modelBuilder.Entity<AnswerEvent>().HasOne<Learner>().WithMany()
+            .HasForeignKey(answer => answer.LearnerId)
+            .HasConstraintName("answer_events_learner_id_fkey")
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<AnswerEvent>().HasOne<DictionaryEntry>().WithMany()
+            .HasForeignKey(answer => answer.EntryId)
+            .HasConstraintName("answer_events_entry_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<AnswerEvent>().HasOne<EntryVersion>().WithMany()
+            .HasForeignKey(answer => answer.VersionId)
+            .HasConstraintName("answer_events_version_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Word>(entity =>
         {

@@ -13,7 +13,7 @@
 | [T02](./T02-test-harness.md) | Додати інтеграційні тести на PostgreSQL з FakeClock і фікстурами | tests | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T03](./T03-migrate-identity.md) | Перенести міграції learner і нагадувань | migration | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
 | [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
-| [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | todo |
+| [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | done |
 | [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | todo |
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | todo |
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
@@ -21,7 +21,7 @@
 | [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | blocked |
 | [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
 | [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | done |
-| [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | todo |
+| [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | in_progress |
 | [T14](./T14-settings-api.md) | Реалізувати зміну ліміту, поясу й нагадувань | app | Viacheslav Melnichenko | M | [T13](T13-onboarding-api.md), [T08](T08-learner-day.md) | todo |
 | [T15](./T15-start-session.md) | Реалізувати старт session з персистенцією карток | app | Viacheslav Melnichenko | M | [T11](T11-session-composition.md), [T05](T05-migrate-learning.md), [T04](T04-migrate-content-core.md), [T12](T12-initdata-auth.md) | todo |
 | [T47](./T47-session-limits-quotas.md) | Застосувати денний ліміт, зміну поясу й квоти під час старту session | app | Viacheslav Melnichenko | M | [T15](T15-start-session.md), [T08](T08-learner-day.md) | todo |
@@ -84,3 +84,5 @@
 - [T04](T04-migrate-content-core.md): переглянуто чотири сутності, конфігурації, п’ять міграцій, lifecycle-тести й snapshot (324 додані рядки без зміни інших моделей). 10 SQL-блоків відповідають staged; Check порожня. PostgreSQL перевіряє up/down/повторний up, catalog, FK, індекси, версії, pointer, cascade та xmin. 19/19 цільових, незалежно 329/329 повних Release-тестів без пропусків; build/format/diff check успішні з початковими NU1903.
 
 - [T12](T12-initdata-auth.md): переглянуто HMAC validator, handler, claims transformation, policy та Program wiring. 49 auth-тестів, незалежний спільний Release-прогін 329/329 без пропусків; build/scoped format успішні. Реальна автентифікація й PostgreSQL lookup перевірені: 401/403 за контрактом, learner_id лише з DB claims, нова ідентичність не створює learner. Test scoped endpoint приховує чужий ресурс як 404; resource endpoints потребують власних тестів у наступних задачах. Захоплені логи/structured values/scopes не містять initData, Authorization, bot token чи Telegram id.
+
+- [T05](T05-migrate-learning.md): переглянуто Learning-модель, сім міжмодульних FK у Platform, чотири міграції й тести. 8 SQL-блоків відповідають staged; snapshot +398 без зміни попередніх моделей; Check порожня. PostgreSQL перевіряє up/down/повторний up, 48 колонок, 18 індексів, 13 constraints, JSONB, дати, унікальність, cascade/SET NULL та xmin. 36/36 цільових і незалежні 351/351 спільних Release-тестів без пропусків; build/format/diff check успішні з початковими NU1903.

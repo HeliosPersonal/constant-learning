@@ -546,6 +546,326 @@ namespace ConstantLearning.Migrations
                     b.ToTable("reminder_schedules", (string)null);
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.AnswerEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answered_at");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<LocalDate?>("DueOn")
+                        .HasColumnType("date")
+                        .HasColumnName("due_on");
+
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_id");
+
+                    b.Property<string>("ExerciseKind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("exercise_kind");
+
+                    b.Property<int?>("IntervalBefore")
+                        .HasColumnType("integer")
+                        .HasColumnName("interval_before");
+
+                    b.Property<LocalDate>("LearnerDay")
+                        .HasColumnType("date")
+                        .HasColumnName("learner_day");
+
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learner_id");
+
+                    b.Property<string>("NormalizedAnswer")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("normalized_answer");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("outcome");
+
+                    b.Property<string>("RawAnswer")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("raw_answer");
+
+                    b.Property<string>("SchedulerVersion")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("scheduler_version");
+
+                    b.Property<Guid?>("SessionItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("session_item_id");
+
+                    b.Property<string>("StateBefore")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("state_before");
+
+                    b.Property<string>("TimeZone")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("time_zone");
+
+                    b.Property<Guid>("VersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version_id");
+
+                    b.HasKey("Id")
+                        .HasName("answer_events_pkey");
+
+                    b.HasIndex("EntryId")
+                        .HasDatabaseName("ix_answer_events_entry_id");
+
+                    b.HasIndex("SessionItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_answer_events_session_item");
+
+                    b.HasIndex("VersionId")
+                        .HasDatabaseName("ix_answer_events_version_id");
+
+                    b.HasIndex("LearnerId", "EntryId", "AnsweredAt")
+                        .HasDatabaseName("ix_answer_events_learner_entry");
+
+                    b.HasIndex("LearnerId", "LearnerDay", "Outcome")
+                        .HasDatabaseName("ix_answer_events_learner_day_outcome");
+
+                    b.ToTable("answer_events", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.LearnerWord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<short>("ConsecutiveScheduledCorrect")
+                        .HasColumnType("smallint")
+                        .HasColumnName("consecutive_scheduled_correct");
+
+                    b.Property<bool>("ControlPending")
+                        .HasColumnType("boolean")
+                        .HasColumnName("control_pending");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<LocalDate?>("DueOn")
+                        .HasColumnType("date")
+                        .HasColumnName("due_on");
+
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_id");
+
+                    b.Property<LocalDate?>("FirstShownDay")
+                        .HasColumnType("date")
+                        .HasColumnName("first_shown_day");
+
+                    b.Property<int?>("IntervalDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("interval_days");
+
+                    b.Property<int>("Lapses")
+                        .HasColumnType("integer")
+                        .HasColumnName("lapses");
+
+                    b.Property<LocalDate?>("LastReviewDay")
+                        .HasColumnType("date")
+                        .HasColumnName("last_review_day");
+
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learner_id");
+
+                    b.Property<string>("ModelState")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("model_state");
+
+                    b.Property<string>("SchedulerVersion")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("scheduler_version");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("learner_words_pkey");
+
+                    b.HasIndex("EntryId")
+                        .HasDatabaseName("ix_learner_words_entry_id");
+
+                    b.HasIndex("LearnerId", "DueOn")
+                        .HasDatabaseName("ix_learner_words_learner_due");
+
+                    b.HasIndex("LearnerId", "EntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_learner_words_learner_entry");
+
+                    b.HasIndex("LearnerId", "Status")
+                        .HasDatabaseName("ix_learner_words_learner_status");
+
+                    b.ToTable("learner_words", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.LearningSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Instant>("EndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ends_at");
+
+                    b.Property<Instant?>("LastActivityAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_activity_at");
+
+                    b.Property<LocalDate>("LearnerDay")
+                        .HasColumnType("date")
+                        .HasColumnName("learner_day");
+
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learner_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("learning_sessions_pkey");
+
+                    b.HasIndex("LearnerId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_learning_sessions_one_active")
+                        .HasFilter("status = 'active'");
+
+                    b.HasIndex("LearnerId", "CompletedAt")
+                        .HasDatabaseName("ix_learning_sessions_learner_completed");
+
+                    b.HasIndex("LearnerId", "LearnerDay")
+                        .HasDatabaseName("ix_learning_sessions_learner_day");
+
+                    b.ToTable("learning_sessions", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.SessionItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AnswerPayloadHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("answer_payload_hash");
+
+                    b.Property<Instant?>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answered_at");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("kind");
+
+                    b.Property<short>("Position")
+                        .HasColumnType("smallint")
+                        .HasColumnName("position");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("session_id");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("state");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("session_items_pkey");
+
+                    b.HasIndex("EntryId")
+                        .HasDatabaseName("ix_session_items_entry_id");
+
+                    b.HasIndex("SessionId", "Position")
+                        .IsUnique()
+                        .HasDatabaseName("ux_session_items_session_position");
+
+                    b.ToTable("session_items", (string)null);
+                });
+
             modelBuilder.Entity("ConstantLearning.Data.Entities.LearnedWord", b =>
                 {
                     b.HasOne("ConstantLearning.Data.Entities.Word", "Word")
@@ -623,6 +943,84 @@ namespace ConstantLearning.Migrations
                         .HasConstraintName("reminder_schedules_learner_id_fkey");
 
                     b.Navigation("Learner");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.AnswerEvent", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("answer_events_entry_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Identity.Data.Learner", null)
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("answer_events_learner_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Learning.Data.SessionItem", "SessionItem")
+                        .WithOne()
+                        .HasForeignKey("ConstantLearning.Features.Learning.Data.AnswerEvent", "SessionItemId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("answer_events_session_item_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("answer_events_version_id_fkey");
+
+                    b.Navigation("SessionItem");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.LearnerWord", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("learner_words_entry_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Identity.Data.Learner", null)
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("learner_words_learner_id_fkey");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.LearningSession", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Identity.Data.Learner", null)
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("learning_sessions_learner_id_fkey");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.SessionItem", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("session_items_entry_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Learning.Data.LearningSession", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("session_items_session_id_fkey");
+
+                    b.Navigation("Session");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.Learner", b =>
