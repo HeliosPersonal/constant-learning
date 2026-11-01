@@ -16,7 +16,7 @@
 | [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | todo |
 | [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | todo |
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | todo |
-| [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | in_progress |
+| [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | in_progress |
 | [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
@@ -68,3 +68,5 @@
 - [T09](T09-answer-evaluation.md): незалежно перевірено 105/105 тестів оцінювання, нормалізації й diff; переглянуто всі доменні файли. Build успішний із початковими NU1903; scoped format і diff check без помилок. Усі результати AC-12–AC-16, AC-56, AC-57 покриті.
 
 - [T02](T02-test-harness.md): harness на PostgreSQL 16 застосовує міграції й очищує стан; контрактні перевірки виявляють невалідні HTTP-відповіді й рядки черг. 14/14 цільових і 180/180 спільних Release-тестів без пропусків; build та scoped format успішні. Відсутній Docker локально дає пояснений skip, у CI — помилку; додано backend PR workflow. Виправлено лише лапки в YAML description, що блокувало парсер. Початкові NU1903 зберігаються.
+
+- [T08](T08-learner-day.md): незалежно перевірено 22/22 часові тести й переглянуто реалізацію. Варшава → Токіо/Нью-Йорк, DST, fallback, точні межі та повторні зміни поясу покриті; сервіс використовує IClock без БД. Спільні Release build і 180/180 тестів зелені. Для інтеграції потрібно передавати попередній знімок доби; межа вже створеної session незмінна.
