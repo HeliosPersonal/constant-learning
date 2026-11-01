@@ -1,5 +1,7 @@
 # Tracker — personal-trainer-mvp
 
+Контент підготовлено: [2 000 схвалених лем](../../../dictionary/README.md), стан — [readiness.json](../../../dictionary/readiness.json). Реалізація імпортера T20 ще `todo`; підготовка CSV не завершує цю задачу.
+
 Рекомендовані Agency-агенти й моделі: [agent-routing.md](../agent-routing.md). Машинні призначення — `execution` у [tasks.json](./tasks.json).
 
 > Статус кожної задачі епіку. `implement-tasks` оновлює `done`, коли комітить задачу.

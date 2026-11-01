@@ -9,3 +9,7 @@ riderModule.iml
 # Локальні налаштування Claude Code та SDLC
 .claude/*.local.md
 .worktrees/
+
+# Локальні словникові знімки й кеш Python-інструментів.
+.dictionary-cache/
+__pycache__/

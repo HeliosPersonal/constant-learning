@@ -1,0 +1,41 @@
+{
+  "retrieved_on": "2026-11-01",
+  "approval_method": "Джерельна звірка Wikisłownik + LLM-редактура; окремо погоджено користувачем",
+  "editorial_model": "gpt-6.1-sol",
+  "sources": [
+    {
+      "name": "plwiktionary.jsonl.gz",
+      "url": "https://kaikki.org/plwiktionary/raw-wiktextract-data.jsonl.gz",
+      "sha256": "478d3cbff2a3cd7f427ccb172d5c5bac11fc1003a42636024a5e98533f55b21e",
+      "size_bytes": 137850838,
+      "license": "CC-BY-SA-4.0"
+    },
+    {
+      "name": "kwjp-lemmas.csv.gz",
+      "url": "https://raw.githubusercontent.com/ipipan/kwjp100-varia/main/freqlists/kwjp100-slowa-lemma-all.csv.gz",
+      "sha256": "5206e80669a054ad4d3c9d39b7643d13e75435afa3612a15d2847f39f42bb5fc",
+      "size_bytes": 3133438,
+      "license": "CC-BY-4.0"
+    }
+  ],
+  "extraction_metadata": "This dictionary is based on structured data extracted on 2026-10-30 from the plwiktionary dump dated 2026-10-01 using  wiktextract  ( 19f9a30  and  6f96ddf ).",
+  "candidate_limit": 8000,
+  "selection_method": "За спаданням максимального ARF KWJP; однословна лема, пов’язаний український переклад, IPA й приклад ужитку; потім семантичний відбір редактором",
+  "release": {
+    "approved_unique_lemmas": 2000,
+    "editorial_decisions": 2123,
+    "cross_review_findings": 116,
+    "final_adjustments": 2,
+    "blocked": 108,
+    "spares": 15,
+    "frequency_rank_min": 2,
+    "frequency_rank_max": 7057,
+    "independent_human_review": false,
+    "wsjp_full_review": false,
+    "independent_corpus_review": false,
+    "course_csv_sha256": "0b1151e178cfd951a7fa86de28c752fda5210eb1a718fb95c16804fc890bcc53",
+    "evidence_jsonl_sha256": "95832be16252da6e615000b7509a4a9e4363b7a4f7814680bc4f0850573bbe74",
+    "editorial-decisions_jsonl_sha256": "3e732b7311daa476ebebaf44bb161acd4de4d1cead96811083ca78c759afa0c4",
+    "review-changes_jsonl_sha256": "f7bf3cfdbd63a8dcbca434f90ef2d323e250a04791be585514d58626456bd63d"
+  }
+}

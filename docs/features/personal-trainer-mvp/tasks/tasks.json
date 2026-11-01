@@ -613,7 +613,7 @@
         "AC-32",
         "AC-33"
       ],
-      "dod": "інтеграційний тест: повторний імпорт без змін не створює версій; AC-32, AC-33: запис без `approved` не має `published_version_id`, а в `publication_log` є рядок `unpublish`; версії й історія learner лишаються; старий `WordImportService` не викликається для нової моделі",
+      "dod": "інтеграційний тест: повторний імпорт без змін не створює версій; AC-32, AC-33: запис без `approved` не має `published_version_id`, а в `publication_log` є рядок `unpublish`; версії й історія learner лишаються; старий `WordImportService` не викликається для нової моделі; імпортер читає підготовлений docs/dictionary/course.csv з accepted_answers_pl і множинною позначкою gender=pl, редакторські ID не підставляються як UUID БД",
       "files_hint": [
         "ConstantLearning/Features/Content/Import/",
         "ConstantLearning/Features/Content/Publishing/",

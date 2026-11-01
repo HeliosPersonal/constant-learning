@@ -22,7 +22,7 @@ AC-35 автоматично застосовує зміну перекладу 
 
 - AC-35, AC-36: автоматична звірка лише для перекладу й транскрипції
 - Non-goal: без мовних моделей (PRD §3)
-- Rate limit Wikisłownik (`docs/dictionary/wiktionary-validation-pilot.csv`)
+- Обмеження live-запитів Wikisłownik; джерельні знімки й атрибуція — `docs/dictionary/NOTICE.md`
 - Ліцензії: Wikisłownik CC BY-SA 4.0, умови WSJP PAN невідомі
 
 ## Considered options

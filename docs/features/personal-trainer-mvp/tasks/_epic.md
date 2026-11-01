@@ -8,6 +8,8 @@
 
 Дизайн Mini App: [Everforest, світла й темна теми](../design-system.md), AC-58. Токени й провайдер реалізує T34, ручний вибір — T41; решта UI-задач використовує спільні компоненти.
 
+Контентний поріг досягнуто: [2 000 схвалених лем](../../../dictionary/README.md), [звіт готовності](../../../dictionary/readiness.json). Це підготовка даних; T20 імпорту, решта реалізації та їхні DoD залишаються задачами трекера.
+
 ## Scope
 
 - **In:** модулі `Identity`, `Learning`, `Content`, `Notifications`, `Bot`, `Platform` у `ConstantLearning/`, Mini App `ConstantLearning.MiniApp/`, 23 staged-міграції, виведення групової моделі, збірка й маніфести.

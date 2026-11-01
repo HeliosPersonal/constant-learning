@@ -20,7 +20,7 @@ status: "todo"
 
 ## What
 
-Розбір CSV з лапками, нова версія лише за зміни `content_hash`, публікація лише `approved`, зняття публікації при втраті `approved`, запис у `publication_log`; спільний сервіс публікації версії для імпорту, звірки, редактора й відкату. Перемкнути `DatabaseInitializationService` з `WordImportService` на новий імпорт. Додати поле прийнятих польських варіантів у `content-schema.md` і шаблон CSV.
+Розбір CSV з лапками, нова версія лише за зміни `content_hash`, публікація лише `approved`, зняття публікації при втраті `approved`, запис у `publication_log`; спільний сервіс публікації версії для імпорту, звірки, редактора й відкату. Перемкнути `DatabaseInitializationService` з `WordImportService` на новий імпорт. Використати вже підготовлені `docs/dictionary/course.csv`, `evidence.jsonl` і `readiness.json`; поле `accepted_answers_pl` уже визначене в схемі та шаблоні. Редакторські ID не підставляти як UUID первинних ключів БД; імпортер має зберігати ідентичність запису при повторному імпорті. `gender=pl` відображає множинну словникову форму, у клієнті — «мн.».
 
 Файли: `ConstantLearning/Features/Content/Import/`, `ConstantLearning/Features/Content/Publishing/`, `ConstantLearning/HostedServices/DatabaseInitializationService.cs`, `docs/dictionary/content-schema.md`, `ConstantLearning.Tests/Content/Import/`
 

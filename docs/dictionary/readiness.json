@@ -1,0 +1,21 @@
+{
+  "target": 2000,
+  "editorial_decisions": 2123,
+  "approved_candidates": 2015,
+  "blocked": 108,
+  "ready": true,
+  "approval_policy_confirmed": true,
+  "reasons": {
+    "editorial_rejected": 108,
+    "missing_translation_uk": 103,
+    "missing_pronunciation_uk": 103,
+    "missing_example_pl": 103,
+    "missing_example_uk": 103,
+    "unknown_part_of_speech": 1
+  },
+  "scope": "Польсько-український словник; джерельна звірка й LLM-редактура, не незалежна перевірка людиною.",
+  "released": 2000,
+  "spares": 15,
+  "course_sha256": "0b1151e178cfd951a7fa86de28c752fda5210eb1a718fb95c16804fc890bcc53",
+  "evidence_sha256": "95832be16252da6e615000b7509a4a9e4363b7a4f7814680bc4f0850573bbe74"
+}

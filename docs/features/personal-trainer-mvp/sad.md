@@ -45,7 +45,7 @@ target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by a
 
 **Organisational.**
 - Один розробник, переважно бекенд .NET.
-- Пілот на ~50 learner стартує лише після схвалення 2 000 лем (PRD §1, OQ-2).
+- Пілот на ~50 learner стартує лише після схвалення 2 000 лем (PRD §1, OQ-2). Контентний поріг підтверджено випуском від 2026-11-01 за ADR-0014; імпорт T20 і реалізація застосунку ще потрібні.
 - Роль content editor — власник проєкту, призначений вручну (PRD OQ-3).
 
 **Conventions.**
@@ -57,7 +57,7 @@ target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by a
 **Regulatory / external.**
 - Персональні дані learner класифіковано як confidential (PRD §6.1). Окремий security review до пілоту свідомо скасовано рішенням від 2026-11-01; перевірки спираються на автоматизовані тести, залишковий ризик зафіксовано в PRD §6.1.
 - Ліцензії зовнішніх даних: Wikisłownik — CC BY-SA 4.0 (атрибуція), PoliMorf і Morfeusz 2 — 2-clause BSD, VESUM — CC BY-NC-SA 4.0 (див. §11).
-- Обмеження частоти запитів до Wikisłownik підтверджено пілотом (`docs/dictionary/wiktionary-validation-pilot.csv`).
+- Для пакетної словникової звірки використовується локальний знімок Wikisłownik через Kaikki; джерела й атрибуція — `docs/dictionary/NOTICE.md`.
 
 ## 3. Context and scope
 
@@ -846,6 +846,7 @@ flowchart LR
 | 0011 | Verify content reports asynchronously against reference snapshots | Accepted | §4 |
 | 0012 | Search via a precomputed table of folded word forms | Accepted | §8 |
 | 0013 | Використовувати Everforest із ручним вибором світлої та темної теми | Accepted | §4, §6, §8 |
+| 0014 | Підготувати початковий словник за методом Wikisłownik + LLM-редактура | Accepted | §2 |
 
 ADR files live under `docs/features/personal-trainer-mvp/adr/NNNN-<title>.md`.
 
