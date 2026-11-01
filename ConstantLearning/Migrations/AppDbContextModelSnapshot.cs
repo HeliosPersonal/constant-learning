@@ -165,6 +165,117 @@ namespace ConstantLearning.Migrations
                     b.ToTable("Words", (string)null);
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.ContentReport", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AnswerEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("answer_event_id");
+
+                    b.Property<Instant?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("EntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_id");
+
+                    b.Property<string>("Field")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("field");
+
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learner_id");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("origin");
+
+                    b.Property<string>("Outcome")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("outcome");
+
+                    b.Property<string>("ProposedValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("proposed_value");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("rejection_reason");
+
+                    b.Property<Guid?>("ResultingVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("resulting_version_id");
+
+                    b.Property<string>("SearchQuery")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("search_query");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("status");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.Property<Guid?>("VersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version_id");
+
+                    b.HasKey("Id")
+                        .HasName("content_reports_pkey");
+
+                    b.HasIndex("AnswerEventId")
+                        .HasDatabaseName("ix_content_reports_answer_event_id");
+
+                    b.HasIndex("EntryId")
+                        .HasDatabaseName("ix_content_reports_entry_id");
+
+                    b.HasIndex("ResultingVersionId")
+                        .HasDatabaseName("ix_content_reports_resulting_version_id");
+
+                    b.HasIndex("VersionId")
+                        .HasDatabaseName("ix_content_reports_version_id");
+
+                    b.HasIndex("LearnerId", "ClosedAt")
+                        .HasDatabaseName("ix_content_reports_learner_closed");
+
+                    b.HasIndex("LearnerId", "CreatedAt")
+                        .HasDatabaseName("ix_content_reports_learner_created");
+
+                    b.HasIndex("Status", "CreatedAt")
+                        .HasDatabaseName("ix_content_reports_status_created");
+
+                    b.ToTable("content_reports", (string)null);
+                });
+
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.DictionaryEntry", b =>
                 {
                     b.Property<Guid>("Id")
@@ -354,6 +465,126 @@ namespace ConstantLearning.Migrations
                         .HasDatabaseName("ix_entry_versions_entry_id");
 
                     b.ToTable("entry_versions", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.PublicationLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("action");
+
+                    b.Property<string>("ActorKind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("actor_kind");
+
+                    b.Property<Guid?>("ActorLearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("actor_learner_id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_id");
+
+                    b.Property<Guid?>("FromVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("from_version_id");
+
+                    b.Property<Guid?>("ToVersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("to_version_id");
+
+                    b.HasKey("Id")
+                        .HasName("publication_log_pkey");
+
+                    b.HasIndex("ActorLearnerId")
+                        .HasDatabaseName("ix_publication_log_actor_learner_id");
+
+                    b.HasIndex("FromVersionId")
+                        .HasDatabaseName("ix_publication_log_from_version_id");
+
+                    b.HasIndex("ToVersionId")
+                        .HasDatabaseName("ix_publication_log_to_version_id");
+
+                    b.HasIndex("EntryId", "CreatedAt")
+                        .HasDatabaseName("ix_publication_log_entry_created");
+
+                    b.ToTable("publication_log", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.ValidationEvidence", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Attribution")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("attribution");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Field")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("field");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("outcome");
+
+                    b.Property<Instant>("RetrievedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retrieved_at");
+
+                    b.Property<string>("RevisionId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("revision_id");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("url");
+
+                    b.Property<Guid>("VersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version_id");
+
+                    b.HasKey("Id")
+                        .HasName("validation_evidence_pkey");
+
+                    b.HasIndex("VersionId")
+                        .HasDatabaseName("ix_validation_evidence_version_id");
+
+                    b.ToTable("validation_evidence", (string)null);
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionAcceptedAnswer", b =>
@@ -651,6 +882,39 @@ namespace ConstantLearning.Migrations
                     b.ToTable("answer_events", (string)null);
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.AnswerNeutralization", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AnswerEventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("answer_event_id");
+
+                    b.Property<Guid>("ContentReportId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_report_id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("answer_neutralizations_pkey");
+
+                    b.HasIndex("AnswerEventId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_answer_neutralizations_answer_event");
+
+                    b.HasIndex("ContentReportId")
+                        .HasDatabaseName("ix_answer_neutralizations_content_report_id");
+
+                    b.ToTable("answer_neutralizations", (string)null);
+                });
+
             modelBuilder.Entity("ConstantLearning.Features.Learning.Data.LearnerWord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -878,6 +1142,40 @@ namespace ConstantLearning.Migrations
                     b.Navigation("Word");
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.ContentReport", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Learning.Data.AnswerEvent", null)
+                        .WithMany()
+                        .HasForeignKey("AnswerEventId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("content_reports_answer_event_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("content_reports_entry_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Identity.Data.Learner", null)
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("content_reports_learner_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
+                        .WithMany()
+                        .HasForeignKey("ResultingVersionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("content_reports_resulting_version_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("content_reports_version_id_fkey");
+                });
+
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.DictionaryEntry", b =>
                 {
                     b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", "PublishedVersion")
@@ -897,6 +1195,12 @@ namespace ConstantLearning.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("entry_versions_based_on_version_id_fkey");
 
+                    b.HasOne("ConstantLearning.Features.Content.Data.ContentReport", null)
+                        .WithMany()
+                        .HasForeignKey("ContentReportId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("fk_entry_versions_content_report");
+
                     b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", "Entry")
                         .WithMany()
                         .HasForeignKey("EntryId")
@@ -907,6 +1211,44 @@ namespace ConstantLearning.Migrations
                     b.Navigation("BasedOnVersion");
 
                     b.Navigation("Entry");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.PublicationLog", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Identity.Data.Learner", null)
+                        .WithMany()
+                        .HasForeignKey("ActorLearnerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("publication_log_actor_learner_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("publication_log_entry_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
+                        .WithMany()
+                        .HasForeignKey("FromVersionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("publication_log_from_version_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
+                        .WithMany()
+                        .HasForeignKey("ToVersionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("publication_log_to_version_id_fkey");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.ValidationEvidence", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("validation_evidence_version_id_fkey");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionAcceptedAnswer", b =>
@@ -975,6 +1317,23 @@ namespace ConstantLearning.Migrations
                         .HasConstraintName("answer_events_version_id_fkey");
 
                     b.Navigation("SessionItem");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Learning.Data.AnswerNeutralization", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Learning.Data.AnswerEvent", null)
+                        .WithOne()
+                        .HasForeignKey("ConstantLearning.Features.Learning.Data.AnswerNeutralization", "AnswerEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("answer_neutralizations_answer_event_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.ContentReport", null)
+                        .WithMany()
+                        .HasForeignKey("ContentReportId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("answer_neutralizations_content_report_id_fkey");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Learning.Data.LearnerWord", b =>

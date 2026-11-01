@@ -40,5 +40,9 @@ internal sealed class EntryVersionConfiguration : IEntityTypeConfiguration<Entry
             .HasForeignKey(version => version.BasedOnVersionId)
             .HasConstraintName("entry_versions_based_on_version_id_fkey")
             .OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne<ContentReport>().WithMany()
+            .HasForeignKey(version => version.ContentReportId)
+            .HasConstraintName("fk_entry_versions_content_report")
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

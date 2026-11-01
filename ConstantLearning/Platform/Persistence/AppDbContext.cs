@@ -21,6 +21,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<LearningSession> LearningSessions => Set<LearningSession>();
     public DbSet<SessionItem> SessionItems => Set<SessionItem>();
     public DbSet<AnswerEvent> AnswerEvents => Set<AnswerEvent>();
+    public DbSet<ContentReport> ContentReports => Set<ContentReport>();
+    public DbSet<AnswerNeutralization> AnswerNeutralizations => Set<AnswerNeutralization>();
+    public DbSet<ValidationEvidence> ValidationEvidence => Set<ValidationEvidence>();
+    public DbSet<PublicationLog> PublicationLog => Set<PublicationLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,6 +66,26 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<AnswerEvent>().HasOne<EntryVersion>().WithMany()
             .HasForeignKey(answer => answer.VersionId)
             .HasConstraintName("answer_events_version_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.ApplyConfiguration(new ContentReportConfiguration());
+        modelBuilder.Entity<ContentReport>().HasOne<Learner>().WithMany()
+            .HasForeignKey(report => report.LearnerId)
+            .HasConstraintName("content_reports_learner_id_fkey")
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<ContentReport>().HasOne<AnswerEvent>().WithMany()
+            .HasForeignKey(report => report.AnswerEventId)
+            .HasConstraintName("content_reports_answer_event_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.ApplyConfiguration(new AnswerNeutralizationConfiguration());
+        modelBuilder.Entity<AnswerNeutralization>().HasOne<ContentReport>().WithMany()
+            .HasForeignKey(neutralization => neutralization.ContentReportId)
+            .HasConstraintName("answer_neutralizations_content_report_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.ApplyConfiguration(new ValidationEvidenceConfiguration());
+        modelBuilder.ApplyConfiguration(new PublicationLogConfiguration());
+        modelBuilder.Entity<PublicationLog>().HasOne<Learner>().WithMany()
+            .HasForeignKey(log => log.ActorLearnerId)
+            .HasConstraintName("publication_log_actor_learner_id_fkey")
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Word>(entity =>
