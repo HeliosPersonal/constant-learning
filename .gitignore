@@ -21,3 +21,5 @@ ConstantLearning.MiniApp/playwright-report/
 ConstantLearning.MiniApp/artifacts/
 ConstantLearning/wwwroot/*
 !ConstantLearning/wwwroot/.gitkeep
+ConstantLearning.MiniApp/.env.local
+ConstantLearning.MiniApp/.env.*.local
