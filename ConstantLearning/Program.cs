@@ -88,12 +88,19 @@ public static class Program
             app.MapOpenApi();
         }
 
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
         app.UseRouting();
         app.UseMiddleware<ServerTimingMiddleware>();
         app.UseAuthorization();
 
         app.MapControllers();
         app.MapLocalMetrics();
+
+        // Невідомі API-маршрути не повинні повертати HTML оболонки.
+        app.MapFallback("/api/{**path}", () => Results.NotFound());
+        app.MapFallbackToFile("index.html");
 
         app.Run();
     }

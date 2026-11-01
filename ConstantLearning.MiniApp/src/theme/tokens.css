@@ -1,0 +1,30 @@
+/* auto-generated: npm run generate:tokens */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --cl-background: #fdf6e3;
+  --cl-surface: #fffbef;
+  --cl-text: #5c6a72;
+  --cl-muted: #657166;
+  --cl-accent: #52652f;
+  --cl-onAccent: #fffbef;
+  --cl-border: #bdc3af;
+  --cl-danger: #ad4250;
+  --cl-controlBorder: #657166;
+  --cl-focusRing: #52652f;
+  --cl-success: #52652f;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --cl-background: #2d353b;
+  --cl-surface: #343f44;
+  --cl-text: #d3c6aa;
+  --cl-muted: #a7b2a8;
+  --cl-accent: #a7c080;
+  --cl-onAccent: #2d353b;
+  --cl-border: #56635f;
+  --cl-danger: #f29c9d;
+  --cl-controlBorder: #a7b2a8;
+  --cl-focusRing: #a7c080;
+  --cl-success: #a7c080;
+}

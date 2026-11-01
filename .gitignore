@@ -13,3 +13,11 @@ riderModule.iml
 # Локальні словникові знімки й кеш Python-інструментів.
 .dictionary-cache/
 __pycache__/
+
+# Згенеровані файли та локальні результати перевірок Mini App.
+ConstantLearning.MiniApp/node_modules/
+ConstantLearning.MiniApp/test-results/
+ConstantLearning.MiniApp/playwright-report/
+ConstantLearning.MiniApp/artifacts/
+ConstantLearning/wwwroot/*
+!ConstantLearning/wwwroot/.gitkeep

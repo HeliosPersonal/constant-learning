@@ -20,7 +20,7 @@
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | blocked |
 | [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
-| [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | todo |
+| [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | in_progress |
 | [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | todo |
 | [T14](./T14-settings-api.md) | Реалізувати зміну ліміту, поясу й нагадувань | app | Viacheslav Melnichenko | M | [T13](T13-onboarding-api.md), [T08](T08-learner-day.md) | todo |
 | [T15](./T15-start-session.md) | Реалізувати старт session з персистенцією карток | app | Viacheslav Melnichenko | M | [T11](T11-session-composition.md), [T05](T05-migrate-learning.md), [T04](T04-migrate-content-core.md), [T12](T12-initdata-auth.md) | todo |
@@ -44,7 +44,7 @@
 | [T31](./T31-summaries-digest.md) | Реалізувати щоденний підсумок learner і дайджест редактора | app | Viacheslav Melnichenko | M | [T29](T29-notification-dispatcher.md), [T23](T23-content-report-api.md) | todo |
 | [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | todo |
 | [T33](./T33-client-telemetry.md) | Приймати клієнтську телеметрію й публікувати серверні метрики | ports | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
-| [T34](./T34-miniapp-skeleton.md) | Створити каркас Mini App, що його роздає бекенд | ui | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | in_progress |
+| [T34](./T34-miniapp-skeleton.md) | Створити каркас Mini App, що його роздає бекенд | ui | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | todo |
 | [T36](./T36-ui-today.md) | Зробити екран «Сьогодні» | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T19](T19-today-api.md), [T33](T33-client-telemetry.md) | todo |
 | [T37](./T37-ui-session-shell.md) | Зробити каркас заняття, картку нового слова й підсумок | ui | Viacheslav Melnichenko | L | [T36](T36-ui-today.md), [T18](T18-new-word-card.md) | todo |
@@ -78,3 +78,5 @@
 - [T03](T03-migrate-identity.md): переглянуто сутності, конфігурації, обидві SQL-міграції та generated snapshot; SQL відповідає staged-парам. Незалежно Release build успішний, 10/10 цільових тестів на PostgreSQL 16 без пропусків: чиста БД → up → down0 без залишків → up, схема, NodaTime, унікальність, cascade і xmin. Check-міграція порожня; scoped format та diff check успішні, початкові NU1903 зберігаються.
 
 - [T33](T33-client-telemetry.md): переглянуто controller, валідацію, гістограми й middleware; незалежно 43/43 HTTP/metrics/architecture тестів. Невідомі метрики й невалідний payload дають telemetry.invalid_metric, endpoint потребує автентифікації за контрактом. Development loopback /metrics показує гістограми today/answer/search без персональних даних; Program wiring підключено. Release build і scoped format проходять, залишилися початкові NU1903.
+
+- [T34](T34-miniapp-skeleton.md): переглянуто тему, адаптер Telegram/UI kit, типізований API-клієнт, bootstrap і smoke host та знімки обох тем. Незалежно build/lint/typecheck, 24/24 Vitest і 4/4 Playwright зелені. Справжній Kestrel + PostgreSQL 16 віддав SPA/root/deepLink/JS та API404; візуальні еталони перевірено, навмисна зміна CSS дала red, відновлення green. Ранню тему, затриманий Telegram, portal, manual precedence, localStorage fallback і контраст покрито локально; frontend CI не додано.
