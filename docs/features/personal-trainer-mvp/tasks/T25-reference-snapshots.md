@@ -2,7 +2,7 @@
 id: T25
 title: "Завантажити довідкові знімки для звірки"
 layer: "infra"
-deps: ["T07"]
+deps: ["[T07](T07-migrate-search-jobs-dispatches.md)"]
 acs: ["AC-35"]
 files_hint: ["ConstantLearning/Features/Content/References/", "ConstantLearning.Tests/Content/References/"]
 owner: "Viacheslav Melnichenko"

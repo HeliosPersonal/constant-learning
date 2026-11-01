@@ -2,7 +2,7 @@
 id: T36
 title: "Зробити екран «Сьогодні»"
 layer: "ui"
-deps: ["T34", "T19", "T33"]
+deps: ["[T34](T34-miniapp-skeleton.md)", "[T19](T19-today-api.md)", "[T33](T33-client-telemetry.md)"]
 acs: ["AC-06", "AC-10", "AC-28"]
 files_hint: ["ConstantLearning.MiniApp/src/features/today/"]
 owner: "Viacheslav Melnichenko"

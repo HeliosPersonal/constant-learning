@@ -2,7 +2,7 @@
 id: T05
 title: "Перенести міграції слів learner, session, карток і журналу відповідей"
 layer: "migration"
-deps: ["T04"]
+deps: ["[T04](T04-migrate-content-core.md)"]
 acs: []
 files_hint: ["docs/features/personal-trainer-mvp/migrations/20261031120007_create_learner_words_*", "docs/features/personal-trainer-mvp/migrations/20261031120008_create_learning_sessions_*", "docs/features/personal-trainer-mvp/migrations/20261031120009_create_session_items_*", "docs/features/personal-trainer-mvp/migrations/20261031120010_create_answer_events_*", "ConstantLearning/Migrations/", "ConstantLearning/Features/Learning/Data/"]
 owner: "Viacheslav Melnichenko"

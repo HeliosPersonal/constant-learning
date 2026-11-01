@@ -2,7 +2,7 @@
 id: T19
 title: "Реалізувати екран «Сьогодні» на сервері"
 layer: "app"
-deps: ["T16"]
+deps: ["[T16](T16-session-continuation.md)"]
 acs: ["AC-10", "AC-28", "AC-29", "AC-33"]
 files_hint: ["ConstantLearning/Features/Learning/Today/", "ConstantLearning.Tests/Learning/Today/"]
 owner: "Viacheslav Melnichenko"

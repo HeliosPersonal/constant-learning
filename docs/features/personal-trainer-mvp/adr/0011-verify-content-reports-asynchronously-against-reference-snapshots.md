@@ -16,12 +16,12 @@ ticket: "TBD"
 
 ## Context
 
-AC-35 автоматично застосовує зміну перекладу чи транскрипції, якщо довідкове джерело її підтверджує, без мовних моделей (PRD §3). Пілотна перевірка показала обмеження частоти запитів до Wikisłownik, а результат learner отримує лише наступного дня (AC-37).
+AC-35 автоматично застосовує зміну перекладу чи транскрипції, якщо довідкове джерело її підтверджує, без мовних моделей ([PRD §3](../PRD.md#3-non-goals)). Пілотна перевірка показала обмеження частоти запитів до Wikisłownik, а результат learner отримує лише наступного дня (AC-37).
 
 ## Decision drivers
 
 - AC-35, AC-36: автоматична звірка лише для перекладу й транскрипції
-- Non-goal: без мовних моделей (PRD §3)
+- Non-goal: без мовних моделей ([PRD §3](../PRD.md#3-non-goals))
 - Обмеження live-запитів Wikisłownik; джерельні знімки й атрибуція — `docs/dictionary/NOTICE.md`
 - Ліцензії: Wikisłownik CC BY-SA 4.0, умови WSJP PAN невідомі
 
@@ -51,6 +51,6 @@ AC-35 автоматично застосовує зміну перекладу 
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §4
-- Related ADR: [[0010-version-dictionary-entries-in-postgres-with-a-published-pointer]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §4
+- Related ADR: [ADR-0010](0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md)

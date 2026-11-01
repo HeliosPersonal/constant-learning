@@ -2,7 +2,7 @@
 id: T47
 title: "Застосувати денний ліміт, зміну поясу й квоти під час старту session"
 layer: "app"
-deps: ["T15", "T08"]
+deps: ["[T15](T15-start-session.md)", "[T08](T08-learner-day.md)"]
 acs: ["AC-06", "AC-07", "AC-09", "AC-10", "AC-33", "AC-54"]
 files_hint: ["ConstantLearning/Features/Learning/Sessions/Start/Limits/", "ConstantLearning.Tests/Learning/Sessions/Limits/"]
 owner: "Viacheslav Melnichenko"
@@ -20,7 +20,7 @@ status: "todo"
 
 ## What
 
-Залишок денного ліміту за добою learner (T08) з урахуванням виданих і «Вже знаю» понад 10, частки квот з БД, стан «курс завершено» і повідомлення session.
+Залишок денного ліміту за добою learner ([T08](T08-learner-day.md)) з урахуванням виданих і «Вже знаю» понад 10, частки квот з БД, стан «курс завершено» і повідомлення session.
 
 Файли: `ConstantLearning/Features/Learning/Sessions/Start/Limits/`, `ConstantLearning.Tests/Learning/Sessions/Limits/`
 

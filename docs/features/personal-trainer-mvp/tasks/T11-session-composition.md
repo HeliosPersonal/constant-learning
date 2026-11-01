@@ -2,7 +2,7 @@
 id: T11
 title: "Реалізувати складання session з лімітами й квотами"
 layer: "domain"
-deps: ["T08", "T10"]
+deps: ["[T08](T08-learner-day.md)", "[T10](T10-review-scheduler.md)"]
 acs: ["AC-03", "AC-04", "AC-05", "AC-06", "AC-09", "AC-10"]
 files_hint: ["ConstantLearning/Features/Learning/Domain/Composition/", "ConstantLearning.Tests/Learning/Domain/Composition/"]
 owner: "Viacheslav Melnichenko"

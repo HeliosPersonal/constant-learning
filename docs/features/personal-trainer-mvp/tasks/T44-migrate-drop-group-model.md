@@ -2,7 +2,7 @@
 id: T44
 title: "Перенести міграцію видалення таблиць групової моделі"
 layer: "migration"
-deps: ["T43", "T07"]
+deps: ["[T43](T43-retire-group-code.md)", "[T07](T07-migrate-search-jobs-dispatches.md)"]
 acs: []
 files_hint: ["docs/features/personal-trainer-mvp/migrations/20261031120021_drop_group_model_*", "ConstantLearning/Migrations/"]
 owner: "Viacheslav Melnichenko"
@@ -20,7 +20,7 @@ Contract-фаза [ADR-0004](../adr/0004-retire-the-group-model-without-data-mig
 
 ## What
 
-Перенести `20261031120021_drop_group_model` у живу EF-міграцію після T43; код і міграцію випустити разом після резервної копії та успішної проби її відновлення в окрему БД.
+Перенести `20261031120021_drop_group_model` у живу EF-міграцію після [T43](T43-retire-group-code.md); код і міграцію випустити разом після резервної копії та успішної проби її відновлення в окрему БД.
 
 Файли: `docs/features/personal-trainer-mvp/migrations/20261031120021_drop_group_model_*`, `ConstantLearning/Migrations/`
 

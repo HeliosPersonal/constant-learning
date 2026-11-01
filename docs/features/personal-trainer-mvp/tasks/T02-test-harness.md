@@ -2,7 +2,7 @@
 id: T02
 title: "Додати інтеграційні тести на PostgreSQL з FakeClock і фікстурами"
 layer: "tests"
-deps: ["T01"]
+deps: ["[T01](T01-module-skeleton.md)"]
 acs: []
 files_hint: ["ConstantLearning.Tests/Infrastructure/", "ConstantLearning.Tests/Fixtures/", "ConstantLearning.Tests/ConstantLearning.Tests.csproj"]
 owner: "Viacheslav Melnichenko"

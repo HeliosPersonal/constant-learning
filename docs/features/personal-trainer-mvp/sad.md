@@ -16,13 +16,13 @@ target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by a
 
 ## 1. Introduction and goals
 
-**Intent.** Перетворити груповий Telegram-бот на персональний trainer: кожен learner проходить коротке щоденне заняття з пригадуванням польських слів у застосунку всередині Telegram (Mini App), тренер оцінює відповіді на сервері й адаптує інтервали повторень, бот нагадує про заняття, а content editor підтримує якість спільного словника через content reports (PRD §1–§2).
+**Intent.** Перетворити груповий Telegram-бот на персональний trainer: кожен learner проходить коротке щоденне заняття з пригадуванням польських слів у застосунку всередині Telegram (Mini App), тренер оцінює відповіді на сервері й адаптує інтервали повторень, бот нагадує про заняття, а content editor підтримує якість спільного словника через content reports ([PRD §1](PRD.md#1-context)–§2).
 
 **Top-3 quality goals (1-liners; full scenarios in §10):**
 
 1. **Коректність навчального обліку** — жодна відповідь не втрачається й не зараховується двічі; доба, ліміти й статуси слів рахуються в часовому поясі learner.
-2. **Чутливість інтерфейсу** — «Сьогодні», оцінка відповіді й пошук укладаються в latency-цілі PRD §6.
-3. **Надійність нагадувань** — не більше одного нагадування на добу без дублікатів після рестартів, ≥ 99% вчасно; рідкісна втрата при збої між надсиланням і позначкою входить у бюджет 1% (ADR-0007).
+2. **Чутливість інтерфейсу** — «Сьогодні», оцінка відповіді й пошук укладаються в latency-цілі [PRD §6](PRD.md#6-non-functional-requirements).
+3. **Надійність нагадувань** — не більше одного нагадування на добу без дублікатів після рестартів, ≥ 99% вчасно; рідкісна втрата при збої між надсиланням і позначкою входить у бюджет 1% ([ADR-0007](adr/0007-dispatch-notifications-through-postgres-dispatch-table.md)).
 
 **Stakeholders.**
 
@@ -45,7 +45,7 @@ target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by a
 
 **Organisational.**
 - Один розробник, переважно бекенд .NET.
-- Пілот на ~50 learner стартує лише після схвалення 2 000 лем (PRD §1, OQ-2). Контентний поріг підтверджено випуском від 2026-11-01 за ADR-0014; імпорт T20 і реалізація застосунку ще потрібні.
+- Пілот на ~50 learner стартує лише після схвалення 2 000 лем ([PRD §1](PRD.md#1-context), OQ-2). Контентний поріг підтверджено випуском від 2026-11-01 за [ADR-0014](adr/0014-prepare-initial-dictionary-with-source-backed-llm-editing.md); імпорт [T20](tasks/T20-dictionary-import.md) і реалізація застосунку ще потрібні.
 - Роль content editor — власник проєкту, призначений вручну (PRD OQ-3).
 
 **Conventions.**
@@ -55,7 +55,7 @@ target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by a
 - Свідоме відхилення від конвенції тестів: окрім InMemory-тестів сервісів, додаються інтеграційні тести на справжньому PostgreSQL (Testcontainers), бо InMemory-провайдер не перевіряє транзакції, `xmin` і захоплення рядків з пропуском заблокованих, на яких тримаються QG-1 і QG-3.
 
 **Regulatory / external.**
-- Персональні дані learner класифіковано як confidential (PRD §6.1). Окремий security review до пілоту свідомо скасовано рішенням від 2026-11-01; перевірки спираються на автоматизовані тести, залишковий ризик зафіксовано в PRD §6.1.
+- Персональні дані learner класифіковано як confidential ([PRD §6.1](PRD.md)). Окремий security review до пілоту свідомо скасовано рішенням від 2026-11-01; перевірки спираються на автоматизовані тести, залишковий ризик зафіксовано в [PRD §6.1](PRD.md).
 - Ліцензії зовнішніх даних: Wikisłownik — CC BY-SA 4.0 (атрибуція), PoliMorf і Morfeusz 2 — 2-clause BSD, VESUM — CC BY-NC-SA 4.0 (див. §11).
 - Для пакетної словникової звірки використовується локальний знімок Wikisłownik через Kaikki; джерела й атрибуція — `docs/dictionary/NOTICE.md`.
 
@@ -98,19 +98,19 @@ flowchart TB
 
 ## 4. Solution strategy
 
-**Target surface(s) (the first decision — what's being built):** `[backend-service, web-frontend]` — ASP.NET Core бекенд з REST JSON API і фоновими завданнями в тому самому процесі + Telegram Mini App як клієнтська SPA. Окремої `worker`-поверхні немає: нагадування, дайджести й звірка виконуються в процесі бекенду (ADR-0001).
+**Target surface(s) (the first decision — what's being built):** `[backend-service, web-frontend]` — ASP.NET Core бекенд з REST JSON API і фоновими завданнями в тому самому процесі + Telegram Mini App як клієнтська SPA. Окремої `worker`-поверхні немає: нагадування, дайджести й звірка виконуються в процесі бекенду ([ADR-0001](adr/0001-deliver-trainer-as-backend-service-plus-telegram-mini-app.md)).
 
 **Top strategic choices (the seeds for ADRs):**
 
-1. **Модульний моноліт на одному PostgreSQL** — новий код живе у feature-модулях `Identity`, `Learning`, `Content`, `Notifications`, `Bot` в одному проєкті з одним `AppDbContext`; групова модель виводиться з ужитку без міграції даних (ADR-0003, ADR-0004). Відповідь, розклад слова й стан session змінюються в одній транзакції, тож розподіл на сервіси нічого не дає при одному екземплярі.
-2. **Сервер — єдине джерело істини навчального стану** — session, оцінка відповіді, межі доби й планування повторень живуть на сервері; клієнт лише відмальовує стан і результат (ADR-0008, ADR-0009). Це закриває вимоги «0 втрачених відповідей» і «рівно одне зарахування» та не розкриває правильних відповідей клієнту.
-3. **Час learner як доменне поняття** — IANA-пояс learner і календарна доба з урахуванням DST моделюються явно; нагадування й дайджести йдуть через таблицю відправлень з унікальним ключем на дату (ADR-0006, ADR-0007).
-4. **Словник як версійований контент у БД** — незмінні версії записів, вказівник на опубліковану версію, асинхронна звірка content reports за довідковими знімками й попередньо обчислена таблиця форм для пошуку (ADR-0010, ADR-0011, ADR-0012).
-5. **UI-architecture: SPA, яку роздає бекенд** — React + TypeScript + Vite, компоненти Telegram UI kit із семантичними токенами затвердженої [дизайн-системи Everforest](./design-system.md), той самий origin, що й API; автентифікація через підписані `initData` у кожному запиті (ADR-0002, ADR-0005, ADR-0013). Дві теми мають ручний вибір; Telegram задає початкову схему до першого ручного вибору.
+1. **Модульний моноліт на одному PostgreSQL** — новий код живе у feature-модулях `Identity`, `Learning`, `Content`, `Notifications`, `Bot` в одному проєкті з одним `AppDbContext`; групова модель виводиться з ужитку без міграції даних ([ADR-0003](adr/0003-organise-code-into-feature-modules-inside-the-monolith.md), [ADR-0004](adr/0004-retire-the-group-model-without-data-migration.md)). Відповідь, розклад слова й стан session змінюються в одній транзакції, тож розподіл на сервіси нічого не дає при одному екземплярі.
+2. **Сервер — єдине джерело істини навчального стану** — session, оцінка відповіді, межі доби й планування повторень живуть на сервері; клієнт лише відмальовує стан і результат ([ADR-0008](adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md), [ADR-0009](adr/0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md)). Це закриває вимоги «0 втрачених відповідей» і «рівно одне зарахування» та не розкриває правильних відповідей клієнту.
+3. **Час learner як доменне поняття** — IANA-пояс learner і календарна доба з урахуванням DST моделюються явно; нагадування й дайджести йдуть через таблицю відправлень з унікальним ключем на дату ([ADR-0006](adr/0006-model-learner-time-with-nodatime-and-iana-zones.md), [ADR-0007](adr/0007-dispatch-notifications-through-postgres-dispatch-table.md)).
+4. **Словник як версійований контент у БД** — незмінні версії записів, вказівник на опубліковану версію, асинхронна звірка content reports за довідковими знімками й попередньо обчислена таблиця форм для пошуку ([ADR-0010](adr/0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md), [ADR-0011](adr/0011-verify-content-reports-asynchronously-against-reference-snapshots.md), [ADR-0012](adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md)).
+5. **UI-architecture: SPA, яку роздає бекенд** — React + TypeScript + Vite, компоненти Telegram UI kit із семантичними токенами затвердженої [дизайн-системи Everforest](./design-system.md), той самий origin, що й API; автентифікація через підписані `initData` у кожному запиті ([ADR-0002](adr/0002-build-mini-app-as-react-spa-served-by-aspnet-core.md), [ADR-0005](adr/0005-authenticate-every-api-request-with-telegram-init-data.md), [ADR-0013](adr/0013-use-everforest-with-manual-light-dark-themes.md)). Дві теми мають ручний вибір; Telegram задає початкову схему до першого ручного вибору.
 
 ## 5. Building block view
 
-Модульний моноліт: технічні папки поточного бота замінюються feature-модулями, кожен з власними контролерами, сервісами, конфігураціями EF-сутностей і методом реєстрації `Add<Module>()`; `Program.cs` лишається composition root. Модуль читає чужі дані лише через його інтерфейс; правило перевіряє архітектурний тест (ADR-0003).
+Модульний моноліт: технічні папки поточного бота замінюються feature-модулями, кожен з власними контролерами, сервісами, конфігураціями EF-сутностей і методом реєстрації `Add<Module>()`; `Program.cs` лишається composition root. Модуль читає чужі дані лише через його інтерфейс; правило перевіряє архітектурний тест ([ADR-0003](adr/0003-organise-code-into-feature-modules-inside-the-monolith.md)).
 
 **Internal decomposition:**
 
@@ -737,7 +737,7 @@ sequenceDiagram
 | AC-26 | `Critical flow 2: щоденне нагадування` | flow | пропуск, відкладення на 30 хв і два види нагадування |
 | AC-27 | `Налаштування темпу, поясу й нагадувань` | branch | `else нагадування без вибраного поясу` |
 | AC-28 | `Екран «Сьогодні»` | flow | |
-| AC-29 | — | N/A | learner id береться лише з перевірених підписаних даних запуску, тож запит до чужого прогресу неможливо сформувати — забезпечує автентифікація (ADR-0005), не runtime-гілка |
+| AC-29 | — | N/A | learner id береться лише з перевірених підписаних даних запуску, тож запит до чужого прогресу неможливо сформувати — забезпечує автентифікація ([ADR-0005](adr/0005-authenticate-every-api-request-with-telegram-init-data.md)), не runtime-гілка |
 | AC-30 | `Пошук у словнику` | flow | |
 | AC-31 | `Пошук у словнику` | branch | `alt збігів немає` |
 | AC-32 | `Пошук у словнику`, `Складання session` | flow | фільтр лише за опублікованими `approved`-версіями |
@@ -785,7 +785,7 @@ flowchart LR
 Некоректне значення сховища прирівнюється до відсутнього. Недоступне сховище не блокує перемикання в поточному запуску; після ручного вибору themeChanged не змінює тему. Навчальний стан і введена відповідь зберігаються. Серверного запиту для вибору теми немає (AC-58).
 
 **Flags:**
-- `message-bus` у потоці «Content report і автоматична звірка» реалізує черга задач у PostgreSQL з пропуском заблокованих рядків (ADR-0011), окремого брокера §5 не має — уточнити в `generate-data-model`.
+- `message-bus` у потоці «Content report і автоматична звірка» реалізує черга задач у PostgreSQL з пропуском заблокованих рядків ([ADR-0011](adr/0011-verify-content-reports-asynchronously-against-reference-snapshots.md)), окремого брокера §5 не має — уточнити в `generate-data-model`.
 - Учасники підписані `user`, `ui`, `service`, `data-store`, `external-system`, `message-bus`, `client` без кутових дужок, щоб рендерер Mermaid не прибрав їх як HTML-теги.
 - Дві чорнові діаграми від `architecture-design` (`Critical flow 1`, `Critical flow 2`) лишено без змін; вони використовують конкретні назви контейнерів.
 - Після другого `clarify-prd` (2026-10-31) потоки оновлено вручну під AC-46…AC-55 і US-12; додано потік «Відкат застосованої зміни словника», а `Critical flow 2` переписано під відкладене нагадування з AC-26.
@@ -812,19 +812,19 @@ flowchart LR
 | Concept | Convention | Where defined |
 |---|---|---|
 | Logging | Структуровані шаблони `ILogger` з `{LearnerId}` замість `{ChatId}`; заголовок `Authorization` і `initData` ніколи не логуються | тут; `architecture-map.md` §Conventions |
-| Authentication | `AuthenticationHandler` перевіряє `initData` (HMAC-SHA256, свіжість `auth_date` ≤ 24 год) у кожному запиті | ADR-0005 |
+| Authentication | `AuthenticationHandler` перевіряє `initData` (HMAC-SHA256, свіжість `auth_date` ≤ 24 год) у кожному запиті | [ADR-0005](adr/0005-authenticate-every-api-request-with-telegram-init-data.md) |
 | Authorization | Policy `ContentEditor` з claim, який додає `IClaimsTransformation` за списком Telegram id у конфігурації (secret); `learner_id` лише з claims, чужі ресурси — «не знайдено» | тут (рішення OQ-3) |
-| Псевдонімна мітка автора | Випадковий alias на кшталт `R-7F3A9C`, унікальний, зберігається в learner при першому content report | тут (PRD §6.1) |
+| Псевдонімна мітка автора | Випадковий alias на кшталт `R-7F3A9C`, унікальний, зберігається в learner при першому content report | тут ([PRD §6.1](PRD.md)) |
 | Error handling | ProblemDetails через `[ApiController]`; доменні відмови — бізнесові повідомлення українською; webhook завжди відповідає успіхом, помилки лише логуються | тут |
 | API style | REST JSON на контролерах `[ApiController]` усередині модулів, `AddOpenApi()`; TS-типи клієнта генеруються з OpenAPI | тут; `api-forge` |
-| Idempotency | Картка session — природний ключ відповіді: захоплення `pending → answered` у тій самій транзакції, що й запис відповіді; повтор з тим самим вмістом повертає збережений результат, з іншим — відмову без зміни результату | ADR-0008 |
+| Idempotency | Картка session — природний ключ відповіді: захоплення `pending → answered` у тій самій транзакції, що й запис відповіді; повтор з тим самим вмістом повертає збережений результат, з іншим — відмову без зміни результату | [ADR-0008](adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md) |
 | Concurrency | Оптимістична конкурентність через `xmin` на стані слова й session; унікальні `learner_word(learner_id, entry_id)` і одна активна session на learner у межах доби | тут |
-| Time | NodaTime: `IClock`, IANA tzdb, `LocalDate` доби learner; тести з `FakeClock` | ADR-0006 |
+| Time | NodaTime: `IClock`, IANA tzdb, `LocalDate` доби learner; тести з `FakeClock` | [ADR-0006](adr/0006-model-learner-time-with-nodatime-and-iana-zones.md) |
 | Answer evaluation | Чистий доменний сервіс: NFC, обрізання й стискання пробілів, нижній регістр, без кінцевих `. , ! ? ; : …`, кириличні двійники `а е і о р с у х` → латиниця; явна мапа згортання діакритики (`ą ć ę ł ń ó ś ź ż`); синонім з іншого запису — нейтральний результат `synonym`; структурований diff з сервера | тут (AC-12–AC-17, AC-56, AC-57) |
-| ID strategy | UUID v7, генерується застосунком (`Guid.CreateVersion7()`) — дефолт курсу для нової схеми, старі `int`-таблиці видаляються (ADR-0004); Telegram user id — `long` з унікальним індексом | `data-model.md` |
-| UI / design system | `@telegram-apps/telegram-ui` із токенами Everforest; світла/темна тема, ручний вибір у localStorage, Telegram лише початкове джерело схеми; lazy-чанки для словника, налаштувань і черги редактора | [design-system.md](./design-system.md), ADR-0013 |
+| ID strategy | UUID v7, генерується застосунком (`Guid.CreateVersion7()`) — дефолт курсу для нової схеми, старі `int`-таблиці видаляються ([ADR-0004](adr/0004-retire-the-group-model-without-data-migration.md)); Telegram user id — `long` з унікальним індексом | `data-model.md` |
+| UI / design system | `@telegram-apps/telegram-ui` із токенами Everforest; світла/темна тема, ручний вибір у localStorage, Telegram лише початкове джерело схеми; lazy-чанки для словника, налаштувань і черги редактора | [design-system.md](./design-system.md), [ADR-0013](adr/0013-use-everforest-with-manual-light-dark-themes.md) |
 | Data fetching | TanStack Query: кеш `/today`, відміна застарілих запитів пошуку, повтор мутацій з тим самим ключем картки | тут |
-| Search UX | Запит на кожен символ без debounce, відміна застарілого запиту, `CancellationToken` до EF-запиту | ADR-0012, AC-30 |
+| Search UX | Запит на кожен символ без debounce, відміна застарілого запиту, `CancellationToken` до EF-запиту | [ADR-0012](adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md), AC-30 |
 | Bot webhook | `SetWebhook` з `secret_token` і перевіркою заголовка; явні `allowed_updates`; без видалення на зупинці; заблокований бот вимикає нагадування | тут |
 | Internationalisation | Інтерфейс українською; польські тексти — контент словника | — |
 | Observability | Журнал відправлень, серверні latency-метрики, клієнтська телеметрія «Сьогодні» | §7 |
@@ -854,22 +854,22 @@ ADR files live under `docs/features/personal-trainer-mvp/adr/NNNN-<title>.md`.
 
 **QG-1. Коректність навчального обліку**
 - **When:** learner надсилає ту саму відповідь двічі (подвійне натискання, повтор після мережевої помилки) або двома пристроями.
-- **Then:** 0 втрачених відповідей; повторне надсилання тієї самої відповіді зараховується один раз (PRD §6).
+- **Then:** 0 втрачених відповідей; повторне надсилання тієї самої відповіді зараховується один раз ([PRD §6](PRD.md#6-non-functional-requirements)).
 - **How verify:** інтеграційний тест подвійного надсилання на справжньому PostgreSQL (Testcontainers) + щоденна звірка журналу відповідей із картками session.
 
 **QG-2. Чутливість інтерфейсу**
 - **When:** learner відкриває trainer, відповідає на вправу або вводить символ у пошуку при ≥ 100 одночасних learner на одному екземплярі.
-- **Then:** Latency p95 відкриття екрана «Сьогодні» ≤ 1 500 ms; оцінки відповіді ≤ 500 ms; пошуку в словнику ≤ 300 ms на запит (PRD §6).
+- **Then:** Latency p95 відкриття екрана «Сьогодні» ≤ 1 500 ms; оцінки відповіді ≤ 500 ms; пошуку в словнику ≤ 300 ms на запит ([PRD §6](PRD.md#6-non-functional-requirements)).
 - **How verify:** навантажувальний тест перед пілотом; клієнтська телеметрія «Сьогодні»; серверні метрики оцінки відповіді й пошуку.
 
 **QG-3. Надійність нагадувань**
 - **When:** настає час нагадування learner, зокрема після рестарту застосунку чи зміни часового поясу.
-- **Then:** ≥ 99% нагадувань надіслано в межах 2 хв від запланованого часу; не більше одного нагадування на календарну дату learner (PRD §6, AC-26, AC-44).
+- **Then:** ≥ 99% нагадувань надіслано в межах 2 хв від запланованого часу; не більше одного нагадування на календарну дату learner ([PRD §6](PRD.md#6-non-functional-requirements), AC-26, AC-44).
 - **How verify:** журнал доставки з тижневим вікном; тести planner на перехід DST і зміну поясу з `FakeClock`.
 
 **QG-4. Доступність**
 - **When:** будь-який місяць пілоту.
-- **Then:** Availability 99.5% (PRD §6).
+- **Then:** Availability 99.5% ([PRD §6](PRD.md#6-non-functional-requirements)).
 - **How verify:** місячне вікно обчислюється за зовнішніми перевірками health endpoint раз на хвилину; три послідовні невдалі перевірки створюють сповіщення власнику.
 
 ## 11. Risks and technical debt

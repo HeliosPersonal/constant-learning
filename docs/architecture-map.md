@@ -90,7 +90,7 @@ C4Container
 - **Розклад у локальному часі контейнера.** Завдання порівнюють `DateTime.Now` з `HH:mm` групи; часового поясу не задано — `Jobs/NewWordsJob.cs:39-41`. Нагадування за поясом learner потребують іншого підходу.
 - **Немає захисту від повторного надсилання.** Розклад — точний збіг хвилини без обліку вже надісланого; сховище Quartz — у пам'яті, тож кілька реплік надсилали б дублікати. Зараз `replicas: 1` — `../k8s/base/deployment.yaml:8`.
 - **Повторення блокує завдання.** `RepetitionJob` чекає `AnswerDelaySeconds` всередині виконання — `Jobs/RepetitionJob.cs:109`.
-- **Імпорт словника одноразовий.** Зміни CSV після першого імпорту ігноруються, розбір не підтримує коми в лапках — `Services/WordImportService.cs:33,95`. Редакторський словник із версіями (PRD §1) потребує іншого механізму.
+- **Імпорт словника одноразовий.** Зміни CSV після першого імпорту ігноруються, розбір не підтримує коми в лапках — `Services/WordImportService.cs:33,95`. Редакторський словник із версіями ([PRD §1](features/personal-trainer-mvp/PRD.md#1-context)) потребує іншого механізму.
 - **Webhook видаляється на кожній зупинці** — `HostedServices/WebhookConfigurationService.cs:54`; під час rolling deploy бот може лишитися без webhook.
 - **Розбіжності k8s-маніфестів із кодом:** probes звертаються до `/health`, а маршрут — `api/telegram/health` (`../k8s/base/deployment.yaml:34,40`, `Controllers/TelegramController.cs:8,29`); overlay задає `CONNECTION_STRING`, а застосунок читає `ConnectionStrings:DefaultConnection` (`../k8s/overlays/staging/patch-env.yaml:13`, `Program.cs:27`).
 - **CI лише збирає й публікує образ**, розгортання не виконує — `../.github/workflows/ci-cd.yml`.

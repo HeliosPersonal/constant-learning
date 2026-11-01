@@ -16,14 +16,14 @@ ticket: "TBD"
 
 ## Context
 
-PRD §6.1 вимагає ідентифікувати learner за перевіреною Telegram-ідентичністю й відмовляти при підробці. Mini App отримує від Telegram підписані `initData`. Треба вирішити, як бекенд автентифікує кожен запит.
+[PRD §6.1](../PRD.md) вимагає ідентифікувати learner за перевіреною Telegram-ідентичністю й відмовляти при підробці. Mini App отримує від Telegram підписані `initData`. Треба вирішити, як бекенд автентифікує кожен запит.
 
 ## Decision drivers
 
-- Abuse case «підробка ідентичності» (PRD §6.1)
+- Abuse case «підробка ідентичності» ([PRD §6.1](../PRD.md))
 - AC-29, AC-41: доступ лише до власних даних і до черги лише для content editor
 - WebView Telegram на iOS обмежує cookie
-- Latency p95 оцінки відповіді ≤ 500 ms (PRD §6)
+- Latency p95 оцінки відповіді ≤ 500 ms ([PRD §6](../PRD.md#6-non-functional-requirements))
 
 ## Considered options
 
@@ -52,6 +52,6 @@ PRD §6.1 вимагає ідентифікувати learner за переві�
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §8
-- Related ADR: [[0002-build-mini-app-as-react-spa-served-by-aspnet-core]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §8
+- Related ADR: [ADR-0002](0002-build-mini-app-as-react-spa-served-by-aspnet-core.md)

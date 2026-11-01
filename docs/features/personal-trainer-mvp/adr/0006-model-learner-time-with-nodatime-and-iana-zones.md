@@ -16,11 +16,11 @@ ticket: "TBD"
 
 ## Context
 
-PRD §5 визначає добу learner як календарну дату в його поясі з урахуванням DST; від неї залежать денний ліміт (AC-06, AC-07), межа session (AC-25), нагадування (AC-26, AC-44) і вікна KPI. Поточний код використовує `DateTime.Now` контейнера.
+[PRD §5](../PRD.md#5-acceptance-criteria) визначає добу learner як календарну дату в його поясі з урахуванням DST; від неї залежать денний ліміт (AC-06, AC-07), межа session (AC-25), нагадування (AC-26, AC-44) і вікна KPI. Поточний код використовує `DateTime.Now` контейнера.
 
 ## Decision drivers
 
-- Доба learner і DST (PRD §5, AC-06, AC-07, AC-25, AC-44)
+- Доба learner і DST ([PRD §5](../PRD.md#5-acceptance-criteria), AC-06, AC-07, AC-25, AC-44)
 - Тестованість межових випадків часу
 - Пояс приходить з клієнта як IANA id
 
@@ -48,6 +48,6 @@ PRD §5 визначає добу learner як календарну дату в 
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §8
-- Related ADR: [[0007-dispatch-notifications-through-postgres-dispatch-table]], [[0008-keep-the-learning-session-server-side-with-per-card-idempotency]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §8
+- Related ADR: [ADR-0007](0007-dispatch-notifications-through-postgres-dispatch-table.md), [ADR-0008](0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)

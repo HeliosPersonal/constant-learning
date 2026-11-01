@@ -2,7 +2,7 @@
 id: T40
 title: "Зробити форму content report"
 layer: "ui"
-deps: ["T39", "T23"]
+deps: ["[T39](T39-ui-dictionary.md)", "[T23](T23-content-report-api.md)"]
 acs: ["AC-34", "AC-36", "AC-46", "AC-51"]
 files_hint: ["ConstantLearning.MiniApp/src/features/dictionary/report/"]
 owner: "Viacheslav Melnichenko"

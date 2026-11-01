@@ -2,7 +2,7 @@
 id: T23
 title: "Реалізувати надсилання content report з лімітом і дедуплікацією"
 layer: "app"
-deps: ["T06", "T07", "T12"]
+deps: ["[T06](T06-migrate-reports-publication.md)", "[T07](T07-migrate-search-jobs-dispatches.md)", "[T12](T12-initdata-auth.md)"]
 acs: ["AC-34", "AC-36", "AC-46", "AC-51"]
 files_hint: ["ConstantLearning/Features/Content/Reports/", "ConstantLearning/Features/Identity/Aliases/", "ConstantLearning.Tests/Content/Reports/"]
 owner: "Viacheslav Melnichenko"

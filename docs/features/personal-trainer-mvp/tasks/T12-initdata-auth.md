@@ -2,7 +2,7 @@
 id: T12
 title: "Автентифікувати запити за initData і додати роль content editor"
 layer: "ports"
-deps: ["T03", "T02"]
+deps: ["[T03](T03-migrate-identity.md)", "[T02](T02-test-harness.md)"]
 acs: ["AC-29", "AC-41", "AC-50"]
 files_hint: ["ConstantLearning/Features/Identity/Auth/", "ConstantLearning.Tests/Identity/"]
 owner: "Viacheslav Melnichenko"

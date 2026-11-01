@@ -2,7 +2,7 @@
 id: T17
 title: "Реалізувати відповідь на картку з ідемпотентністю"
 layer: "app"
-deps: ["T09", "T10", "T16"]
+deps: ["[T09](T09-answer-evaluation.md)", "[T10](T10-review-scheduler.md)", "[T16](T16-session-continuation.md)"]
 acs: ["AC-12", "AC-13", "AC-14", "AC-15", "AC-16", "AC-33", "AC-42", "AC-52", "AC-56", "AC-57"]
 files_hint: ["ConstantLearning/Features/Learning/Sessions/Answer/", "ConstantLearning.Tests/Learning/Sessions/"]
 owner: "Viacheslav Melnichenko"
@@ -20,7 +20,7 @@ US-03 у [PRD](../PRD.md); Critical flow 1 і «Оцінка відповіді 
 
 ## What
 
-В одній транзакції: захоплення картки `pending → answered`, оцінка (T09), запис `answer_events`, виклик планувальника (T10) і побудова наступної картки та `session_completed`; повтор з тим самим вмістом повертає збережений результат, з іншим — `answer.already_answered_differently`; картка запису, що втратив `approved`, пропускається без зарахування (AC-33); після межі доби — `session.expired` (AC-52).
+В одній транзакції: захоплення картки `pending → answered`, оцінка ([T09](T09-answer-evaluation.md)), запис `answer_events`, виклик планувальника ([T10](T10-review-scheduler.md)) і побудова наступної картки та `session_completed`; повтор з тим самим вмістом повертає збережений результат, з іншим — `answer.already_answered_differently`; картка запису, що втратив `approved`, пропускається без зарахування (AC-33); після межі доби — `session.expired` (AC-52).
 
 Файли: `ConstantLearning/Features/Learning/Sessions/Answer/`, `ConstantLearning.Tests/Learning/Sessions/`
 

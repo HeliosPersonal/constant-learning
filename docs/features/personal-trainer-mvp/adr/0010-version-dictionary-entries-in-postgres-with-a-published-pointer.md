@@ -16,11 +16,11 @@ ticket: "TBD"
 
 ## Context
 
-PRD §1 робить редакторський словник єдиним джерелом контенту з версіями, історією й відкатом; learner бачить лише `approved` (AC-32), зняття статусу ховає слово (AC-33), зміни застосовуються під час роботи автоматично (AC-35) або рішенням content editor (AC-38), а прогрес learner переживає зміну перекладу (AC-42).
+[PRD §1](../PRD.md#1-context) робить редакторський словник єдиним джерелом контенту з версіями, історією й відкатом; learner бачить лише `approved` (AC-32), зняття статусу ховає слово (AC-33), зміни застосовуються під час роботи автоматично (AC-35) або рішенням content editor (AC-38), а прогрес learner переживає зміну перекладу (AC-42).
 
 ## Decision drivers
 
-- Відкат і історія (PRD §1)
+- Відкат і історія ([PRD §1](../PRD.md#1-context))
 - Автоматичне застосування змін без участі редактора (AC-35)
 - Прогрес посилається на стабільний запис (AC-42)
 - Поточний `Words` + одноразовий CSV-імпорт непридатні
@@ -47,10 +47,10 @@ PRD §1 робить редакторський словник єдиним дж
 - `WordImportService` переписується на справжній CSV-парсер
 
 **Neutral**
-- Поле прийнятих польських варіантів треба додати до `content-schema.md` (SAD §11)
+- Поле прийнятих польських варіантів треба додати до `content-schema.md` ([SAD §11](../sad.md#11-risks-and-technical-debt))
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §4
-- Related ADR: [[0011-verify-content-reports-asynchronously-against-reference-snapshots]], [[0012-search-via-a-precomputed-table-of-folded-word-forms]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §4
+- Related ADR: [ADR-0011](0011-verify-content-reports-asynchronously-against-reference-snapshots.md), [ADR-0012](0012-search-via-a-precomputed-table-of-folded-word-forms.md)

@@ -16,11 +16,11 @@ ticket: "TBD"
 
 ## Context
 
-Session має до 20 слів (PRD §5), продовжується тієї самої доби з наступної картки (AC-24) і закривається опівночі (AC-25). Відповідь не можна втратити чи зарахувати двічі (PRD §6), а оцінка залежить від прийнятих варіантів, які не можна розкривати клієнту.
+Session має до 20 слів ([PRD §5](../PRD.md#5-acceptance-criteria)), продовжується тієї самої доби з наступної картки (AC-24) і закривається опівночі (AC-25). Відповідь не можна втратити чи зарахувати двічі ([PRD §6](../PRD.md#6-non-functional-requirements)), а оцінка залежить від прийнятих варіантів, які не можна розкривати клієнту.
 
 ## Decision drivers
 
-- 0 втрачених відповідей і одне зарахування при повторі (PRD §6)
+- 0 втрачених відповідей і одне зарахування при повторі ([PRD §6](../PRD.md#6-non-functional-requirements))
 - Latency p95 оцінки відповіді ≤ 500 ms
 - AC-24, AC-25: продовження й межа доби
 - Правильні відповіді не потрапляють на клієнт до відповіді
@@ -51,6 +51,6 @@ Session має до 20 слів (PRD §5), продовжується тієї �
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §6
-- Related ADR: [[0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log]], [[0006-model-learner-time-with-nodatime-and-iana-zones]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §6
+- Related ADR: [ADR-0009](0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md), [ADR-0006](0006-model-learner-time-with-nodatime-and-iana-zones.md)

@@ -20,7 +20,7 @@ ticket: "TBD"
 
 ## Decision drivers
 
-- ≥ 99% нагадувань у межах 2 хв (PRD §6)
+- ≥ 99% нагадувань у межах 2 хв ([PRD §6](../PRD.md#6-non-functional-requirements))
 - Рівно одне нагадування на дату learner (AC-26, AC-44)
 - Без дублікатів після рестартів і з другою реплікою
 - Журнал доставки для вимірювання NFR
@@ -52,6 +52,6 @@ ticket: "TBD"
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §6
-- Related ADR: [[0006-model-learner-time-with-nodatime-and-iana-zones]], [[0001-deliver-trainer-as-backend-service-plus-telegram-mini-app]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §6
+- Related ADR: [ADR-0006](0006-model-learner-time-with-nodatime-and-iana-zones.md), [ADR-0001](0001-deliver-trainer-as-backend-service-plus-telegram-mini-app.md)

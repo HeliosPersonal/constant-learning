@@ -2,7 +2,7 @@
 id: T27
 title: "Реалізувати чергу й рішення content editor"
 layer: "app"
-deps: ["T23", "T20", "T21"]
+deps: ["[T23](T23-content-report-api.md)", "[T20](T20-dictionary-import.md)", "[T21](T21-search-forms.md)"]
 acs: ["AC-38", "AC-39", "AC-40", "AC-41", "AC-42", "AC-51"]
 files_hint: ["ConstantLearning/Features/Content/Editor/Queue/", "ConstantLearning.Tests/Content/Editor/"]
 owner: "Viacheslav Melnichenko"

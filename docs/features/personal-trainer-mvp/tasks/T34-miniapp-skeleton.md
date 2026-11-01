@@ -2,7 +2,7 @@
 id: T34
 title: "Створити каркас Mini App, що його роздає бекенд"
 layer: "ui"
-deps: ["T01"]
+deps: ["[T01](T01-module-skeleton.md)"]
 acs: ["AC-58"]
 files_hint: ["ConstantLearning.MiniApp/", "ConstantLearning/wwwroot/", "ConstantLearning/Program.cs"]
 owner: "Viacheslav Melnichenko"
@@ -39,7 +39,7 @@ Vite + React + TypeScript, `@telegram-apps/telegram-ui` із семантичн�
 
 ## Notes
 
-Дизайн-система — [Everforest](../design-system.md), токени — [theme-tokens.json](../design/theme-tokens.json). UI kit Telegram залишається базою компонентів (ADR-0013).
+Дизайн-система — [Everforest](../design-system.md), токени — [theme-tokens.json](../design/theme-tokens.json). UI kit Telegram залишається базою компонентів ([ADR-0013](../adr/0013-use-everforest-with-manual-light-dark-themes.md)).
 
 - Провайдер теми завантажує валідний локальний вибір до першого видимого рендера; за його відсутності використовує Telegram, ОС або світлу схему. Обробляє недоступне сховище, themeChanged та portal-компоненти.
 - Локальні перевірки AC-58: початкова тема, повторне відкриття, помилка сховища, ручний пріоритет, контраст токенів.

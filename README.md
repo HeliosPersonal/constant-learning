@@ -108,4 +108,4 @@ ConstantLearning/
 
 ## Готовність словникового контенту
 
-Підготовлено [2 000 схвалених унікальних лем](docs/dictionary/README.md) за погодженим методом Wikisłownik + LLM-редактура. [Звіт готовності](docs/dictionary/readiness.json) і [журнал доказів](docs/dictionary/evidence.jsonl) підтверджують склад випуску. Імпорт у персональну модель виконує T20; чинний груповий бот поки використовує старий CSV. Статус реалізації — у [трекері задач](docs/features/personal-trainer-mvp/tasks/tracker.md).
+Підготовлено [2 000 схвалених унікальних лем](docs/dictionary/README.md) за погодженим методом Wikisłownik + LLM-редактура. [Звіт готовності](docs/dictionary/readiness.json) і [журнал доказів](docs/dictionary/evidence.jsonl) підтверджують склад випуску. Імпорт у персональну модель виконує [T20](docs/features/personal-trainer-mvp/tasks/T20-dictionary-import.md); чинний груповий бот поки використовує старий CSV. Статус реалізації — у [трекері задач](docs/features/personal-trainer-mvp/tasks/tracker.md).

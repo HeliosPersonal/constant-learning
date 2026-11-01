@@ -2,7 +2,7 @@
 id: T04
 title: "Перенести міграції записів, версій, перекладів і прийнятих відповідей"
 layer: "migration"
-deps: ["T03"]
+deps: ["[T03](T03-migrate-identity.md)"]
 acs: []
 files_hint: ["docs/features/personal-trainer-mvp/migrations/20261031120002_create_dictionary_entries_*", "docs/features/personal-trainer-mvp/migrations/20261031120003_create_entry_versions_*", "docs/features/personal-trainer-mvp/migrations/20261031120004_add_published_version_fk_to_dictionary_entries_*", "docs/features/personal-trainer-mvp/migrations/20261031120005_create_version_translations_*", "docs/features/personal-trainer-mvp/migrations/20261031120006_create_version_accepted_answers_*", "ConstantLearning/Migrations/", "ConstantLearning/Features/Content/Data/"]
 owner: "Viacheslav Melnichenko"

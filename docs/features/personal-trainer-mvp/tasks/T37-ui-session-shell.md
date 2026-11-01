@@ -2,7 +2,7 @@
 id: T37
 title: "Зробити каркас заняття, картку нового слова й підсумок"
 layer: "ui"
-deps: ["T36", "T18"]
+deps: ["[T36](T36-ui-today.md)", "[T18](T18-new-word-card.md)"]
 acs: ["AC-03", "AC-11", "AC-20", "AC-21", "AC-24", "AC-52"]
 files_hint: ["ConstantLearning.MiniApp/src/features/session/shell/", "ConstantLearning.MiniApp/src/features/session/new-word/"]
 owner: "Viacheslav Melnichenko"

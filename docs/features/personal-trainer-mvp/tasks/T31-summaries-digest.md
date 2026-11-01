@@ -2,7 +2,7 @@
 id: T31
 title: "Реалізувати щоденний підсумок learner і дайджест редактора"
 layer: "app"
-deps: ["T29", "T23"]
+deps: ["[T29](T29-notification-dispatcher.md)", "[T23](T23-content-report-api.md)"]
 acs: ["AC-37", "AC-43", "AC-51"]
 files_hint: ["ConstantLearning/Features/Notifications/Summaries/", "ConstantLearning.Tests/Notifications/"]
 owner: "Viacheslav Melnichenko"

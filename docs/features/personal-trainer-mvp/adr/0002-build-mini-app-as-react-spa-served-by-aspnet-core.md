@@ -20,7 +20,7 @@ ticket: "TBD"
 
 ## Decision drivers
 
-- Latency p95 відкриття «Сьогодні» ≤ 1 500 ms (PRD §6)
+- Latency p95 відкриття «Сьогодні» ≤ 1 500 ms ([PRD §6](../PRD.md#6-non-functional-requirements))
 - AC-30: результати після кожного введеного символу
 - Екосистема Telegram Mini Apps (SDK, theme params, UI kit)
 - Атомарний реліз UI й API, без CORS
@@ -53,6 +53,6 @@ ticket: "TBD"
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §4
-- Related ADR: [[0001-deliver-trainer-as-backend-service-plus-telegram-mini-app]], [[0005-authenticate-every-api-request-with-telegram-init-data]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §4
+- Related ADR: [ADR-0001](0001-deliver-trainer-as-backend-service-plus-telegram-mini-app.md), [ADR-0005](0005-authenticate-every-api-request-with-telegram-init-data.md)

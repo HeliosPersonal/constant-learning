@@ -2,7 +2,7 @@
 id: T24
 title: "Реалізувати «Моя відповідь теж правильна»"
 layer: "app"
-deps: ["T17", "T23"]
+deps: ["[T17](T17-answer-item.md)", "[T23](T23-content-report-api.md)"]
 acs: ["AC-17", "AC-36", "AC-47", "AC-55"]
 files_hint: ["ConstantLearning/Features/Learning/Disputes/", "ConstantLearning.Tests/Learning/Disputes/"]
 owner: "Viacheslav Melnichenko"

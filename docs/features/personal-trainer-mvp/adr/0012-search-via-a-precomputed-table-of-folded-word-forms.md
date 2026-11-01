@@ -16,7 +16,7 @@ ticket: "TBD"
 
 ## Context
 
-AC-30 вимагає пошуку за будь-якою граматичною формою українського перекладу чи польського слова, без діакритики, за початком від 2 символів і точним збігом з 1 символу, з порядком base course; latency p95 ≤ 300 ms (PRD §6).
+AC-30 вимагає пошуку за будь-якою граматичною формою українського перекладу чи польського слова, без діакритики, за початком від 2 символів і точним збігом з 1 символу, з порядком base course; latency p95 ≤ 300 ms ([PRD §6](../PRD.md#6-non-functional-requirements)).
 
 ## Decision drivers
 
@@ -43,7 +43,7 @@ AC-30 вимагає пошуку за будь-якою граматичною 
 
 **Negative**
 - Потрібен конвеєр генерації форм і перебудова при кожній публікації
-- Для української ліцензійне рішення щодо VESUM (CC BY-NC-SA 4.0) потрібне до запуску (SAD §11)
+- Для української ліцензійне рішення щодо VESUM (CC BY-NC-SA 4.0) потрібне до запуску ([SAD §11](../sad.md#11-risks-and-technical-debt))
 - Одруки в запиті не знаходяться
 
 **Neutral**
@@ -51,6 +51,6 @@ AC-30 вимагає пошуку за будь-якою граматичною 
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §8
-- Related ADR: [[0010-version-dictionary-entries-in-postgres-with-a-published-pointer]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §8
+- Related ADR: [ADR-0010](0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md)

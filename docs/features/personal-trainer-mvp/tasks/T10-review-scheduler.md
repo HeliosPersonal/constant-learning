@@ -2,7 +2,7 @@
 id: T10
 title: "Реалізувати планувальник повторень за портом над журналом відповідей"
 layer: "domain"
-deps: ["T01"]
+deps: ["[T01](T01-module-skeleton.md)"]
 acs: ["AC-08", "AC-18", "AC-19", "AC-22", "AC-23"]
 files_hint: ["ConstantLearning/Features/Learning/Domain/Scheduling/", "ConstantLearning.Tests/Learning/Domain/Scheduling/"]
 owner: "Viacheslav Melnichenko"

@@ -2,7 +2,7 @@
 id: T07
 title: "Перенести міграції форм пошуку, довідок, задач звірки й відправлень"
 layer: "migration"
-deps: ["T06"]
+deps: ["[T06](T06-migrate-reports-publication.md)"]
 acs: []
 files_hint: ["docs/features/personal-trainer-mvp/migrations/20261031120016_create_search_forms_*", "docs/features/personal-trainer-mvp/migrations/20261031120017_create_morph_forms_*", "docs/features/personal-trainer-mvp/migrations/20261031120018_create_reference_entries_*", "docs/features/personal-trainer-mvp/migrations/20261031120019_create_verification_jobs_*", "docs/features/personal-trainer-mvp/migrations/20261031120020_create_notification_dispatches_*", "docs/features/personal-trainer-mvp/migrations/20261031120022_alter_content_reports_dedup_and_summary_*", "ConstantLearning/Migrations/", "ConstantLearning/Features/Content/Data/", "ConstantLearning/Features/Notifications/Data/"]
 owner: "Viacheslav Melnichenko"
@@ -16,7 +16,7 @@ status: "todo"
 
 ## Why
 
-Схема з [data-model.md](../data-model.md); staged-пари в [migrations/](../migrations/). Пара `0022` іде одразу після `0020`, бо посилається на `notification_dispatches`; `0021` залишається останньою міграцією й виходить разом із видаленням групового коду (T44).
+Схема з [data-model.md](../data-model.md); staged-пари в [migrations/](../migrations/). Пара `0022` іде одразу після `0020`, бо посилається на `notification_dispatches`; `0021` залишається останньою міграцією й виходить разом із видаленням групового коду ([T44](T44-migrate-drop-group-model.md)).
 
 ## What
 

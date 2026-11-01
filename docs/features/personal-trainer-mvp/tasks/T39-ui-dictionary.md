@@ -2,7 +2,7 @@
 id: T39
 title: "Зробити пошук у словнику й картку запису"
 layer: "ui"
-deps: ["T34", "T22"]
+deps: ["[T34](T34-miniapp-skeleton.md)", "[T22](T22-dictionary-search-api.md)"]
 acs: ["AC-30", "AC-31"]
 files_hint: ["ConstantLearning.MiniApp/src/features/dictionary/search/"]
 owner: "Viacheslav Melnichenko"

@@ -16,12 +16,12 @@ ticket: "TBD"
 
 ## Context
 
-`docs/IDEAS.md` обирає MEMORIZE для адаптивних інтервалів; PRD §5 задає межі (перше повторення наступної доби, після mistake — наступної доби, довший інтервал не раніше ніж через 2 доби, control repetition через 7 діб). Даних для підбору параметрів немає до пілоту (PRD OQ-4).
+`docs/IDEAS.md` обирає MEMORIZE для адаптивних інтервалів; [PRD §5](../PRD.md#5-acceptance-criteria) задає межі (перше повторення наступної доби, після mistake — наступної доби, довший інтервал не раніше ніж через 2 доби, control repetition через 7 діб). Даних для підбору параметрів немає до пілоту (PRD OQ-4).
 
 ## Decision drivers
 
 - Рішення IDEAS про MEMORIZE
-- Правила інтервалів PRD §5, AC-18–AC-23
+- Правила інтервалів [PRD §5](../PRD.md#5-acceptance-criteria), AC-18–AC-23
 - Перенастроювання параметрів після пілоту (OQ-4)
 - Відкат нейтралізованої відповіді (AC-17)
 
@@ -51,6 +51,6 @@ ticket: "TBD"
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §4
-- Related ADR: [[0008-keep-the-learning-session-server-side-with-per-card-idempotency]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §4
+- Related ADR: [ADR-0008](0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)

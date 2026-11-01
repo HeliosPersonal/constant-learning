@@ -2,7 +2,7 @@
 id: T30
 title: "Реалізувати планування й умови нагадувань"
 layer: "app"
-deps: ["T29", "T08", "T14", "T16"]
+deps: ["[T29](T29-notification-dispatcher.md)", "[T08](T08-learner-day.md)", "[T14](T14-settings-api.md)", "[T16](T16-session-continuation.md)"]
 acs: ["AC-26", "AC-44"]
 files_hint: ["ConstantLearning/Features/Notifications/Reminders/", "ConstantLearning.Tests/Notifications/"]
 owner: "Viacheslav Melnichenko"
@@ -20,7 +20,7 @@ US-06 у [PRD](../PRD.md); Critical flow 2 у [sad §6](../sad.md); умови `
 
 ## What
 
-Planner створює відправлення на добу learner і під'єднується до точки «налаштування змінено» з T14, щоб перераховувати їх; умови: пропуск, відкладення на 30 хв після останньої відповіді (не пізніше 2 год і кінця доби), два види тексту.
+Planner створює відправлення на добу learner і під'єднується до точки «налаштування змінено» з [T14](T14-settings-api.md), щоб перераховувати їх; умови: пропуск, відкладення на 30 хв після останньої відповіді (не пізніше 2 год і кінця доби), два види тексту.
 
 Файли: `ConstantLearning/Features/Notifications/Reminders/`, `ConstantLearning.Tests/Notifications/`
 

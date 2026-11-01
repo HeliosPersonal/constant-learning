@@ -2,7 +2,7 @@
 id: T21
 title: "Генерувати форми пошуку для опублікованих версій"
 layer: "infra"
-deps: ["T20", "T07"]
+deps: ["[T20](T20-dictionary-import.md)", "[T07](T07-migrate-search-jobs-dispatches.md)"]
 acs: ["AC-30", "AC-32"]
 files_hint: ["ConstantLearning/Features/Content/Search/Forms/", "ConstantLearning.Tests/Content/Search/"]
 owner: "Viacheslav Melnichenko"

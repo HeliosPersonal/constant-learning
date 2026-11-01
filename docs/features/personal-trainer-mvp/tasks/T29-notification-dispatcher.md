@@ -2,7 +2,7 @@
 id: T29
 title: "Реалізувати dispatcher таблиці відправлень"
 layer: "infra"
-deps: ["T07", "T02", "T32"]
+deps: ["[T07](T07-migrate-search-jobs-dispatches.md)", "[T02](T02-test-harness.md)", "[T32](T32-bot-webhook.md)"]
 acs: []
 files_hint: ["ConstantLearning/Features/Notifications/Dispatch/", "ConstantLearning.Tests/Notifications/"]
 owner: "Viacheslav Melnichenko"

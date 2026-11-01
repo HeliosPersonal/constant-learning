@@ -2,7 +2,7 @@
 id: T42
 title: "Зробити чергу content editor і список застосованих змін"
 layer: "ui"
-deps: ["T34", "T27", "T28"]
+deps: ["[T34](T34-miniapp-skeleton.md)", "[T27](T27-editor-queue.md)", "[T28](T28-applied-changes-rollback.md)"]
 acs: ["AC-38", "AC-39", "AC-40", "AC-41", "AC-48", "AC-49", "AC-50"]
 files_hint: ["ConstantLearning.MiniApp/src/features/editor/"]
 owner: "Viacheslav Melnichenko"

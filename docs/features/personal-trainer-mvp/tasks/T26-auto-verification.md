@@ -2,7 +2,7 @@
 id: T26
 title: "Реалізувати фонову звірку content reports"
 layer: "app"
-deps: ["T23", "T25", "T20", "T21"]
+deps: ["[T23](T23-content-report-api.md)", "[T25](T25-reference-snapshots.md)", "[T20](T20-dictionary-import.md)", "[T21](T21-search-forms.md)"]
 acs: ["AC-35", "AC-42"]
 files_hint: ["ConstantLearning/Features/Content/Verification/", "ConstantLearning.Tests/Content/Verification/"]
 owner: "Viacheslav Melnichenko"

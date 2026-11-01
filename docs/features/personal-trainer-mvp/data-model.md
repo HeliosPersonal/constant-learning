@@ -16,7 +16,7 @@ implement-tasks promotes them. -->
 
 > Міграції лежать у [`migrations/`](./migrations/) (23 пари `.up.sql` / `.down.sql`) і ще не застосовані. `implement-tasks` переносить кожну пару в EF Core міграцію (`migrationBuilder.Sql`) з новою позначкою часу. Повний DDL — у файлах міграцій; тут — модель, обмеження й обґрунтування індексів.
 >
-> **Правила курсу:** UUID v7 генерується в застосунку (`Guid.CreateVersion7()`); лише `created_at`, без `updated_at`; жорстке видалення; `VARCHAR(N)`; без `CHECK`, `TRIGGER` і бізнесових `DEFAULT` — статуси, ліміти й прапорці завжди задає застосунок. Оптимістична конкурентність — системна колонка PostgreSQL `xmin` (DDL не потрібен, SAD §8).
+> **Правила курсу:** UUID v7 генерується в застосунку (`Guid.CreateVersion7()`); лише `created_at`, без `updated_at`; жорстке видалення; `VARCHAR(N)`; без `CHECK`, `TRIGGER` і бізнесових `DEFAULT` — статуси, ліміти й прапорці завжди задає застосунок. Оптимістична конкурентність — системна колонка PostgreSQL `xmin` (DDL не потрібен, [SAD §8](sad.md#8-crosscutting-concepts)).
 
 ## ER diagram
 
@@ -119,7 +119,7 @@ erDiagram
     }
 ```
 
-Таблиці `morph_forms` і `reference_entries` — довідкові знімки без зовнішніх ключів (ADR-0011, ADR-0012); на діаграмі не показані.
+Таблиці `morph_forms` і `reference_entries` — довідкові знімки без зовнішніх ключів ([ADR-0011](adr/0011-verify-content-reports-asynchronously-against-reference-snapshots.md), [ADR-0012](adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md)); на діаграмі не показані.
 
 ## Entities
 
@@ -128,15 +128,15 @@ erDiagram
 | Column | Type | Constraints | Notes |
 |---|---|---|---|
 | `id` | UUID | PK, app-generated (UUID v7) | |
-| `telegram_user_id` | BIGINT | NOT NULL, UNIQUE | ідентичність з `initData` (ADR-0005) |
-| `first_name` | VARCHAR(64) | NULL | персональні дані, PRD §6.1 |
+| `telegram_user_id` | BIGINT | NOT NULL, UNIQUE | ідентичність з `initData` ([ADR-0005](adr/0005-authenticate-every-api-request-with-telegram-init-data.md)) |
+| `first_name` | VARCHAR(64) | NULL | персональні дані, [PRD §6.1](PRD.md) |
 | `time_zone` | VARCHAR(64) | NOT NULL | IANA id; `Europe/Warsaw`, якщо не визначено (AC-01) |
 | `time_zone_confirmed` | BOOLEAN | NOT NULL | false — пояс не вибрано, вимагається для reminder (AC-27) |
 | `daily_new_words_limit` | SMALLINT | NOT NULL | 3, 5 або 10 — валідація в застосунку (AC-45) |
 | `pending_daily_new_words_limit` | SMALLINT | NULL | новий ліміт до початку наступної доби (AC-44) |
 | `pending_limit_effective_from` | TIMESTAMPTZ | NULL | початок наступної доби в новому поясі |
 | `new_words_available_from` | TIMESTAMPTZ | NULL | кінець доби видачі останньої порції (AC-07) |
-| `reporter_alias` | VARCHAR(16) | NULL, UNIQUE | псевдонімна мітка автора (PRD §6.1) |
+| `reporter_alias` | VARCHAR(16) | NULL, UNIQUE | псевдонімна мітка автора ([PRD §6.1](PRD.md)) |
 | `can_message` | BOOLEAN | NOT NULL | бот може писати learner; false після блокування |
 | `onboarded_at` | TIMESTAMPTZ | NULL | null — онбординг не завершено (KPI активації) |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
@@ -169,11 +169,11 @@ erDiagram
 | `due_on` | DATE | NULL | доба learner для наступного повторення |
 | `control_pending` | BOOLEAN | NOT NULL | очікує control repetition (AC-20) |
 | `lapses` | INTEGER | NOT NULL | |
-| `model_state` | JSONB | NOT NULL | непрозорий стан планувальника (ADR-0009) — змінюється з алгоритмом |
+| `model_state` | JSONB | NOT NULL | непрозорий стан планувальника ([ADR-0009](adr/0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md)) — змінюється з алгоритмом |
 | `scheduler_version` | VARCHAR(16) | NOT NULL | |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
-**Aggregate root:** `learners`. Проєкція журналу `answer_events`; перебудовується повторним прогоном (ADR-0009). **Constraints:** UNIQUE (`learner_id`, `entry_id`).
+**Aggregate root:** `learners`. Проєкція журналу `answer_events`; перебудовується повторним прогоном ([ADR-0009](adr/0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md)). **Constraints:** UNIQUE (`learner_id`, `entry_id`).
 
 ### Агрегат Learning — `learning_sessions`
 
@@ -188,16 +188,16 @@ erDiagram
 | `completed_at` | TIMESTAMPTZ | NULL | лічильник «завершені заняття за 7 днів» (AC-28) |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
-**Constraints:** часткова UNIQUE (`learner_id`) WHERE `status = 'active'` — одна активна session (SAD §8).
+**Constraints:** часткова UNIQUE (`learner_id`) WHERE `status = 'active'` — одна активна session ([SAD §8](sad.md#8-crosscutting-concepts)).
 
 ### Агрегат Learning — `session_items`
 
 | Column | Type | Constraints | Notes |
 |---|---|---|---|
-| `id` | UUID | PK | природний ключ ідемпотентності відповіді (ADR-0008) |
+| `id` | UUID | PK | природний ключ ідемпотентності відповіді ([ADR-0008](adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)) |
 | `session_id` | UUID | NOT NULL, FK → `learning_sessions(id)` CASCADE | |
 | `entry_id` | UUID | NOT NULL, FK → `dictionary_entries(id)` | |
-| `position` | SMALLINT | NOT NULL | ≤ 20 — склад session (PRD §5) |
+| `position` | SMALLINT | NOT NULL | ≤ 20 — склад session ([PRD §5](PRD.md#5-acceptance-criteria)) |
 | `kind` | VARCHAR(24) | NOT NULL | `review` / `new_word_card` / `new_word_check` / `control_repetition` |
 | `state` | VARCHAR(16) | NOT NULL | `pending` / `answered` / `skipped` |
 | `answer_payload_hash` | VARCHAR(64) | NULL | порівняння повтору «той самий / інший вміст» |
@@ -226,7 +226,7 @@ erDiagram
 | `state_before` | JSONB | NOT NULL | знімок стану слова для відкату (AC-17) |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
-**Aggregate root:** `learners`. Незмінний журнал — джерело істини (ADR-0009).
+**Aggregate root:** `learners`. Незмінний журнал — джерело істини ([ADR-0009](adr/0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md)).
 
 ### Агрегат Learning — `answer_neutralizations` (append-only)
 
@@ -248,7 +248,7 @@ erDiagram
 | `course_position` | INTEGER | NULL | матеріалізований порядок base course (AC-09) |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
-**Aggregate root:** root (ADR-0010).
+**Aggregate root:** root ([ADR-0010](adr/0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md)).
 
 ### Агрегат Content — `entry_versions`
 
@@ -279,8 +279,8 @@ erDiagram
 | Table | Key columns | Constraints | Notes |
 |---|---|---|---|
 | `version_translations` | `version_id`, `kind` VARCHAR(16), `text_uk` VARCHAR(200), `position` | UNIQUE (`version_id`, `position`) | `canonical` / `variant` / `local` — пошук і підказка |
-| `version_accepted_answers` | `version_id`, `text_pl` VARCHAR(200), `is_canonical` | UNIQUE (`version_id`, `text_pl`) | прийняті польські відповіді (AC-12, AC-16); закриває OQ SAD §11 |
-| `validation_evidence` | `version_id`, `field`, `source`, `url` TEXT, `revision_id`, `attribution`, `outcome`, `retrieved_at` | FK CASCADE | доказ звірки й атрибуція CC BY-SA (ADR-0011) |
+| `version_accepted_answers` | `version_id`, `text_pl` VARCHAR(200), `is_canonical` | UNIQUE (`version_id`, `text_pl`) | прийняті польські відповіді (AC-12, AC-16); закриває OQ [SAD §11](sad.md#11-risks-and-technical-debt) |
+| `validation_evidence` | `version_id`, `field`, `source`, `url` TEXT, `revision_id`, `attribution`, `outcome`, `retrieved_at` | FK CASCADE | доказ звірки й атрибуція CC BY-SA ([ADR-0011](adr/0011-verify-content-reports-asynchronously-against-reference-snapshots.md)) |
 
 **Aggregate root:** `entry_versions` → `dictionary_entries`. Усі незмінні.
 
@@ -309,7 +309,7 @@ erDiagram
 | `origin` | VARCHAR(24) | NOT NULL | `card` / `answer_dispute` / `missing_word` |
 | `field` | VARCHAR(32) | NULL | `lemma` / `translation` / `pronunciation` / `example` |
 | `proposed_value` | VARCHAR(500) | NULL | (AC-34) |
-| `comment` | VARCHAR(1000) | NULL | показується лише як текст (PRD §6.1) |
+| `comment` | VARCHAR(1000) | NULL | показується лише як текст ([PRD §6.1](PRD.md)) |
 | `search_query` | VARCHAR(200) | NULL | для відсутнього запису |
 | `status` | VARCHAR(24) | NOT NULL | `pending_verification` / `in_editor_queue` / `closed` |
 | `outcome` | VARCHAR(24) | NULL | `applied` / `added_to_candidates` / `rejected` |
@@ -328,10 +328,10 @@ erDiagram
 
 | Table | Key columns | Constraints | Notes |
 |---|---|---|---|
-| `verification_jobs` | `content_report_id`, `status`, `attempts`, `next_attempt_at`, `last_error`, `claimed_at`, `completed_at` | UNIQUE (`content_report_id`) — ключ ідемпотентності | черга звірки з пропуском заблокованих рядків, 3 спроби (ADR-0011) |
+| `verification_jobs` | `content_report_id`, `status`, `attempts`, `next_attempt_at`, `last_error`, `claimed_at`, `completed_at` | UNIQUE (`content_report_id`) — ключ ідемпотентності | черга звірки з пропуском заблокованих рядків, 3 спроби ([ADR-0011](adr/0011-verify-content-reports-asynchronously-against-reference-snapshots.md)) |
 | `reference_entries` | `source`, `lemma`, `lemma_folded`, `field`, `value` VARCHAR(500), `url`, `revision_id`, `retrieved_at` | — | знімок Wikisłownik і кеш точкових запитів |
-| `search_forms` | `entry_id`, `version_id`, `lang` VARCHAR(2), `form_display`, `form_folded` VARCHAR(200), `is_lemma` | FK CASCADE | перебудовується при публікації (ADR-0012) |
-| `morph_forms` | `lang`, `source`, `lemma`, `form`, `tags` | — | лексикон для генерації форм; ліцензія VESUM — SAD §11 |
+| `search_forms` | `entry_id`, `version_id`, `lang` VARCHAR(2), `form_display`, `form_folded` VARCHAR(200), `is_lemma` | FK CASCADE | перебудовується при публікації ([ADR-0012](adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md)) |
+| `morph_forms` | `lang`, `source`, `lemma`, `form`, `tags` | — | лексикон для генерації форм; ліцензія VESUM — [SAD §11](sad.md#11-risks-and-technical-debt) |
 
 ### Агрегат Notifications — `notification_dispatches`
 
@@ -345,22 +345,22 @@ erDiagram
 | `due_at` | TIMESTAMPTZ | NOT NULL | |
 | `status` | VARCHAR(16) | NOT NULL | `pending` / `sending` / `sent` / `skipped` / `missed` / `failed` |
 | `attempts` | SMALLINT | NOT NULL | ≤ 3 тимчасові збої до доставки |
-| `claimed_at` / `sent_at` | TIMESTAMPTZ | NULL | метрика «≤ 2 хв» (PRD §6) |
+| `claimed_at` / `sent_at` | TIMESTAMPTZ | NULL | метрика «≤ 2 хв» ([PRD §6](PRD.md#6-non-functional-requirements)) |
 | `reason` | VARCHAR(200) | NULL | |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
-**Constraints:** UNIQUE (`recipient_telegram_user_id`, `kind`, `local_date`) — «не більше одного на дату» (ADR-0007).
+**Constraints:** UNIQUE (`recipient_telegram_user_id`, `kind`, `local_date`) — «не більше одного на дату» ([ADR-0007](adr/0007-dispatch-notifications-through-postgres-dispatch-table.md)).
 
 ## Indexes
 
 | Index | Columns | Query it serves |
 |---|---|---|
-| `ux_learners_telegram_user_id` | `learners(telegram_user_id)` | Пошук learner за ідентичністю з `initData` на кожен запит (ADR-0005) |
+| `ux_learners_telegram_user_id` | `learners(telegram_user_id)` | Пошук learner за ідентичністю з `initData` на кожен запит ([ADR-0005](adr/0005-authenticate-every-api-request-with-telegram-init-data.md)) |
 | `ux_learners_reporter_alias` | `learners(reporter_alias)` | Унікальність псевдоніма при генерації |
 | `ux_dictionary_entries_external_id` | `dictionary_entries(external_id)` | Ідемпотентний імпорт CSV |
 | `ix_dictionary_entries_course_position` | `dictionary_entries(course_position) WHERE published_version_id IS NOT NULL` | Добір нових лем у порядку base course («Складання session», AC-09) |
 | `ix_dictionary_entries_published_version_id` | `dictionary_entries(published_version_id)` | Індекс FK |
-| `ix_entry_versions_entry_id` | `entry_versions(entry_id, created_at)` | Історія версій і відкат (ADR-0010) |
+| `ix_entry_versions_entry_id` | `entry_versions(entry_id, created_at)` | Історія версій і відкат ([ADR-0010](adr/0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md)) |
 | `ix_entry_versions_based_on_version_id`, `ix_entry_versions_content_report_id` | FK | Індекси FK |
 | `ux_version_translations_version_position` | `version_translations(version_id, position)` | Переклади опублікованої версії на картці й в оцінці |
 | `ux_version_accepted_answers_version_text` | `version_accepted_answers(version_id, text_pl)` | Прийняті варіанти під час оцінки відповіді (AC-12) |
@@ -373,8 +373,8 @@ erDiagram
 | `ix_learning_sessions_learner_day` | `learning_sessions(learner_id, learner_day)` | Чи завершено session цієї доби — reminder (AC-26) |
 | `ux_session_items_session_position` | `session_items(session_id, position)` | Наступна неопрацьована картка (AC-24) |
 | `ix_session_items_entry_id` | FK | Індекс FK |
-| `ux_answer_events_session_item` | `answer_events(session_item_id)` | Ідемпотентність відповіді (ADR-0008) |
-| `ix_answer_events_learner_entry` | `answer_events(learner_id, entry_id, answered_at)` | Перебудова стану слова з журналу (ADR-0009) |
+| `ux_answer_events_session_item` | `answer_events(session_item_id)` | Ідемпотентність відповіді ([ADR-0008](adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)) |
+| `ix_answer_events_learner_entry` | `answer_events(learner_id, entry_id, answered_at)` | Перебудова стану слова з журналу ([ADR-0009](adr/0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md)) |
 | `ix_answer_events_learner_day_outcome` | `answer_events(learner_id, learner_day, outcome)` | Ліміт «Вже знаю» 10 на добу (AC-20, AC-21); KPI активних днів |
 | `ix_answer_events_entry_id`, `ix_answer_events_version_id` | FK | Індекси FK |
 | `ix_content_reports_learner_created` | `content_reports(learner_id, created_at)` | Ліміт 20 content reports на добу (AC-46) |
@@ -397,7 +397,7 @@ erDiagram
 | `ux_verification_jobs_content_report` | `verification_jobs(content_report_id)` | Ідемпотентність задачі звірки |
 | `ix_verification_jobs_status_next_attempt` | `verification_jobs(status, next_attempt_at)` | Захоплення належних задач звірки |
 | `ux_notification_dispatches_recipient_kind_date` | `notification_dispatches(recipient_telegram_user_id, kind, local_date)` | Одне відправлення на дату (AC-26, AC-44) |
-| `ix_notification_dispatches_status_due` | `notification_dispatches(status, due_at)` | Захоплення належних відправлень кожні 30 с (ADR-0007) |
+| `ix_notification_dispatches_status_due` | `notification_dispatches(status, due_at)` | Захоплення належних відправлень кожні 30 с ([ADR-0007](adr/0007-dispatch-notifications-through-postgres-dispatch-table.md)) |
 | `ix_notification_dispatches_learner_id` | FK | Індекс FK |
 
 ## Test fixtures
@@ -411,4 +411,4 @@ erDiagram
 
 ## Seeds
 
-Bootstrap- і lookup-сидів немає: статуси й види — константи застосунку, роль content editor — конфігурація (SAD §8), словник завантажує імпорт редакторського CSV, а не міграція.
+Bootstrap- і lookup-сидів немає: статуси й види — константи застосунку, роль content editor — конфігурація ([SAD §8](sad.md#8-crosscutting-concepts)), словник завантажує імпорт редакторського CSV, а не міграція.

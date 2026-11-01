@@ -2,7 +2,7 @@
 id: T35
 title: "Зробити екран онбордингу"
 layer: "ui"
-deps: ["T34", "T13"]
+deps: ["[T34](T34-miniapp-skeleton.md)", "[T13](T13-onboarding-api.md)"]
 acs: ["AC-01", "AC-02", "AC-27", "AC-53"]
 files_hint: ["ConstantLearning.MiniApp/src/features/onboarding/"]
 owner: "Viacheslav Melnichenko"

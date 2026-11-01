@@ -2,7 +2,7 @@
 id: T43
 title: "Видалити код групової моделі"
 layer: "wiring"
-deps: ["T32", "T07", "T20", "T34"]
+deps: ["[T32](T32-bot-webhook.md)", "[T07](T07-migrate-search-jobs-dispatches.md)", "[T20](T20-dictionary-import.md)", "[T34](T34-miniapp-skeleton.md)"]
 acs: []
 files_hint: ["ConstantLearning/Services/", "ConstantLearning/Jobs/", "ConstantLearning/Data/", "ConstantLearning/Enums/", "ConstantLearning/Resources/", "ConstantLearning/Program.cs", "ConstantLearning.Tests/Services/"]
 owner: "Viacheslav Melnichenko"
@@ -20,7 +20,7 @@ status: "todo"
 
 ## What
 
-Прибрати групові сервіси, Quartz-завдання, команди, сутності з `AppDbContext` і тексти бота; залишити лише те, що використовує новий модуль `Bot`. Snapshot EF після цього очікує видалення таблиць — його фіксує T44.
+Прибрати групові сервіси, Quartz-завдання, команди, сутності з `AppDbContext` і тексти бота; залишити лише те, що використовує новий модуль `Bot`. Snapshot EF після цього очікує видалення таблиць — його фіксує [T44](T44-migrate-drop-group-model.md).
 
 Файли: `ConstantLearning/Services/`, `ConstantLearning/Jobs/`, `ConstantLearning/Data/`, `ConstantLearning/Enums/`, `ConstantLearning/Resources/`, `ConstantLearning/Program.cs`, `ConstantLearning.Tests/Services/`
 

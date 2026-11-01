@@ -16,12 +16,12 @@ ticket: "TBD"
 
 ## Context
 
-PRD §1 і §3 виводять групову модель з ужитку без перенесення прогресу: дані належать незапущеному пілоту. Групові завдання на `DateTime.Now`, команди й таблиці `ChatRegistrations`, `LearnedWords`, `Words` несумісні з моделлю learner і версіями словника.
+[PRD §1](../PRD.md#1-context) і §3 виводять групову модель з ужитку без перенесення прогресу: дані належать незапущеному пілоту. Групові завдання на `DateTime.Now`, команди й таблиці `ChatRegistrations`, `LearnedWords`, `Words` несумісні з моделлю learner і версіями словника.
 
 ## Decision drivers
 
-- Non-goal PRD §3: перенесення прогресу груп
-- Нові таблиці словника з версіями несумісні з `Words` (ADR-0010)
+- Non-goal [PRD §3](../PRD.md#3-non-goals): перенесення прогресу груп
+- Нові таблиці словника з версіями несумісні з `Words` ([ADR-0010](0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md))
 - Одноразовий CSV-імпорт треба замінити (`architecture-map.md` §Constraints)
 
 ## Considered options
@@ -50,6 +50,6 @@ PRD §1 і §3 виводять групову модель з ужитку бе
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §4
-- Related ADR: [[0003-organise-code-into-feature-modules-inside-the-monolith]], [[0010-version-dictionary-entries-in-postgres-with-a-published-pointer]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §4
+- Related ADR: [ADR-0003](0003-organise-code-into-feature-modules-inside-the-monolith.md), [ADR-0010](0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md)

@@ -2,7 +2,7 @@
 id: T38
 title: "Зробити вправу пригадування, результат і оскарження"
 layer: "ui"
-deps: ["T37", "T17", "T24"]
+deps: ["[T37](T37-ui-session-shell.md)", "[T17](T17-answer-item.md)", "[T24](T24-answer-dispute.md)"]
 acs: ["AC-12", "AC-13", "AC-14", "AC-15", "AC-16", "AC-17", "AC-55", "AC-56", "AC-57"]
 files_hint: ["ConstantLearning.MiniApp/src/features/session/recall/"]
 owner: "Viacheslav Melnichenko"

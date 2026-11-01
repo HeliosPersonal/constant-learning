@@ -16,12 +16,12 @@ ticket: "TBD"
 
 ## Context
 
-PRD §1 обирає персональний trainer — застосунок усередині Telegram, де learner проходить заняття, а бот нагадує. Потрібно визначити, які поверхні будуємо і де виконуються фонові задачі: нагадування (AC-26), підсумки content reports (AC-37), дайджест редактора (AC-43) і звірка (AC-35).
+[PRD §1](../PRD.md#1-context) обирає персональний trainer — застосунок усередині Telegram, де learner проходить заняття, а бот нагадує. Потрібно визначити, які поверхні будуємо і де виконуються фонові задачі: нагадування (AC-26), підсумки content reports (AC-37), дайджест редактора (AC-43) і звірка (AC-35).
 
 ## Decision drivers
 
-- Пілот ~50 learner, ≥ 100 одночасних на одному екземплярі (PRD §6)
-- ≥ 99% нагадувань у межах 2 хв (PRD §6)
+- Пілот ~50 learner, ≥ 100 одночасних на одному екземплярі ([PRD §6](../PRD.md#6-non-functional-requirements))
+- ≥ 99% нагадувань у межах 2 хв ([PRD §6](../PRD.md#6-non-functional-requirements))
 - Один розробник, один Deployment з `replicas: 1` (§2)
 - Quartz у процесі вже є прецедентом (`architecture-map.md` §Conventions)
 
@@ -33,7 +33,7 @@ PRD §1 обирає персональний trainer — застосунок �
 
 ## Decision outcome
 
-**Chosen:** Option 1. Тика кожні 30 секунд у процесі досить для цілі 2 хв, а гарантію «не більше одного на дату» дає унікальний ключ у БД (ADR-0007), а не топологія; окремий worker виправданий лише з другою реплікою.
+**Chosen:** Option 1. Тика кожні 30 секунд у процесі досить для цілі 2 хв, а гарантію «не більше одного на дату» дає унікальний ключ у БД ([ADR-0007](0007-dispatch-notifications-through-postgres-dispatch-table.md)), а не топологія; окремий worker виправданий лише з другою реплікою.
 
 ## Consequences
 
@@ -50,6 +50,6 @@ PRD §1 обирає персональний trainer — застосунок �
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §4
-- Related ADR: [[0002-build-mini-app-as-react-spa-served-by-aspnet-core]], [[0007-dispatch-notifications-through-postgres-dispatch-table]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §4
+- Related ADR: [ADR-0002](0002-build-mini-app-as-react-spa-served-by-aspnet-core.md), [ADR-0007](0007-dispatch-notifications-through-postgres-dispatch-table.md)

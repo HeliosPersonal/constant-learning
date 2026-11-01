@@ -2,7 +2,7 @@
 id: T33
 title: "Приймати клієнтську телеметрію й публікувати серверні метрики"
 layer: "ports"
-deps: ["T01"]
+deps: ["[T01](T01-module-skeleton.md)"]
 acs: []
 files_hint: ["ConstantLearning/Features/Learning/Telemetry/", "ConstantLearning/Platform/Metrics/"]
 owner: "Viacheslav Melnichenko"

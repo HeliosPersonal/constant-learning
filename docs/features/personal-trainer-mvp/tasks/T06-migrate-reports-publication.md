@@ -2,7 +2,7 @@
 id: T06
 title: "Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій"
 layer: "migration"
-deps: ["T05"]
+deps: ["[T05](T05-migrate-learning.md)"]
 acs: []
 files_hint: ["docs/features/personal-trainer-mvp/migrations/20261031120011_create_content_reports_*", "docs/features/personal-trainer-mvp/migrations/20261031120012_add_content_report_fk_to_entry_versions_*", "docs/features/personal-trainer-mvp/migrations/20261031120013_create_answer_neutralizations_*", "docs/features/personal-trainer-mvp/migrations/20261031120014_create_validation_evidence_*", "docs/features/personal-trainer-mvp/migrations/20261031120015_create_publication_log_*", "ConstantLearning/Migrations/", "ConstantLearning/Features/Content/Data/", "ConstantLearning/Features/Learning/Data/"]
 owner: "Viacheslav Melnichenko"

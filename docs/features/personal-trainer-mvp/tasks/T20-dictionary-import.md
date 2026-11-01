@@ -2,7 +2,7 @@
 id: T20
 title: "Імпортувати редакторський CSV у версійований словник"
 layer: "infra"
-deps: ["T04", "T06"]
+deps: ["[T04](T04-migrate-content-core.md)", "[T06](T06-migrate-reports-publication.md)"]
 acs: ["AC-32", "AC-33"]
 files_hint: ["ConstantLearning/Features/Content/Import/", "ConstantLearning/Features/Content/Publishing/", "ConstantLearning/HostedServices/DatabaseInitializationService.cs", "docs/dictionary/content-schema.md", "ConstantLearning.Tests/Content/Import/"]
 owner: "Viacheslav Melnichenko"
@@ -16,7 +16,7 @@ status: "todo"
 
 ## Why
 
-[ADR-0010](../adr/0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md); PRD §1 про робочу копію словника; [content-schema.md](../../../dictionary/content-schema.md).
+[ADR-0010](../adr/0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md); [PRD §1](../PRD.md#1-context) про робочу копію словника; [content-schema.md](../../../dictionary/content-schema.md).
 
 ## What
 

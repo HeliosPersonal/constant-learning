@@ -2,7 +2,7 @@
 id: T49
 title: "Перевірити бюджети латентності під навантаженням"
 layer: "tests"
-deps: ["T45", "T17", "T19", "T22", "T30", "T33", "T36"]
+deps: ["[T45](T45-deployment-fixes.md)", "[T17](T17-answer-item.md)", "[T19](T19-today-api.md)", "[T22](T22-dictionary-search-api.md)", "[T30](T30-reminders.md)", "[T33](T33-client-telemetry.md)", "[T36](T36-ui-today.md)"]
 acs: []
 files_hint: ["tests/load/", ".github/workflows/"]
 owner: "Viacheslav Melnichenko"
@@ -20,7 +20,7 @@ NFR латентності з [PRD §6](../PRD.md) і QG-2 у [sad §10](../sad.
 
 ## What
 
-Сценарій навантаження на 100 одночасних learner: відкриття «Сьогодні», відповіді на картки, пошук; звіт p95 за серверними метриками з T33.
+Сценарій навантаження на 100 одночасних learner: відкриття «Сьогодні», відповіді на картки, пошук; звіт p95 за серверними метриками з [T33](T33-client-telemetry.md).
 
 Файли: `tests/load/`, `.github/workflows/`
 

@@ -2,7 +2,7 @@
 id: T09
 title: "Реалізувати оцінку відповіді з нормалізацією й різницею написання"
 layer: "domain"
-deps: ["T01"]
+deps: ["[T01](T01-module-skeleton.md)"]
 acs: ["AC-12", "AC-13", "AC-14", "AC-15", "AC-16", "AC-56", "AC-57"]
 files_hint: ["ConstantLearning/Features/Learning/Domain/Evaluation/", "ConstantLearning.Tests/Learning/Domain/Evaluation/"]
 owner: "Viacheslav Melnichenko"
@@ -33,4 +33,4 @@ AC-12…AC-16 і правило «Прийняті варіанти» з [PRD §
 
 ## Notes
 
-OQ-5 закрито: правило «Прийняті варіанти» в PRD §5, AC-56, AC-57.
+OQ-5 закрито: правило «Прийняті варіанти» в [PRD §5](../PRD.md#5-acceptance-criteria), AC-56, AC-57.

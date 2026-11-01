@@ -2,7 +2,7 @@
 id: T46
 title: "Покрити наскрізними тестами критичні потоки через UI"
 layer: "tests"
-deps: ["T35", "T38", "T40", "T41", "T45"]
+deps: ["[T35](T35-ui-onboarding.md)", "[T38](T38-ui-recall.md)", "[T40](T40-ui-content-report.md)", "[T41](T41-ui-settings.md)", "[T45](T45-deployment-fixes.md)"]
 acs: ["AC-01", "AC-03", "AC-12", "AC-17", "AC-34"]
 files_hint: ["ConstantLearning.MiniApp/e2e/"]
 owner: "Viacheslav Melnichenko"

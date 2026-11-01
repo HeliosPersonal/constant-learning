@@ -2,7 +2,7 @@
 id: T13
 title: "Реалізувати онбординг і профіль learner"
 layer: "app"
-deps: ["T12"]
+deps: ["[T12](T12-initdata-auth.md)"]
 acs: ["AC-01", "AC-02", "AC-53"]
 files_hint: ["ConstantLearning/Features/Identity/Onboarding/", "ConstantLearning/Features/Identity/Learners/", "ConstantLearning.Tests/Identity/"]
 owner: "Viacheslav Melnichenko"

@@ -20,7 +20,7 @@ ticket: "TBD"
 
 ## Decision drivers
 
-- NFR «0 втрачених відповідей» вимагає однієї транзакції на відповідь (PRD §6)
+- NFR «0 втрачених відповідей» вимагає однієї транзакції на відповідь ([PRD §6](../PRD.md#6-non-functional-requirements))
 - Конвенції DI в `Program.cs`, primary constructors, `IOptions<T>` (`architecture-map.md`)
 - Один розробник, один екземпляр
 
@@ -50,6 +50,6 @@ ticket: "TBD"
 
 ## Links
 
-- PRD: [[../PRD.md]]
-- SAD: [[../sad.md]] §5
-- Related ADR: [[0004-retire-the-group-model-without-data-migration]]
+- PRD: [PRD](../PRD.md)
+- SAD: [SAD](../sad.md) §5
+- Related ADR: [ADR-0004](0004-retire-the-group-model-without-data-migration.md)

@@ -2,7 +2,7 @@
 id: T48
 title: "Застосувати переходи word status і control repetition у відповіді"
 layer: "app"
-deps: ["T17"]
+deps: ["[T17](T17-answer-item.md)"]
 acs: ["AC-18", "AC-19", "AC-22", "AC-23"]
 files_hint: ["ConstantLearning/Features/Learning/Sessions/Answer/Status/", "ConstantLearning.Tests/Learning/Sessions/Status/"]
 owner: "Viacheslav Melnichenko"

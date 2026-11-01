@@ -2,7 +2,7 @@
 id: T28
 title: "Реалізувати список застосованих змін і відкат"
 layer: "app"
-deps: ["T27"]
+deps: ["[T27](T27-editor-queue.md)"]
 acs: ["AC-48", "AC-49", "AC-50"]
 files_hint: ["ConstantLearning/Features/Content/Editor/Rollback/", "ConstantLearning.Tests/Content/Editor/"]
 owner: "Viacheslav Melnichenko"

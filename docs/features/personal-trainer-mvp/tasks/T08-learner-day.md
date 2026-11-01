@@ -2,7 +2,7 @@
 id: T08
 title: "Реалізувати обчислення доби learner зі зміною поясу"
 layer: "domain"
-deps: ["T01"]
+deps: ["[T01](T01-module-skeleton.md)"]
 acs: ["AC-07", "AC-54"]
 files_hint: ["ConstantLearning/Features/Learning/Domain/LearnerDay/", "ConstantLearning.Tests/Learning/Domain/LearnerDay/"]
 owner: "Viacheslav Melnichenko"

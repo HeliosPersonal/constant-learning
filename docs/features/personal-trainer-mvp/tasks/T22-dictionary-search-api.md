@@ -2,7 +2,7 @@
 id: T22
 title: "Реалізувати пошук у словнику й картку запису"
 layer: "ports"
-deps: ["T21", "T12"]
+deps: ["[T21](T21-search-forms.md)", "[T12](T12-initdata-auth.md)"]
 acs: ["AC-30", "AC-31", "AC-32", "AC-33"]
 files_hint: ["ConstantLearning/Features/Content/Search/Api/", "ConstantLearning.Tests/Content/Search/"]
 owner: "Viacheslav Melnichenko"

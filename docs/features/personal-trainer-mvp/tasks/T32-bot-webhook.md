@@ -2,7 +2,7 @@
 id: T32
 title: "Переробити webhook бота під Mini App"
 layer: "ports"
-deps: ["T03"]
+deps: ["[T03](T03-migrate-identity.md)"]
 acs: []
 files_hint: ["ConstantLearning/Features/Bot/", "ConstantLearning/Platform/Telegram/", "ConstantLearning/Controllers/TelegramController.cs", "ConstantLearning/HostedServices/WebhookConfigurationService.cs", "ConstantLearning.Tests/Bot/"]
 owner: "Viacheslav Melnichenko"

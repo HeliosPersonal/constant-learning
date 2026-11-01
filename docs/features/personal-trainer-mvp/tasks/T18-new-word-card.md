@@ -2,7 +2,7 @@
 id: T18
 title: "Реалізувати картку нового слова, «Далі» і «Вже знаю»"
 layer: "app"
-deps: ["T17", "T10"]
+deps: ["[T17](T17-answer-item.md)", "[T10](T10-review-scheduler.md)"]
 acs: ["AC-11", "AC-20", "AC-21", "AC-52"]
 files_hint: ["ConstantLearning/Features/Learning/Sessions/NewWords/", "ConstantLearning.Tests/Learning/Sessions/"]
 owner: "Viacheslav Melnichenko"

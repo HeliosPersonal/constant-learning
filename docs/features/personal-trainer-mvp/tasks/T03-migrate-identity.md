@@ -2,7 +2,7 @@
 id: T03
 title: "Перенести міграції learner і нагадувань"
 layer: "migration"
-deps: ["T01"]
+deps: ["[T01](T01-module-skeleton.md)"]
 acs: []
 files_hint: ["docs/features/personal-trainer-mvp/migrations/20261031120000_create_learners_*", "docs/features/personal-trainer-mvp/migrations/20261031120001_create_reminder_schedules_*", "ConstantLearning/Migrations/", "ConstantLearning/Features/Identity/Data/"]
 owner: "Viacheslav Melnichenko"
