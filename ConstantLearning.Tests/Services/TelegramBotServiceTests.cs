@@ -4,7 +4,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using Telegram.Bot;
+using ConstantLearning.Platform.Telegram;
 
 namespace ConstantLearning.Tests.Services;
 
@@ -14,7 +14,7 @@ public class TelegramBotServiceTests
     public void Constructor_InitializesService_Successfully()
     {
         // Підготовка
-        var botClientMock = new Mock<ITelegramBotClient>();
+        var botClientMock = new Mock<ITelegramClient>();
         var botMessagesMock = new Mock<IBotMessagesService>();
         var loggerMock = new Mock<ILogger<TelegramBotService>>();
         var serviceProviderMock = new Mock<IServiceProvider>();
@@ -37,7 +37,7 @@ public class TelegramBotServiceTests
     public async Task SendMessageAsync_DoesNotThrow_WithValidParameters()
     {
         // Підготовка
-        var botClientMock = new Mock<ITelegramBotClient>();
+        var botClientMock = new Mock<ITelegramClient>();
         var botMessagesMock = new Mock<IBotMessagesService>();
         var loggerMock = new Mock<ILogger<TelegramBotService>>();
         var serviceProviderMock = new Mock<IServiceProvider>();

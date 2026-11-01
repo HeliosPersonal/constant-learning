@@ -42,7 +42,7 @@
 | [T29](./T29-notification-dispatcher.md) | Реалізувати dispatcher таблиці відправлень | infra | Viacheslav Melnichenko | M | [T07](T07-migrate-search-jobs-dispatches.md), [T02](T02-test-harness.md), [T32](T32-bot-webhook.md) | todo |
 | [T30](./T30-reminders.md) | Реалізувати планування й умови нагадувань | app | Viacheslav Melnichenko | M | [T29](T29-notification-dispatcher.md), [T08](T08-learner-day.md), [T14](T14-settings-api.md), [T16](T16-session-continuation.md) | todo |
 | [T31](./T31-summaries-digest.md) | Реалізувати щоденний підсумок learner і дайджест редактора | app | Viacheslav Melnichenko | M | [T29](T29-notification-dispatcher.md), [T23](T23-content-report-api.md) | todo |
-| [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | in_progress |
+| [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
 | [T33](./T33-client-telemetry.md) | Приймати клієнтську телеметрію й публікувати серверні метрики | ports | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
 | [T34](./T34-miniapp-skeleton.md) | Створити каркас Mini App, що його роздає бекенд | ui | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | in_progress |
@@ -94,3 +94,5 @@
 - [T35](T35-ui-onboarding.md): реалізація триває; реальний контакт власника для запиту на видалення у документах не задано, питання користувачу відкрите. До отримання контакту повний DoD не виконано; підставні реальні контакти не використовуються.
 
 - [T06](T06-migrate-reports-publication.md): переглянуто чотири сутності, конфігурації, п’ять міграцій і snapshot (+359 без переписування попередніх моделей). 10 SQL-блоків відповідають staged, Check порожня. PostgreSQL: 38 колонок, 18 індексів, 17 constraints, up/down/reapply, зв’язки report/version, нейтралізація без зміни JSONB-знімка, докази й журнал. 47/47 цільових і незалежні 376/376 спільних Release-тестів без пропусків; build/scoped format/diff check успішні, початкові NU1903 збережені.
+
+- [T32](T32-bot-webhook.md): переглянуто wrapper, webhook/secret, Identity-порт can_message, конфігурацію й сумісну адаптацію legacy-сервісу. 14/14 цільових і незалежні 376/376 спільних Release-тестів без пропусків; build, scoped format нових каталогів і docs links проходять. Невірний секрет401 перевіряється до JSON; /start має Mini App кнопку, блокування змінює лише дозвіл, StopAsync не видаляє webhook. HTTP-логування URL із token і автоматичні повтори SDK вимкнені; зовнішніх Telegram-викликів не було. Додано ключі SecretToken/MiniAppUrl у шаблон секрету та runbook.

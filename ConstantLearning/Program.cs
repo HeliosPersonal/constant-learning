@@ -8,9 +8,9 @@ using ConstantLearning.HostedServices;
 using ConstantLearning.Jobs;
 using ConstantLearning.Platform;
 using ConstantLearning.Platform.Metrics;
+using ConstantLearning.Platform.Telegram;
 using ConstantLearning.Services;
 using Quartz;
-using Telegram.Bot;
 
 namespace ConstantLearning;
 
@@ -35,14 +35,7 @@ public static class Program
         builder.Services.AddContent();
         builder.Services.AddNotifications();
         builder.Services.AddBot();
-
-        var telegramOptions = builder
-                                  .Configuration
-                                  .GetSection(TelegramOptions.SectionName)
-                                  .Get<TelegramOptions>()
-                              ?? throw new InvalidOperationException("Telegram configuration not found");
-
-        builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramOptions.BotToken));
+        builder.Services.AddTelegram();
         builder.Services.AddScoped<ITelegramBotService, TelegramBotService>();
 
         builder.Services.AddSingleton<IBotMessagesService, BotMessagesService>();
