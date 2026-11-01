@@ -2,7 +2,9 @@ using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using ConstantLearning.Features.Identity.Auth;
+using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Identity.Onboarding;
+using ConstantLearning.Platform.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,7 +13,7 @@ namespace ConstantLearning.Features.Identity.Learners;
 [ApiController]
 [Authorize]
 [Route("api/v1/learners/me")]
-public sealed class LearnersController(OnboardingService onboarding) : ControllerBase
+public sealed class LearnersController(OnboardingService onboarding, ILearnerDayStateService learnerDays, AppDbContext db) : ControllerBase
 {
     [HttpGet(Name = "getCurrentLearner")]
     [ProducesResponseType<LearnerResponse>(StatusCodes.Status200OK)]
@@ -19,10 +21,25 @@ public sealed class LearnersController(OnboardingService onboarding) : Controlle
     [ProducesResponseType<IdentityError>(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetCurrentLearner(CancellationToken cancellationToken)
     {
-        var learner = await onboarding.FindAsync(TelegramUserId(), cancellationToken);
-        return learner?.OnboardedAt is null
-            ? NotFound(new IdentityError("learner.not_onboarded", "Спершу налаштуйте тренер."))
-            : Ok(learner);
+        if (User.GetLearnerId() is not { } learnerId)
+        {
+            return NotFound(new IdentityError("learner.not_onboarded", "Спершу налаштуйте тренер."));
+        }
+
+        return await ReadCurrentLearnerAsync(learnerId, cancellationToken);
+    }
+
+    private async Task<IActionResult> ReadCurrentLearnerAsync(Guid learnerId, CancellationToken cancellationToken)
+    {
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        var current = await learnerDays.GetForUpdateAsync(learnerId, cancellationToken);
+        if (current is null)
+        {
+            return NotFound(new IdentityError("learner.not_onboarded", "Спершу налаштуйте тренер."));
+        }
+
+        await transaction.CommitAsync(cancellationToken);
+        return Ok(LearnerResponse.From(current.Learner));
     }
 
     [HttpPost("onboarding", Name = "completeOnboarding")]
@@ -36,7 +53,10 @@ public sealed class LearnersController(OnboardingService onboarding) : Controlle
         // AC-53: навіть невалідне тіло повторного запиту не повинне змінювати наявний профіль.
         if (await onboarding.FindAsync(telegramUserId, cancellationToken) is { OnboardedAt: not null } existing)
         {
-            return Ok(existing);
+            // Дозрілий ліміт уже заплановано сервером; тіло повторного запиту й далі ігнорується.
+            return existing.PendingDailyNewWordsLimit is not null
+                ? await ReadCurrentLearnerAsync(existing.Id, cancellationToken)
+                : Ok(existing);
         }
 
         OnboardingRequest? request;

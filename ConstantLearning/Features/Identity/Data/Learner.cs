@@ -13,6 +13,11 @@ public sealed class Learner
     public short? PendingDailyNewWordsLimit { get; set; }
     public Instant? PendingLimitEffectiveFrom { get; set; }
     public Instant? NewWordsAvailableFrom { get; set; }
+    public LocalDate? CurrentDayDate { get; set; }
+    public Instant? CurrentDayStartsAt { get; set; }
+    public Instant? CurrentDayEndsAt { get; set; }
+    public Instant? CurrentDayOriginalEndsAt { get; set; }
+    public string? CurrentDayTimeZoneAtStart { get; set; }
     public string? ReporterAlias { get; set; }
     public bool CanMessage { get; set; }
     public Instant? OnboardedAt { get; set; }

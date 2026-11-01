@@ -939,6 +939,27 @@ namespace ConstantLearning.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<LocalDate?>("CurrentDayDate")
+                        .HasColumnType("date")
+                        .HasColumnName("current_day_date");
+
+                    b.Property<Instant?>("CurrentDayEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("current_day_ends_at");
+
+                    b.Property<Instant?>("CurrentDayOriginalEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("current_day_original_ends_at");
+
+                    b.Property<Instant?>("CurrentDayStartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("current_day_starts_at");
+
+                    b.Property<string>("CurrentDayTimeZoneAtStart")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("current_day_time_zone_at_start");
+
                     b.Property<short>("DailyNewWordsLimit")
                         .HasColumnType("smallint")
                         .HasColumnName("daily_new_words_limit");

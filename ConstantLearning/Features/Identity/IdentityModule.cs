@@ -2,6 +2,8 @@ using ConstantLearning.Configuration;
 using ConstantLearning.Features.Identity.Auth;
 using ConstantLearning.Features.Identity.Onboarding;
 using ConstantLearning.Features.Identity.Messaging;
+using ConstantLearning.Features.Identity.LearnerDays;
+using ConstantLearning.Features.Identity.Settings;
 using Microsoft.AspNetCore.Authentication;
 
 namespace ConstantLearning.Features.Identity;
@@ -14,6 +16,8 @@ public static class IdentityModule
         services.Configure<IdentityOptions>(configuration.GetSection(IdentityOptions.SectionName));
         services.AddSingleton<TelegramInitDataValidator>();
         services.AddScoped<OnboardingService>();
+        services.AddScoped<ILearnerDayStateService, LearnerDayStateService>();
+        services.AddScoped<LearnerSettingsService>();
         services.AddScoped<IMessagingPermissionService, MessagingPermissionService>();
         services.AddTransient<IClaimsTransformation, ContentEditorClaimsTransformation>();
         services.AddAuthentication(TelegramAuthentication.Scheme)

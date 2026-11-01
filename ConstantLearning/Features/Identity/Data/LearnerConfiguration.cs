@@ -12,6 +12,7 @@ internal sealed class LearnerConfiguration : IEntityTypeConfiguration<Learner>
         builder.Property(learner => learner.Id).ValueGeneratedNever();
         builder.Property(learner => learner.FirstName).HasMaxLength(64);
         builder.Property(learner => learner.TimeZone).HasMaxLength(64).IsRequired();
+        builder.Property(learner => learner.CurrentDayTimeZoneAtStart).HasMaxLength(64);
         builder.Property(learner => learner.ReporterAlias).HasMaxLength(16);
         builder.Property(learner => learner.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(learner => learner.Version).IsRowVersion();

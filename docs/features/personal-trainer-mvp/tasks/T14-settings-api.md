@@ -24,6 +24,12 @@ US-11 у [PRD](../PRD.md); потік «Налаштування темпу, п�
 
 Файли: `ConstantLearning/Features/Identity/Settings/`, `ConstantLearning.Tests/Identity/`
 
+Для повторних змін поясу реалізація зберігає повний поточний знімок доби у п'яти nullable-полях `learners.current_day_*`, описаних у [моделі даних](../data-model.md). Окрема additive EF-міграція `PersistCurrentLearnerDay` виконується після [T07](T07-migrate-search-jobs-dispatches.md) і перед вилученням застарілої схеми у [T44](T44-migrate-drop-group-model.md); початкові SQL-міграції не змінюються. Порожній знімок ініціалізується ліниво за старим збереженим поясом у транзакції з блокуванням learner. Наявний `xmin` захищає атомарні зміни знімка, поясу й ліміту.
+
+Порт `ILearnerDayStateService.GetForUpdateAsync` повертає tracked learner і актуальну добу в транзакції викликувача для подальших операцій навчання та нагадувань. `ChangeTimeZone` перераховує межу доби й майбутній pending limit. Успішне збереження налаштувань викликає `ILearnerSettingsChangedHandler.HandleAsync` до commit у спільному scoped `AppDbContext`. Помилка обробника відкочує всю зміну налаштувань.
+
+**Заплановане під'єднання:** [T30](T30-reminders.md) зареєструє обробник цього порту для перерахунку persistent dispatch rows; зараз таких обробників немає. Зовнішні виклики виконує dispatcher після commit.
+
 ## Definition of Done
 
 - [ ] інтеграційні тести AC-27, AC-45 зелені
