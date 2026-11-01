@@ -11,14 +11,14 @@
 |---|---|---|---|---|---|---|
 | [T01](./T01-module-skeleton.md) | Створити каркас feature-модулів, Platform і NodaTime | wiring | Viacheslav Melnichenko | M | — | done |
 | [T02](./T02-test-harness.md) | Додати інтеграційні тести на PostgreSQL з FakeClock і фікстурами | tests | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
-| [T03](./T03-migrate-identity.md) | Перенести міграції learner і нагадувань | migration | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | todo |
+| [T03](./T03-migrate-identity.md) | Перенести міграції learner і нагадувань | migration | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | in_progress |
 | [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | todo |
 | [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | todo |
 | [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | todo |
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | todo |
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
-| [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | in_progress |
+| [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | blocked |
 | [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
 | [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | todo |
 | [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | todo |
@@ -70,3 +70,7 @@
 - [T02](T02-test-harness.md): harness на PostgreSQL 16 застосовує міграції й очищує стан; контрактні перевірки виявляють невалідні HTTP-відповіді й рядки черг. 14/14 цільових і 180/180 спільних Release-тестів без пропусків; build та scoped format успішні. Відсутній Docker локально дає пояснений skip, у CI — помилку; додано backend PR workflow. Виправлено лише лапки в YAML description, що блокувало парсер. Початкові NU1903 зберігаються.
 
 - [T08](T08-learner-day.md): незалежно перевірено 22/22 часові тести й переглянуто реалізацію. Варшава → Токіо/Нью-Йорк, DST, fallback, точні межі та повторні зміни поясу покриті; сервіс використовує IClock без БД. Спільні Release build і 180/180 тестів зелені. Для інтеграції потрібно передавати попередній знімок доби; межа вже створеної session незмінна.
+
+- [T10](T10-review-scheduler.md): реалізація триває; очікується рішення користувача про суперечність меж інтервалу, коли фактичний попередній інтервал ≥180 діб (нижня prev+1 перевищує стелю 180). До рішення задача не може бути done.
+
+- [T10](T10-review-scheduler.md): переглянуто порт, MEMORIZE і проєкцію журналу; незалежні 48/48 тестів зелені, scoped format успішний. Часткову реалізацію зафіксовано; для prev≥180 повертається явний ReviewIntervalConflictException до рішення користувача. Повний DoD не виконано; залежні задачі не розблоковано.
