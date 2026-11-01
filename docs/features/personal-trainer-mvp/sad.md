@@ -129,31 +129,36 @@ ConstantLearning.MiniApp/  React + TypeScript + Vite
 ConstantLearning.Tests/    модульні й інтеграційні тести
 ```
 
-**C4 Container (L2):**
+**C4 Container (L2):** та сама нотація, що й у §3. Світло-синій — контейнери trainer усередині пунктирної межі системи.
 
 ```mermaid
-C4Container
-    title personal-trainer-mvp — Containers
+flowchart TB
+    learner["<b>learner</b><br/><i>[Person]</i><br/>Щоденні заняття"]
+    editor["<b>content editor</b><br/><i>[Person]</i><br/>Розгляд content reports"]
+    telegram["<b>Telegram</b><br/><i>[External System]</i><br/>Bot API і клієнт"]
 
-    Person(learner, "learner", "Щоденні заняття")
-    Person(editor, "content editor", "Розгляд content reports")
+    subgraph trainer["trainer — Software System"]
+        miniapp["<b>Mini App</b><br/><i>[Container: React, TS, Vite]</i><br/>Сьогодні, session, словник,<br/>налаштування, черга редактора"]
+        api["<b>Backend</b><br/><i>[Container: ASP.NET Core, .NET 10]</i><br/>REST API, webhook бота,<br/>фонові тики нагадувань і звірки"]
+        db[("<b>PostgreSQL</b><br/><i>[Database: PostgreSQL 16]</i><br/>прогрес, журнал відповідей,<br/>версії словника, відправлення")]
+    end
 
-    Container_Boundary(trainer, "trainer") {
-        Container(miniapp, "Mini App", "React, TypeScript, Vite", "Сьогодні, session, словник, налаштування, черга редактора")
-        Container(api, "Backend", "ASP.NET Core, .NET 10", "REST API, webhook бота, фонові тики нагадувань і звірки")
-        ContainerDb(db, "PostgreSQL", "PostgreSQL 16", "learner, прогрес, журнал відповідей, версії словника, форми пошуку, відправлення")
-    }
+    refs["<b>Довідкові джерела</b><br/><i>[External System]</i><br/>Wikisłownik, WSJP PAN"]
 
-    System_Ext(telegram, "Telegram", "Bot API і клієнт")
-    System_Ext(refs, "Довідкові джерела", "Wikisłownik, WSJP PAN")
+    learner -- "Користується<br/><i>[Telegram WebView]</i>" --> miniapp
+    editor -- "Розглядає чергу<br/><i>[Telegram WebView]</i>" --> miniapp
+    telegram <-- "Webhook оновлень;<br/>нагадування, підсумки, дайджест<br/><i>[HTTPS]</i>" --> api
+    miniapp -- "JSON API з initData<br/><i>[HTTPS, той самий origin]</i>" --> api
+    api -- "Читає й пише<br/><i>[EF Core, Npgsql]</i>" --> db
+    api -- "Точкові запити й дамп<br/><i>[HTTPS]</i>" --> refs
 
-    Rel(learner, miniapp, "Користується", "Telegram WebView")
-    Rel(editor, miniapp, "Розглядає чергу", "Telegram WebView")
-    Rel(miniapp, api, "JSON API з initData", "HTTPS, той самий origin")
-    Rel(telegram, api, "Webhook оновлень", "HTTPS")
-    Rel(api, telegram, "Нагадування, підсумки, дайджест", "HTTPS")
-    Rel(api, db, "Читає й пише", "EF Core, Npgsql")
-    Rel(api, refs, "Точкові запити й дамп", "HTTPS")
+    classDef person fill:#08427b,stroke:#052e56,color:#ffffff
+    classDef container fill:#438dd5,stroke:#2e6295,color:#ffffff
+    classDef external fill:#8a8a8a,stroke:#5e5e5e,color:#ffffff
+    class learner,editor person
+    class miniapp,api,db container
+    class telegram,refs external
+    style trainer fill:none,stroke:#1168bd,stroke-dasharray:6 4,color:#1168bd
 ```
 
 ## 6. Runtime view
