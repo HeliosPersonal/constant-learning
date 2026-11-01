@@ -5,7 +5,7 @@ import { ThemeProvider } from '../src/theme/ThemeProvider';
 import { createQueryClient } from '../src/api/query';
 import { Onboarding } from '../src/features/onboarding/Onboarding';
 import { OnboardingGate } from '../src/features/onboarding/OnboardingGate';
-import { parsePrivacyContact } from '../src/features/onboarding/privacy';
+import { parsePrivacyContact, resolvePrivacyContact } from '../src/features/onboarding/privacy';
 import type { ApiErrorBody, Learner, OnboardingRequest } from '../src/features/onboarding/api';
 import { themeStore } from '../src/theme/store';
 
@@ -35,6 +35,12 @@ function enableReminder() { fireEvent.click(screen.getByLabelText('Нагаду�
 afterEach(() => { clients.forEach(client => client.clear()); clients.length = 0; vi.unstubAllGlobals(); vi.restoreAllMocks(); window.history.replaceState(null, '', '/'); });
 
 describe('Приватність перед початком', () => {
+  it('без перевизначення використовує погоджений mailto, а порожнє чи невалідне значення блокує початок', () => {
+    expect(resolvePrivacyContact(undefined)?.url).toBe('mailto:melnichenkoviatcheslav@gmail.com');
+    expect(resolvePrivacyContact('')).toBeUndefined();
+    expect(resolvePrivacyContact('invalid')).toBeUndefined();
+    expect(resolvePrivacyContact('mailto:privacy@example.test')?.url).toBe('mailto:privacy@example.test');
+  });
   it('показує склад даних, строки видалення та контакт перед формою', () => {
     form();
     const privacy = screen.getByRole('heading', { name: 'Ваші дані — під вашим контролем' });

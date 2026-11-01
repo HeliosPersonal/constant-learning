@@ -15,4 +15,11 @@ export function parsePrivacyContact(value: unknown): PrivacyContact | undefined 
   } catch { /* Невалідний контакт не дозволяє завершити онбординг. */ }
 }
 
-export const configuredPrivacyContact = parsePrivacyContact(import.meta.env.VITE_PRIVACY_CONTACT_URL);
+// Публічний контакт погоджено власником проєкту 2026-11-01.
+const defaultPrivacyContactUrl = 'mailto:melnichenkoviatcheslav@gmail.com';
+
+export function resolvePrivacyContact(value: unknown): PrivacyContact | undefined {
+  return parsePrivacyContact(value === undefined ? defaultPrivacyContactUrl : value);
+}
+
+export const configuredPrivacyContact = resolvePrivacyContact(import.meta.env.VITE_PRIVACY_CONTACT_URL);

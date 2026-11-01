@@ -18,7 +18,7 @@
 | [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | done |
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
-| [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | blocked |
+| [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | in_progress |
 | [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
 | [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | done |
 | [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | done |
@@ -32,8 +32,8 @@
 | [T19](./T19-today-api.md) | Реалізувати екран «Сьогодні» на сервері | app | Viacheslav Melnichenko | S | [T16](T16-session-continuation.md) | todo |
 | [T20](./T20-dictionary-import.md) | Імпортувати редакторський CSV у версійований словник | infra | Viacheslav Melnichenko | L | [T04](T04-migrate-content-core.md), [T06](T06-migrate-reports-publication.md) | done |
 | [T21](./T21-search-forms.md) | Генерувати форми пошуку для опублікованих версій | infra | Viacheslav Melnichenko | M | [T20](T20-dictionary-import.md), [T07](T07-migrate-search-jobs-dispatches.md) | done |
-| [T22](./T22-dictionary-search-api.md) | Реалізувати пошук у словнику й картку запису | ports | Viacheslav Melnichenko | M | [T21](T21-search-forms.md), [T12](T12-initdata-auth.md) | todo |
-| [T23](./T23-content-report-api.md) | Реалізувати надсилання content report з лімітом і дедуплікацією | app | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md), [T07](T07-migrate-search-jobs-dispatches.md), [T12](T12-initdata-auth.md) | todo |
+| [T22](./T22-dictionary-search-api.md) | Реалізувати пошук у словнику й картку запису | ports | Viacheslav Melnichenko | M | [T21](T21-search-forms.md), [T12](T12-initdata-auth.md) | in_progress |
+| [T23](./T23-content-report-api.md) | Реалізувати надсилання content report з лімітом і дедуплікацією | app | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md), [T07](T07-migrate-search-jobs-dispatches.md), [T12](T12-initdata-auth.md) | in_progress |
 | [T24](./T24-answer-dispute.md) | Реалізувати «Моя відповідь теж правильна» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T23](T23-content-report-api.md) | todo |
 | [T25](./T25-reference-snapshots.md) | Завантажити довідкові знімки для звірки | infra | Viacheslav Melnichenko | L | [T07](T07-migrate-search-jobs-dispatches.md) | in_progress |
 | [T26](./T26-auto-verification.md) | Реалізувати фонову звірку content reports | app | Viacheslav Melnichenko | M | [T23](T23-content-report-api.md), [T25](T25-reference-snapshots.md), [T20](T20-dictionary-import.md), [T21](T21-search-forms.md) | todo |
@@ -45,13 +45,13 @@
 | [T32](./T32-bot-webhook.md) | Переробити webhook бота під Mini App | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
 | [T33](./T33-client-telemetry.md) | Приймати клієнтську телеметрію й публікувати серверні метрики | ports | Viacheslav Melnichenko | S | [T01](T01-module-skeleton.md) | done |
 | [T34](./T34-miniapp-skeleton.md) | Створити каркас Mini App, що його роздає бекенд | ui | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
-| [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | blocked |
+| [T35](./T35-ui-onboarding.md) | Зробити екран онбордингу | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T13](T13-onboarding-api.md) | done |
 | [T36](./T36-ui-today.md) | Зробити екран «Сьогодні» | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T19](T19-today-api.md), [T33](T33-client-telemetry.md) | todo |
 | [T37](./T37-ui-session-shell.md) | Зробити каркас заняття, картку нового слова й підсумок | ui | Viacheslav Melnichenko | L | [T36](T36-ui-today.md), [T18](T18-new-word-card.md) | todo |
 | [T38](./T38-ui-recall.md) | Зробити вправу пригадування, результат і оскарження | ui | Viacheslav Melnichenko | L | [T37](T37-ui-session-shell.md), [T17](T17-answer-item.md), [T24](T24-answer-dispute.md) | todo |
 | [T39](./T39-ui-dictionary.md) | Зробити пошук у словнику й картку запису | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T22](T22-dictionary-search-api.md) | todo |
 | [T40](./T40-ui-content-report.md) | Зробити форму content report | ui | Viacheslav Melnichenko | M | [T39](T39-ui-dictionary.md), [T23](T23-content-report-api.md) | todo |
-| [T41](./T41-ui-settings.md) | Зробити екран налаштувань | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T14](T14-settings-api.md) | todo |
+| [T41](./T41-ui-settings.md) | Зробити екран налаштувань | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T14](T14-settings-api.md) | in_progress |
 | [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | todo |
 | [T43](./T43-retire-group-code.md) | Видалити код групової моделі | wiring | Viacheslav Melnichenko | M | [T32](T32-bot-webhook.md), [T07](T07-migrate-search-jobs-dispatches.md), [T20](T20-dictionary-import.md), [T34](T34-miniapp-skeleton.md) | todo |
 | [T44](./T44-migrate-drop-group-model.md) | Перенести міграцію видалення таблиць групової моделі | migration | Viacheslav Melnichenko | S | [T43](T43-retire-group-code.md), [T07](T07-migrate-search-jobs-dispatches.md) | todo |
@@ -111,3 +111,7 @@
 - [T14](T14-settings-api.md): переглянуто PATCH, порт доби, міграцію п’яти nullable-полів, lazy init і pending limit. 28/28 цільових та 89/89 перевірок регресії; незалежний спільний Release-прогін — 463/463 без пропусків. Перевірено up/down міграції, повторні зміни поясу, DST, застосування ліміту на межі доби, strict validation і rollback hook. GET профілю та повторний onboarding показують дозрілий ліміт. Початкові SQL незмінні, Check порожня; build, форматування й посилання проходять із початковими NU1903. ILearnerDayStateService та ILearnerSettingsChangedHandler готові для залежних задач.
 
 - [T21](T21-search-forms.md): переглянуто імпортер морфології, атомарну пошукову проєкцію, startup backfill, нормалізацію й атрибуцію. 35/35 цільових тестів із регресією імпорту; незалежний спільний Release-прогін — 463/463 без пропусків. Підмножина PoliMorf: 58 971 рядок, 337 110 байтів gzip, покриття 1 998/2 000 лем. Для siebie і związany доступні базові форми та явний індикатор; VESUM не використовується. Зняття публікації прибирає форми в тій самій транзакції. Build, форматування й посилання проходять із початковими NU1903; обмеження й оновлення лексикону описані в [документації пошуку](../search-forms.md).
+
+- Рішення користувача від 2026-11-01: для [T10](T10-review-scheduler.md) стеля інтервалу лишається 180 діб, нижня межа — min(180, max(2, prev+1)); для [T35](T35-ui-onboarding.md) погоджено контакт melnichenkoviatcheslav@gmail.com. Обидві задачі повернуто в роботу; завершення потребує зміни коду й перевірок.
+
+- [T35](T35-ui-onboarding.md): блокер знято рішенням користувача від 2026-11-01. Контакт mailto:melnichenkoviatcheslav@gmail.com додано як публічне значення за замовчуванням; явний VITE override лишається. Переглянуто вузьку правку; незалежно lint, typecheck і 59/59 тестів зелені (35 цільових для онбордингу). Попередні build і 6/6 візуальних перевірок обох тем залишаються чинними; synthetic fixtures не замінено реальною адресою.
