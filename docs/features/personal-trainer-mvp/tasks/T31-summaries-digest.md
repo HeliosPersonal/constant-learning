@@ -3,7 +3,7 @@ id: T31
 title: "Реалізувати щоденний підсумок learner і дайджест редактора"
 layer: "app"
 deps: ["T29", "T23"]
-acs: ["AC-37", "AC-43"]
+acs: ["AC-37", "AC-43", "AC-51"]
 files_hint: ["ConstantLearning/Features/Notifications/Summaries/", "ConstantLearning.Tests/Notifications/"]
 owner: "Viacheslav Melnichenko"
 estimate: "M"
@@ -12,7 +12,7 @@ status: "todo"
 
 # T31 — Реалізувати щоденний підсумок learner і дайджест редактора
 
-**Шар:** `app` · **Залежить від:** [T29](./T29-notification-dispatcher.md), [T23](./T23-content-report-api.md) · **AC:** AC-37, AC-43 · **Оцінка:** M · **Фаза:** 8
+**Шар:** `app` · **Залежить від:** [T29](./T29-notification-dispatcher.md), [T23](./T23-content-report-api.md) · **AC:** AC-37, AC-43, AC-51 · **Оцінка:** M · **Фаза:** 8
 
 ## Why
 
@@ -28,4 +28,5 @@ AC-37, AC-43 у [PRD](../PRD.md); потік «Щоденні підсумки �
 
 - [ ] інтеграційні тести AC-37, AC-43 зелені
 - [ ] результат з ненадісланого підсумку потрапляє в наступний і не повторюється після надісланого
+- [ ] повтор report за AC-51 дає один рядок у підсумку
 - [ ] `dotnet build`, тести й лінтер без нових попереджень

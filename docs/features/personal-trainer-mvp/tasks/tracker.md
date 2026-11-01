@@ -53,6 +53,6 @@
 | [T44](./T44-migrate-drop-group-model.md) | Перенести міграцію видалення таблиць групової моделі | migration | Viacheslav Melnichenko | S | T43, T07 | todo |
 | [T45](./T45-deployment-fixes.md) | Оновити збірку й маніфести розгортання | wiring | Viacheslav Melnichenko | S | T34 | todo |
 | [T46](./T46-e2e-critical-flows.md) | Покрити наскрізними тестами критичні потоки через UI | tests | Viacheslav Melnichenko | M | T35, T38, T40, T41, T45 | todo |
-| [T49](./T49-load-test.md) | Перевірити бюджети латентності під навантаженням | tests | Viacheslav Melnichenko | M | T45, T17, T19, T22, T33 | todo |
+| [T49](./T49-load-test.md) | Перевірити бюджети латентності під навантаженням | tests | Viacheslav Melnichenko | M | T45, T17, T19, T22, T30, T33, T36 | todo |
 
 **Total:** 49 tasks, ~26.75 person-days.

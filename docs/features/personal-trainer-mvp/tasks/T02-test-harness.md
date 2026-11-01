@@ -20,14 +20,15 @@ QG-1 у [sad §10](../sad.md) вимагає перевірки на справ�
 
 ## What
 
-Базовий клас інтеграційного тесту з Testcontainers PostgreSQL 16, застосуванням міграцій, `FakeClock` і фабриками `LearnerFixtures`, `ContentFixtures`, `LearningFixtures`.
+Базовий клас інтеграційного тесту з ефемерним PostgreSQL 16, застосуванням міграцій, `FakeClock`, тестовим підписувачем `initData` і фабриками `LearnerFixtures`, `ContentFixtures`, `LearningFixtures`; contract-перевірка, що валідує відповіді API проти `contracts/openapi.yaml` і рядки `verification_jobs` / `notification_dispatches` проти `contracts/events.md`.
 
 Файли: `ConstantLearning.Tests/Infrastructure/`, `ConstantLearning.Tests/Fixtures/`, `ConstantLearning.Tests/ConstantLearning.Tests.csproj`
 
 ## Definition of Done
 
 - [ ] приклад інтеграційного тесту піднімає контейнер, застосовує міграції й проходить
-- [ ] тести без Docker позначено й пропускаються з поясненням, а не падають
+- [ ] contract-перевірка ловить відповідь, що не збігається зі схемою
+- [ ] локально без Docker інтеграційні тести пропускаються з поясненням, а в CI пропуск вважається падінням
 - [ ] `dotnet build`, тести й лінтер без нових попереджень
 
 ## Notes

@@ -20,7 +20,7 @@ status: "todo"
 
 ## What
 
-Vite + React + TypeScript, `@telegram-apps/telegram-ui` поверх `--tg-theme-*`, TanStack Query, клієнт і TS-типи з `openapi.yaml`, `mockTelegramEnv` для локальної розробки, роздача з `wwwroot` з fallback на `index.html`.
+Vite + React + TypeScript, `@telegram-apps/telegram-ui` поверх `--tg-theme-*`, TanStack Query, клієнт і TS-типи з `openapi.yaml`, `mockTelegramEnv` для локальної розробки, роздача з `wwwroot` з fallback на `index.html`; механізм visual-regression з еталонами у світлій і темній темі Telegram.
 
 Файли: `ConstantLearning.MiniApp/`, `ConstantLearning/wwwroot/`, `ConstantLearning/Program.cs`
 
@@ -29,6 +29,7 @@ Vite + React + TypeScript, `@telegram-apps/telegram-ui` поверх `--tg-theme
 - [ ] `npm run build` і `npm test` зелені
 - [ ] SPA відкривається з бекенду за кореневим шляхом
 - [ ] типи клієнта генеруються з контракту однією командою
+- [ ] приклад visual-regression падає на навмисній зміні стилю й проходить з еталоном
 - [ ] `npm run lint`, `npm run typecheck` і `npm test` зелені
 
 ## Notes
