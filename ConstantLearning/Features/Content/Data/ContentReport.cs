@@ -19,6 +19,8 @@ public sealed class ContentReport
     public string? RejectionReason { get; set; }
     public Guid? ResultingVersionId { get; set; }
     public Instant? ClosedAt { get; set; }
+    public string? DedupKey { get; set; }
+    public Guid? SummaryDispatchId { get; set; }
     public Instant CreatedAt { get; set; }
     public uint Version { get; set; }
 }

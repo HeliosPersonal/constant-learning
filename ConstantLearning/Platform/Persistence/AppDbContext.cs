@@ -2,6 +2,7 @@ using ConstantLearning.Data.Entities;
 using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Features.Identity.Data;
 using ConstantLearning.Features.Learning.Data;
+using ConstantLearning.Features.Notifications.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.Platform.Persistence;
@@ -25,6 +26,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<AnswerNeutralization> AnswerNeutralizations => Set<AnswerNeutralization>();
     public DbSet<ValidationEvidence> ValidationEvidence => Set<ValidationEvidence>();
     public DbSet<PublicationLog> PublicationLog => Set<PublicationLog>();
+    public DbSet<SearchForm> SearchForms => Set<SearchForm>();
+    public DbSet<MorphForm> MorphForms => Set<MorphForm>();
+    public DbSet<ReferenceEntry> ReferenceEntries => Set<ReferenceEntry>();
+    public DbSet<VerificationJob> VerificationJobs => Set<VerificationJob>();
+    public DbSet<NotificationDispatch> NotificationDispatches => Set<NotificationDispatch>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +92,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<PublicationLog>().HasOne<Learner>().WithMany()
             .HasForeignKey(log => log.ActorLearnerId)
             .HasConstraintName("publication_log_actor_learner_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.ApplyConfiguration(new SearchFormConfiguration());
+        modelBuilder.ApplyConfiguration(new MorphFormConfiguration());
+        modelBuilder.ApplyConfiguration(new ReferenceEntryConfiguration());
+        modelBuilder.ApplyConfiguration(new VerificationJobConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationDispatchConfiguration());
+        modelBuilder.Entity<NotificationDispatch>().HasOne<Learner>().WithMany()
+            .HasForeignKey(dispatch => dispatch.LearnerId)
+            .HasConstraintName("notification_dispatches_learner_id_fkey")
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<ContentReport>().HasOne<NotificationDispatch>().WithMany()
+            .HasForeignKey(report => report.SummaryDispatchId)
+            .HasConstraintName("content_reports_summary_dispatch_id_fkey")
             .OnDelete(DeleteBehavior.NoAction);
 
         modelBuilder.Entity<Word>(entity =>

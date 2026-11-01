@@ -15,7 +15,7 @@
 | [T04](./T04-migrate-content-core.md) | Перенести міграції записів, версій, перекладів і прийнятих відповідей | migration | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md) | done |
 | [T05](./T05-migrate-learning.md) | Перенести міграції слів learner, session, карток і журналу відповідей | migration | Viacheslav Melnichenko | M | [T04](T04-migrate-content-core.md) | done |
 | [T06](./T06-migrate-reports-publication.md) | Перенести міграції content reports, нейтралізацій, доказів і журналу публікацій | migration | Viacheslav Melnichenko | M | [T05](T05-migrate-learning.md) | done |
-| [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | in_progress |
+| [T07](./T07-migrate-search-jobs-dispatches.md) | Перенести міграції форм пошуку, довідок, задач звірки й відправлень | migration | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md) | done |
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | blocked |
@@ -101,3 +101,5 @@
 
 
 - [T35](T35-ui-onboarding.md): код, generated client і обидві теми переглянуто; незалежно build/lint/typecheck, 58/58 Vitest і 6/6 Playwright зелені. Форма перевіряє дні/пояс, зберігає ввід після помилки, захищає pending, GET/POST200/201 ведуть на перехід до екрана Сьогодні. Зображення мають synthetic contact лише в тестовому сервері. Blocker: користувач ще не задав реальний контакт для видалення; VITE_PRIVACY_CONTACT_URL порожній і завершення форми недоступне. Частковий результат зафіксовано, повний DoD не виконано.
+
+- [T07](T07-migrate-search-jobs-dispatches.md): переглянуто п’ять сутностей, report dedup/summary, шість міграцій і snapshot (+381/-2 назви замінених індексів). 12 UTF-8 SQL-блоків відповідають staged; Check порожня, порядок0020→0022,0021 не змінено. PostgreSQL:48 колонок/31 індекс/10 constraints,text_pattern_ops, точний down/up, реальні payload-контракти, dedup/summary/null/cascade/xmin. 61/61 цільових, незалежний CI=true Release-прогін413/413 без пропусків; build/format/diff check проходять із початковими NU1903.

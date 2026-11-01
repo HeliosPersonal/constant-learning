@@ -190,6 +190,11 @@ namespace ConstantLearning.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("DedupKey")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("dedup_key");
+
                     b.Property<Guid?>("EntryId")
                         .HasColumnType("uuid")
                         .HasColumnName("entry_id");
@@ -239,6 +244,10 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("character varying(24)")
                         .HasColumnName("status");
 
+                    b.Property<Guid?>("SummaryDispatchId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("summary_dispatch_id");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -253,7 +262,8 @@ namespace ConstantLearning.Migrations
                         .HasName("content_reports_pkey");
 
                     b.HasIndex("AnswerEventId")
-                        .HasDatabaseName("ix_content_reports_answer_event_id");
+                        .IsUnique()
+                        .HasDatabaseName("ux_content_reports_answer_event_id");
 
                     b.HasIndex("EntryId")
                         .HasDatabaseName("ix_content_reports_entry_id");
@@ -261,14 +271,23 @@ namespace ConstantLearning.Migrations
                     b.HasIndex("ResultingVersionId")
                         .HasDatabaseName("ix_content_reports_resulting_version_id");
 
+                    b.HasIndex("SummaryDispatchId")
+                        .HasDatabaseName("ix_content_reports_summary_dispatch_id");
+
                     b.HasIndex("VersionId")
                         .HasDatabaseName("ix_content_reports_version_id");
 
                     b.HasIndex("LearnerId", "ClosedAt")
-                        .HasDatabaseName("ix_content_reports_learner_closed");
+                        .HasDatabaseName("ix_content_reports_learner_unsummarized")
+                        .HasFilter("closed_at IS NOT NULL AND summary_dispatch_id IS NULL");
 
                     b.HasIndex("LearnerId", "CreatedAt")
                         .HasDatabaseName("ix_content_reports_learner_created");
+
+                    b.HasIndex("LearnerId", "DedupKey")
+                        .IsUnique()
+                        .HasDatabaseName("ux_content_reports_open_dedup")
+                        .HasFilter("closed_at IS NULL AND dedup_key IS NOT NULL");
 
                     b.HasIndex("Status", "CreatedAt")
                         .HasDatabaseName("ix_content_reports_status_created");
@@ -467,6 +486,56 @@ namespace ConstantLearning.Migrations
                     b.ToTable("entry_versions", (string)null);
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.MorphForm", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Form")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("form");
+
+                    b.Property<string>("Lang")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("lang");
+
+                    b.Property<string>("Lemma")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("lemma");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Tags")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("tags");
+
+                    b.HasKey("Id")
+                        .HasName("morph_forms_pkey");
+
+                    b.HasIndex("Lang", "Lemma")
+                        .HasDatabaseName("ix_morph_forms_lang_lemma");
+
+                    b.ToTable("morph_forms", (string)null);
+                });
+
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.PublicationLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -519,10 +588,137 @@ namespace ConstantLearning.Migrations
                     b.HasIndex("ToVersionId")
                         .HasDatabaseName("ix_publication_log_to_version_id");
 
+                    b.HasIndex("ActorKind", "CreatedAt")
+                        .HasDatabaseName("ix_publication_log_actor_created");
+
                     b.HasIndex("EntryId", "CreatedAt")
                         .HasDatabaseName("ix_publication_log_entry_created");
 
                     b.ToTable("publication_log", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.ReferenceEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Field")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("field");
+
+                    b.Property<string>("Lemma")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("lemma");
+
+                    b.Property<string>("LemmaFolded")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("lemma_folded");
+
+                    b.Property<Instant>("RetrievedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retrieved_at");
+
+                    b.Property<string>("RevisionId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("revision_id");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("url");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("value");
+
+                    b.HasKey("Id")
+                        .HasName("reference_entries_pkey");
+
+                    b.HasIndex("Source", "LemmaFolded", "Field")
+                        .HasDatabaseName("ix_reference_entries_lookup");
+
+                    b.ToTable("reference_entries", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.SearchForm", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("EntryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("entry_id");
+
+                    b.Property<string>("FormDisplay")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("form_display");
+
+                    b.Property<string>("FormFolded")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("form_folded");
+
+                    b.Property<bool>("IsLemma")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_lemma");
+
+                    b.Property<string>("Lang")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("lang");
+
+                    b.Property<Guid>("VersionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("version_id");
+
+                    b.HasKey("Id")
+                        .HasName("search_forms_pkey");
+
+                    b.HasIndex("EntryId")
+                        .HasDatabaseName("ix_search_forms_entry_id");
+
+                    b.HasIndex("FormFolded")
+                        .HasDatabaseName("ix_search_forms_form_folded");
+
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("FormFolded"), new[] { "text_pattern_ops" });
+
+                    b.HasIndex("VersionId")
+                        .HasDatabaseName("ix_search_forms_version_id");
+
+                    b.ToTable("search_forms", (string)null);
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.ValidationEvidence", b =>
@@ -585,6 +781,68 @@ namespace ConstantLearning.Migrations
                         .HasDatabaseName("ix_validation_evidence_version_id");
 
                     b.ToTable("validation_evidence", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.VerificationJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<short>("Attempts")
+                        .HasColumnType("smallint")
+                        .HasColumnName("attempts");
+
+                    b.Property<Instant?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.Property<Instant?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<Guid>("ContentReportId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("content_report_id");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_error");
+
+                    b.Property<Instant>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("verification_jobs_pkey");
+
+                    b.HasIndex("ContentReportId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_verification_jobs_content_report");
+
+                    b.HasIndex("Status", "NextAttemptAt")
+                        .HasDatabaseName("ix_verification_jobs_status_next_attempt");
+
+                    b.ToTable("verification_jobs", (string)null);
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionAcceptedAnswer", b =>
@@ -1130,6 +1388,85 @@ namespace ConstantLearning.Migrations
                     b.ToTable("session_items", (string)null);
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Notifications.Data.NotificationDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<short>("Attempts")
+                        .HasColumnType("smallint")
+                        .HasColumnName("attempts");
+
+                    b.Property<Instant?>("ClaimedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("claimed_at");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Instant>("DueAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("due_at");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid?>("LearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learner_id");
+
+                    b.Property<LocalDate>("LocalDate")
+                        .HasColumnType("date")
+                        .HasColumnName("local_date");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reason");
+
+                    b.Property<long>("RecipientTelegramUserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("recipient_telegram_user_id");
+
+                    b.Property<Instant?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("Id")
+                        .HasName("notification_dispatches_pkey");
+
+                    b.HasIndex("LearnerId")
+                        .HasDatabaseName("ix_notification_dispatches_learner_id");
+
+                    b.HasIndex("Status", "DueAt")
+                        .HasDatabaseName("ix_notification_dispatches_status_due");
+
+                    b.HasIndex("RecipientTelegramUserId", "Kind", "LocalDate")
+                        .IsUnique()
+                        .HasDatabaseName("ux_notification_dispatches_recipient_kind_date");
+
+                    b.ToTable("notification_dispatches", (string)null);
+                });
+
             modelBuilder.Entity("ConstantLearning.Data.Entities.LearnedWord", b =>
                 {
                     b.HasOne("ConstantLearning.Data.Entities.Word", "Word")
@@ -1168,6 +1505,12 @@ namespace ConstantLearning.Migrations
                         .HasForeignKey("ResultingVersionId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("content_reports_resulting_version_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Notifications.Data.NotificationDispatch", null)
+                        .WithMany()
+                        .HasForeignKey("SummaryDispatchId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("content_reports_summary_dispatch_id_fkey");
 
                     b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
                         .WithMany()
@@ -1241,6 +1584,23 @@ namespace ConstantLearning.Migrations
                         .HasConstraintName("publication_log_to_version_id_fkey");
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.SearchForm", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.DictionaryEntry", null)
+                        .WithMany()
+                        .HasForeignKey("EntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("search_forms_entry_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
+                        .WithMany()
+                        .HasForeignKey("VersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("search_forms_version_id_fkey");
+                });
+
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.ValidationEvidence", b =>
                 {
                     b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
@@ -1249,6 +1609,16 @@ namespace ConstantLearning.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("validation_evidence_version_id_fkey");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Content.Data.VerificationJob", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Content.Data.ContentReport", null)
+                        .WithOne()
+                        .HasForeignKey("ConstantLearning.Features.Content.Data.VerificationJob", "ContentReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("verification_jobs_content_report_id_fkey");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Content.Data.VersionAcceptedAnswer", b =>
@@ -1380,6 +1750,15 @@ namespace ConstantLearning.Migrations
                         .HasConstraintName("session_items_session_id_fkey");
 
                     b.Navigation("Session");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Notifications.Data.NotificationDispatch", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Identity.Data.Learner", null)
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("notification_dispatches_learner_id_fkey");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.Learner", b =>

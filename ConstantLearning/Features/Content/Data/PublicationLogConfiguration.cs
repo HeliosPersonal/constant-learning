@@ -15,6 +15,8 @@ internal sealed class PublicationLogConfiguration : IEntityTypeConfiguration<Pub
         builder.Property(log => log.CreatedAt).HasDefaultValueSql("now()");
         builder.HasIndex(log => new { log.EntryId, log.CreatedAt })
             .HasDatabaseName("ix_publication_log_entry_created");
+        builder.HasIndex(log => new { log.ActorKind, log.CreatedAt })
+            .HasDatabaseName("ix_publication_log_actor_created");
         builder.HasIndex(log => log.FromVersionId).HasDatabaseName("ix_publication_log_from_version_id");
         builder.HasIndex(log => log.ToVersionId).HasDatabaseName("ix_publication_log_to_version_id");
         builder.HasIndex(log => log.ActorLearnerId).HasDatabaseName("ix_publication_log_actor_learner_id");

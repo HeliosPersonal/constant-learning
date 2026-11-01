@@ -18,17 +18,25 @@ internal sealed class ContentReportConfiguration : IEntityTypeConfiguration<Cont
         builder.Property(report => report.Status).HasMaxLength(24).IsRequired();
         builder.Property(report => report.Outcome).HasMaxLength(24);
         builder.Property(report => report.RejectionReason).HasMaxLength(32);
+        builder.Property(report => report.DedupKey).HasMaxLength(64);
         builder.Property(report => report.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(report => report.Version).IsRowVersion();
         builder.HasIndex(report => new { report.LearnerId, report.CreatedAt })
             .HasDatabaseName("ix_content_reports_learner_created");
         builder.HasIndex(report => new { report.LearnerId, report.ClosedAt })
-            .HasDatabaseName("ix_content_reports_learner_closed");
+            .HasFilter("closed_at IS NOT NULL AND summary_dispatch_id IS NULL")
+            .HasDatabaseName("ix_content_reports_learner_unsummarized");
+        builder.HasIndex(report => new { report.LearnerId, report.DedupKey }).IsUnique()
+            .HasFilter("closed_at IS NULL AND dedup_key IS NOT NULL")
+            .HasDatabaseName("ux_content_reports_open_dedup");
         builder.HasIndex(report => new { report.Status, report.CreatedAt })
             .HasDatabaseName("ix_content_reports_status_created");
         builder.HasIndex(report => report.EntryId).HasDatabaseName("ix_content_reports_entry_id");
         builder.HasIndex(report => report.VersionId).HasDatabaseName("ix_content_reports_version_id");
-        builder.HasIndex(report => report.AnswerEventId).HasDatabaseName("ix_content_reports_answer_event_id");
+        builder.HasIndex(report => report.AnswerEventId).IsUnique()
+            .HasDatabaseName("ux_content_reports_answer_event_id");
+        builder.HasIndex(report => report.SummaryDispatchId)
+            .HasDatabaseName("ix_content_reports_summary_dispatch_id");
         builder.HasIndex(report => report.ResultingVersionId)
             .HasDatabaseName("ix_content_reports_resulting_version_id");
         builder.HasOne<DictionaryEntry>().WithMany()
