@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,7 +32,8 @@ internal sealed class MetricsTestApplication(WebApplication app, HttpClient clie
             ["ConnectionStrings:DefaultConnection"] = "Host=localhost;Database=unused;Username=unused;Password=unused"
         });
         builder.Services.AddPlatform(builder.Configuration);
-        builder.Services.AddControllers().AddApplicationPart(typeof(ClientTimingController).Assembly);
+        builder.Services.AddControllers().AddApplicationPart(typeof(ClientTimingController).Assembly)
+            .ConfigureApplicationPartManager(manager => manager.FeatureProviders.Add(new TelemetryControllerFeatureProvider()));
         builder.Services.AddAuthentication("Test").AddScheme<AuthenticationSchemeOptions, TestAuthenticationHandler>("Test", _ => { });
         builder.Services.AddAuthorization(options => options.FallbackPolicy = options.DefaultPolicy);
 
@@ -57,6 +60,21 @@ internal sealed class MetricsTestApplication(WebApplication app, HttpClient clie
     {
         Client.Dispose();
         await app.DisposeAsync();
+    }
+
+    private sealed class TelemetryControllerFeatureProvider : IApplicationFeatureProvider<ControllerFeature>
+    {
+        public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
+        {
+            // Harness перевіряє лише telemetry; решта маршрутів тут є явними пробами метрик.
+            for (var index = feature.Controllers.Count - 1; index >= 0; index--)
+            {
+                if (feature.Controllers[index].AsType() != typeof(ClientTimingController))
+                {
+                    feature.Controllers.RemoveAt(index);
+                }
+            }
+        }
     }
 
     private sealed class TestAuthenticationHandler(

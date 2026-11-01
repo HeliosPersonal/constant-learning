@@ -1,6 +1,6 @@
 # Tracker — personal-trainer-mvp
 
-Контент підготовлено: [2 000 схвалених лем](../../../dictionary/README.md), стан — [readiness.json](../../../dictionary/readiness.json). Реалізація імпортера [T20](T20-dictionary-import.md) ще `todo`; підготовка CSV не завершує цю задачу.
+Контент підготовлено: [2 000 схвалених лем](../../../dictionary/README.md), стан — [readiness.json](../../../dictionary/readiness.json). Імпортер [T20](T20-dictionary-import.md) реалізовано та перевірено на цьому наборі.
 
 Рекомендовані Agency-агенти й моделі: [agent-routing.md](../agent-routing.md). Машинні призначення — `execution` у [tasks.json](./tasks.json).
 
@@ -19,7 +19,7 @@
 | [T08](./T08-learner-day.md) | Реалізувати обчислення доби learner зі зміною поясу | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T09](./T09-answer-evaluation.md) | Реалізувати оцінку відповіді з нормалізацією й різницею написання | domain | Viacheslav Melnichenko | M | [T01](T01-module-skeleton.md) | done |
 | [T10](./T10-review-scheduler.md) | Реалізувати планувальник повторень за портом над журналом відповідей | domain | Viacheslav Melnichenko | L | [T01](T01-module-skeleton.md) | done |
-| [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | todo |
+| [T11](./T11-session-composition.md) | Реалізувати складання session з лімітами й квотами | domain | Viacheslav Melnichenko | M | [T08](T08-learner-day.md), [T10](T10-review-scheduler.md) | in_progress |
 | [T12](./T12-initdata-auth.md) | Автентифікувати запити за initData і додати роль content editor | ports | Viacheslav Melnichenko | M | [T03](T03-migrate-identity.md), [T02](T02-test-harness.md) | done |
 | [T13](./T13-onboarding-api.md) | Реалізувати онбординг і профіль learner | app | Viacheslav Melnichenko | M | [T12](T12-initdata-auth.md) | done |
 | [T14](./T14-settings-api.md) | Реалізувати зміну ліміту, поясу й нагадувань | app | Viacheslav Melnichenko | M | [T13](T13-onboarding-api.md), [T08](T08-learner-day.md) | done |
@@ -32,7 +32,7 @@
 | [T19](./T19-today-api.md) | Реалізувати екран «Сьогодні» на сервері | app | Viacheslav Melnichenko | S | [T16](T16-session-continuation.md) | todo |
 | [T20](./T20-dictionary-import.md) | Імпортувати редакторський CSV у версійований словник | infra | Viacheslav Melnichenko | L | [T04](T04-migrate-content-core.md), [T06](T06-migrate-reports-publication.md) | done |
 | [T21](./T21-search-forms.md) | Генерувати форми пошуку для опублікованих версій | infra | Viacheslav Melnichenko | M | [T20](T20-dictionary-import.md), [T07](T07-migrate-search-jobs-dispatches.md) | done |
-| [T22](./T22-dictionary-search-api.md) | Реалізувати пошук у словнику й картку запису | ports | Viacheslav Melnichenko | M | [T21](T21-search-forms.md), [T12](T12-initdata-auth.md) | in_progress |
+| [T22](./T22-dictionary-search-api.md) | Реалізувати пошук у словнику й картку запису | ports | Viacheslav Melnichenko | M | [T21](T21-search-forms.md), [T12](T12-initdata-auth.md) | done |
 | [T23](./T23-content-report-api.md) | Реалізувати надсилання content report з лімітом і дедуплікацією | app | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md), [T07](T07-migrate-search-jobs-dispatches.md), [T12](T12-initdata-auth.md) | in_progress |
 | [T24](./T24-answer-dispute.md) | Реалізувати «Моя відповідь теж правильна» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T23](T23-content-report-api.md) | todo |
 | [T25](./T25-reference-snapshots.md) | Завантажити довідкові знімки для звірки | infra | Viacheslav Melnichenko | L | [T07](T07-migrate-search-jobs-dispatches.md) | in_progress |
@@ -117,3 +117,5 @@
 - [T35](T35-ui-onboarding.md): блокер знято рішенням користувача від 2026-11-01. Контакт mailto:melnichenkoviatcheslav@gmail.com додано як публічне значення за замовчуванням; явний VITE override лишається. Переглянуто вузьку правку; незалежно lint, typecheck і 59/59 тестів зелені (35 цільових для онбордингу). Попередні build і 6/6 візуальних перевірок обох тем залишаються чинними; synthetic fixtures не замінено реальною адресою.
 
 - [T10](T10-review-scheduler.md): погоджене насичення межі 180 діб застосовано в коді, [PRD](../PRD.md#5-acceptance-criteria) та [ADR-0009](../adr/0009-schedule-reviews-with-memorize-behind-a-port-over-an-answer-log.md). Незалежно переглянуто diff і пройдено 52/52 Scheduling-тести; перевірено тривалі перерви, послідовні інтервали на стелі й replay після нейтралізації. Release build успішний, scoped format і docs links зелені; лише початковий NU1903. Блокер усунуто.
+
+- [T22](T22-dictionary-search-api.md): переглянуто пошук, картку, курсори та публічний Learning-порт власного статусу. Незалежний Release-прогін: 535/536 зелені, єдине падіння ізольованого стенда метрик виправлено й перевірено 10/10 тестами. Реальні HMAC/PG16/контракти пошуку проходять; [500 вимірювань](../test-output/dictionary-search-benchmark.md) на 2 000 записів: p95 сервера 52.688 ms, межа 300 ms. Час включає TestServer/auth/DB/серіалізацію, без зовнішньої мережі. Build успішний із початковими NU1903; scoped format і docs links проходять.
