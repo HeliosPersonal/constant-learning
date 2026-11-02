@@ -132,7 +132,7 @@ erDiagram
 | `first_name` | VARCHAR(64) | NULL | персональні дані, [PRD §6.1](PRD.md) |
 | `time_zone` | VARCHAR(64) | NOT NULL | IANA id; `Europe/Warsaw`, якщо не визначено (AC-01) |
 | `time_zone_confirmed` | BOOLEAN | NOT NULL | false — пояс не вибрано, вимагається для reminder (AC-27) |
-| `daily_new_words_limit` | SMALLINT | NOT NULL | 3, 5 або 10 — валідація в застосунку (AC-45) |
+| `daily_new_words_limit` | SMALLINT | NOT NULL | ціле від 1 до 10 — валідація в застосунку (AC-45) |
 | `pending_daily_new_words_limit` | SMALLINT | NULL | новий ліміт до початку наступної доби (AC-44) |
 | `pending_limit_effective_from` | TIMESTAMPTZ | NULL | початок наступної доби в новому поясі |
 | `new_words_available_from` | TIMESTAMPTZ | NULL | кінець доби видачі останньої порції (AC-07) |
