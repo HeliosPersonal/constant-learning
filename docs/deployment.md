@@ -29,7 +29,7 @@ flowchart LR
 | `GHCR_PULL_TOKEN` | Довготривалий credential із `read:packages`; потрібна ротація. Короткотривалий `GITHUB_TOKEN`, який використовує WiseWizard для pull Secret, після завершення job не гарантує pull на новому вузлі або після очищення кешу. |
 | `KUBECONFIG` | Необов’язковий base64 kubeconfig Helios. Якщо відсутній, використовується наявний `~/.kube/config` runner, як у WiseWizard. |
 
-`GITHUB_TOKEN` для публікації образу GitHub надає автоматично. `ARM_*`, `PG_PASSWORD`, `DOCKERHUB_*`, прикладні `CONNECTIONSTRINGS__*`, `TELEGRAM__*` у Repository secrets цей workflow не читає. БД і роль потрібно підготувати окремо: Terraform із цього pipeline не запускається. `INFISICAL_*` залишаються в Repository secrets; перенесення до Environment secrets не потрібне.
+`GITHUB_TOKEN` для публікації образу GitHub надає автоматично. `ARM_*`, `PG_PASSWORD`, `DOCKERHUB_*`, прикладні `CONNECTIONSTRINGS__*`, `TELEGRAM__*` у Repository secrets цей workflow не читає. При старті застосунок виконує MigrateAsync: користувач із правом CREATEDB (як наявний postgres у Helios) може автоматично створити відсутню прикладну БД. Окремі Terraform-ресурси для цього не потрібні. `INFISICAL_*` залишаються в Repository secrets; перенесення до Environment secrets не потрібне.
 
 ## Infisical: прикладна конфігурація
 
@@ -53,13 +53,13 @@ flowchart LR
 
 Створити GitHub environment `production`, дозволити лише protected branch `main`. Це відмітка середовища й обмеження deployment, секрети залишаються repository-level. Для автоматичного запуску без ручного підтвердження не додавати required reviewers середовища. [PR workflow](../.github/workflows/backend-tests.yml) працює на GitHub-hosted runner, не містить посилань на secrets і не звертається до кластера. Repository secrets технічно доступні workflow цього репозиторію: зміни workflows потребують review, а PR workflows не повинні передавати secrets у виконання.
 
-У **Repository variables** налаштувати `PUBLIC_HOST` — погоджений вільний hostname без схеми, порту та шляху. Вибрати піддомен першого рівня `devoverflow.org`, який покриває наявний wildcard-сертифікат; значення constant-learning не вигадано. Для цього hostname налаштувати Cloudflare DNS/Tunnel та BotFather. Чинний remotely managed Tunnel використовує `https://ingress-nginx-controller.ingress.svc.cluster.local:443`, Origin Server Name `devoverflow.org`, перевірку сертифіката ввімкнено. Локальний HTTP ConfigMap не описує ефективного маршруту.
+У **Repository variables** налаштувати `PUBLIC_HOST` — погоджений вільний hostname без схеми, порту та шляху. Погоджене значення — `constant-learning.devoverflow.org`, яке покриває наявний wildcard-сертифікат. Для цього hostname налаштувати Cloudflare DNS/Tunnel та BotFather. Чинний remotely managed Tunnel використовує `https://ingress-nginx-controller.ingress.svc.cluster.local:443`, Origin Server Name `devoverflow.org`, перевірку сертифіката ввімкнено. Локальний HTTP ConfigMap не описує ефективного маршруту.
 
 [Production Ingress](../k8s/overlays/production/ingress.yaml) використовує nginx і спільний TLS Secret `cloudflare-origin`, який Terraform Overflow копіює в `apps-production`. Pipeline лише перевіряє наявність цього Secret. Namespace повинен існувати. Kubeconfig потребує get namespace, Pod і TLS Secret; get/apply Deployment, Service, Ingress і прикладних bootstrap/pull Secret. Pipeline створює тільки `constant-learning-infisical` і `constant-learning-ghcr`; старі `constant-learning-db` / `constant-learning-telegram` не використовуються й автоматично не видаляються. Спільний `infisical-creds` WiseWizard не змінюється. [Staging overlay](../k8s/overlays/staging/kustomization.yaml) — окремий шаблон без автоматичного деплою, з Infisical slug `staging`.
 
 ## Увімкнення та перевірка
 
-Останнім кроком установити **Repository variable** `AUTOMATIC_DEPLOYMENT_ENABLED=true`. До цього deploy job пропускається. Перший запуск — окремий погоджений крок після мерджу: наступний push у main або rerun успішного push workflow поточного SHA. `workflow_dispatch` не додано.
+Кожен push у `main`, включно з мерджем PR, автоматично запускає деплой після успішних backend-тестів і публікації образу. Окремого флага ввімкнення немає. До мерджу потрібно заповнити Repository secrets, Infisical і `PUBLIC_HOST`, дозволити runner та підготувати Cloudflare hostname. `workflow_dispatch` не додано.
 
 Concurrency `constant-learning-production` із `cancel-in-progress: false` серіалізує весь деплой. [Сценарій](../tools/deployment/deploy.py) перевіряє поточний SHA main перед підготовкою та перед першою зміною кластера; annotation `constant-learning.github.io/run-number` не дозволяє старому запуску перезаписати новіший реліз навіть після force push. Секретні файли створюються лише у приватному тимчасовому каталозі, прибираються після завершення й не потрапляють до артефактів або логів.
 
@@ -69,7 +69,7 @@ Concurrency `constant-learning-production` із `cancel-in-progress: false` се
 
 ## Rollback
 
-Вимкнути `AUTOMATIC_DEPLOYMENT_ENABLED`, дочекатися завершення вже запущених/очікуваних jobs, узгодити ручні операції. Зміна variable не скасовує поставлені в чергу jobs; ручний kubectl не захищений Actions concurrency. Взяти попередній digest із summary та перевірити сумісність коду, схеми БД і конфігурації Infisical. Старі образи до інтеграції Infisical потребують старих прикладних Secret і envFrom; простого set image для переходу між цими схемами недостатньо.
+Тимчасово вимкнути цей workflow через GitHub Actions, дочекатися завершення вже запущених/очікуваних jobs, узгодити ручні операції. Вимкнення workflow не завершує вже запущені jobs; ручний kubectl не захищений Actions concurrency. Взяти попередній digest із summary та перевірити сумісність коду, схеми БД і конфігурації Infisical. Старі образи до інтеграції Infisical потребують старих прикладних Secret і envFrom; простого set image для переходу між цими схемами недостатньо.
 
 Для сумісного образу з підтримкою Infisical:
 

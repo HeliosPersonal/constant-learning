@@ -71,7 +71,7 @@ jobs:
   deploy-production:
     name: Розгорнути production
     needs: build-and-push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AUTOMATIC_DEPLOYMENT_ENABLED == 'true'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on:
       group: HeliosRunners
       labels: [self-hosted, Linux, X64]
