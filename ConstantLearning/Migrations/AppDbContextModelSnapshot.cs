@@ -933,6 +933,10 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("can_message");
 
+                    b.Property<Instant?>("CourseCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("course_completed_at");
+
                     b.Property<Instant>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")

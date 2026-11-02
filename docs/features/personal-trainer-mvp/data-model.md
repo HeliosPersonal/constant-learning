@@ -136,6 +136,7 @@ erDiagram
 | `pending_daily_new_words_limit` | SMALLINT | NULL | новий ліміт до початку наступної доби (AC-44) |
 | `pending_limit_effective_from` | TIMESTAMPTZ | NULL | початок наступної доби в новому поясі |
 | `new_words_available_from` | TIMESTAMPTZ | NULL | кінець доби видачі останньої порції (AC-07) |
+| `course_completed_at` | TIMESTAMPTZ | NULL | момент останнього спостереженого завершення курсу; очищається при одноразовому повідомленні про поповнення ([T47](tasks/T47-session-limits-quotas.md)) |
 | `current_day_date` | DATE | NULL | стабільна дата поточної доби; технічний знімок [T14](tasks/T14-settings-api.md) |
 | `current_day_starts_at` | TIMESTAMPTZ | NULL | включна UTC-межа поточної доби |
 | `current_day_ends_at` | TIMESTAMPTZ | NULL | виключна UTC-межа з урахуванням подовження після зміни поясу |
@@ -151,6 +152,8 @@ erDiagram
 П'ять полів `current_day_*` додано окремою additive EF-міграцією `PersistCurrentLearnerDay` після [T07](tasks/T07-migrate-search-jobs-dispatches.md) у межах [T14](tasks/T14-settings-api.md); початкові SQL-міграції не змінено. Це поточний знімок, а не історія змін. Усі п'ять полів мають бути порожніми або заповненими разом; застосунок перевіряє `StartsAt < OriginalEndsAt <= EndsAt`. Колонки nullable, без business defaults і додаткових CHECK.
 
 Спільний Identity port `ILearnerDayStateService` потребує транзакції викликувача й блокує рядок learner до її завершення. Він ліниво ініціалізує порожній знімок за збереженим поясом **до його зміни**, актуалізує добу й застосовує дозрілий pending limit. Зміна поясу перераховує майбутню межу pending limit разом зі знімком у цій самій транзакції. `new_words_available_from` і межі наявних session зберігають своє призначення та не перезаписуються для стану налаштувань.
+
+`course_completed_at` додано nullable EF-міграцією `PersistCourseCompletion` у [T47](tasks/T47-session-limits-quotas.md), без backfill, defaults або змін початкових SQL-міграцій. Learning встановлює маркер, коли серед поточного повного `approved`-курсу немає непоказаних лем. При появі непоказаних лем маркер очищається разом із поверненням одноразового `course_replenished`. Читання й перехід відбуваються під блокуванням learner у транзакції старту; відкат зберігає повідомлення для наступної спроби. Порожня завершена session через ліміт не означає завершення курсу. Підтверджені покази та «Вже знаю» з усіх діб визначають подані леми; квоти враховують лише поточний `approved`-курс, а денний ліміт не повертається після зняття `approved`.
 
 ### Агрегат Identity — `reminder_schedules`
 

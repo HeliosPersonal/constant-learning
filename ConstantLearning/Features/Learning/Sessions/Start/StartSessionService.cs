@@ -3,6 +3,7 @@ using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Learning.Data;
 using ConstantLearning.Features.Learning.Domain.Composition;
 using ConstantLearning.Features.Learning.Domain.Scheduling;
+using ConstantLearning.Features.Learning.Sessions.Start.Limits;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -12,7 +13,7 @@ namespace ConstantLearning.Features.Learning.Sessions.Start;
 public sealed record StartSessionResult(bool Created, SessionResponse Session);
 
 public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService learnerDays,
-    IPublishedCourseReader courseReader, IClock clock)
+    IPublishedCourseReader courseReader, SessionLimitsService limitsService, IClock clock)
 {
     public async Task<StartSessionResult?> StartAsync(Guid learnerId, CancellationToken cancellationToken = default)
     {
@@ -30,18 +31,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
         var published = course.ToDictionary(word => word.EntryId);
         var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId)
             .ToArrayAsync(cancellationToken);
-        var presented = words.Where(word => word.FirstShownDay != null).Select(word => word.EntryId).ToHashSet();
-        var knownToday = await db.AnswerEvents.Where(answer => answer.LearnerId == learnerId
-                && answer.LearnerDay == current.Day.Date && answer.Outcome == "already_known")
-            .Select(answer => answer.EntryId).Distinct().ToArrayAsync(cancellationToken);
-        var shownToday = words.Where(word => word.FirstShownDay == current.Day.Date)
-            .Select(word => word.EntryId).Union(knownToday).Count();
-        presented.UnionWith(knownToday);
-        var usage = new DailyNewWordUsage(shownToday, knownToday.Length);
-        var available = current.Learner.NewWordsAvailableFrom is null || current.Learner.NewWordsAvailableFrom <= now;
-        var courseCandidates = course.Select(word => new CourseWordCandidate(word.EntryId,
-            word.Domain == "everyday" ? DomainQuota.Everyday : DomainQuota.Legalization,
-            word.Rank, word.CoursePosition, true, presented.Contains(word.EntryId))).ToArray();
+        var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
 
         var session = await db.LearningSessions.SingleOrDefaultAsync(value => value.LearnerId == learnerId
             && value.Status == "active", cancellationToken);
@@ -61,8 +51,8 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
                         attempted.Contains(word.EntryId) ? current.Day.Date : null,
                         word.DueOn!.Value, word.IntervalDays!.Value, word.ConsecutiveScheduledCorrect,
                         word.ControlPending, word.Lapses, 0.3, word.SchedulerVersion)));
-            var composition = SessionComposer.Compose(current.Day.Date, reviews, courseCandidates,
-                current.Learner.DailyNewWordsLimit, usage, available);
+            var composition = SessionComposer.Compose(current.Day.Date, reviews, limits.Course,
+                current.Learner.DailyNewWordsLimit, limits.Usage, limits.NewWordsAvailable);
             session = new LearningSession
             {
                 LearnerId = learnerId,
@@ -106,9 +96,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
             session.CompletedAt = now;
         }
 
-        var notices = new List<string>();
-        if (!available || usage.Remaining(current.Learner.DailyNewWordsLimit) == 0) notices.Add("new_words_limit_reached");
-        if (!courseCandidates.Any(word => !word.IsPresented)) notices.Add("course_completed");
+        var notices = limitsService.ApplyNotices(current, limits, now);
         var response = SessionResponse.From(session, items, notices,
             next is null ? null : SessionItemResponse.From(next, published[next.EntryId]));
         await db.SaveChangesAsync(cancellationToken);

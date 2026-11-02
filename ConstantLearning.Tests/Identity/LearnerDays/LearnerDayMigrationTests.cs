@@ -26,7 +26,8 @@ public sealed class LearnerDayMigrationTests(PostgresFixture postgres) : Postgre
         {
             var connectionString = new NpgsqlConnectionStringBuilder(_postgres.ConnectionString)
             {
-                Database = databaseName, Pooling = false
+                Database = databaseName,
+                Pooling = false
             }.ConnectionString;
             var options = new DbContextOptionsBuilder<AppDbContext>()
                 .UseNpgsql(connectionString, npgsql => npgsql.UseNodaTime()).UseSnakeCaseNamingConvention().Options;
@@ -50,7 +51,16 @@ public sealed class LearnerDayMigrationTests(PostgresFixture postgres) : Postgre
                 "current_day_time_zone_at_start:varchar(64):YES:-"
             }, after.Except(before).Order(StringComparer.Ordinal));
             Assert.Equal(constraintsBefore, await ReadConstraintsAsync(db));
-            var learner = await db.Learners.AsNoTracking().SingleAsync();
+            var learner = await db.Learners.AsNoTracking().Select(value => new
+            {
+                value.Id,
+                value.DailyNewWordsLimit,
+                value.CurrentDayDate,
+                value.CurrentDayStartsAt,
+                value.CurrentDayEndsAt,
+                value.CurrentDayOriginalEndsAt,
+                value.CurrentDayTimeZoneAtStart
+            }).SingleAsync();
             Assert.Equal(learnerId, learner.Id);
             Assert.Equal(5, learner.DailyNewWordsLimit);
             Assert.Null(learner.CurrentDayDate);

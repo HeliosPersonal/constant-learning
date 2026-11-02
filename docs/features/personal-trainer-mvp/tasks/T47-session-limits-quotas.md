@@ -24,6 +24,12 @@ status: "todo"
 
 Файли: `ConstantLearning/Features/Learning/Sessions/Start/Limits/`, `ConstantLearning.Tests/Learning/Sessions/Limits/`
 
+## Межі реалізації
+
+Старт використовує збережену добу й дозрілий pending limit через Identity port із [T14](T14-settings-api.md). Ліміти читають лише підтверджені покази та події «Вже знаю»; складання чи повторне повернення session не витрачає ліміт. Запис показів належить [T18](T18-new-word-card.md).
+
+Стійкий nullable маркер `course_completed_at` у [моделі даних](../data-model.md#агрегат-identity--learners) змінюється атомарно зі стартом session. Повідомлення `course_replenished` повертається один раз на перехід із завершеного курсу до доступних нових лем, зокрема при конкурентних викликах і перезапуску застосунку. Воно вже передбачене [контрактом API](../contracts/openapi.yaml). Спільний `SessionLimitsService` може використовувати майбутня реалізація екрана «Сьогодні» у [T19](T19-today-api.md), утримуючи те саме блокування learner; поточний старт повертає повідомлення в `Session.notices`.
+
 ## Definition of Done
 
 - [ ] інтеграційні тести AC-06, AC-07, AC-09, AC-10, AC-54 з `FakeClock` зелені
