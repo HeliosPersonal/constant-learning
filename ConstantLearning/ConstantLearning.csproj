@@ -9,6 +9,7 @@
   </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Infisical.Sdk" Version="3.0.4" />
         <PackageReference Include="EFCore.NamingConventions" Version="10.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
@@ -48,4 +49,7 @@
       <Folder Include="Migrations\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <InternalsVisibleTo Include="ConstantLearning.Tests" />
+    </ItemGroup>
 </Project>

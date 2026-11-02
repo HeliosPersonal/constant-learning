@@ -20,7 +20,7 @@ public static class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
+        builder.AddEnvVariablesAndConfigureSecrets();
 
         builder.Services.Configure<TelegramOptions>(builder.Configuration.GetSection(TelegramOptions.SectionName));
         builder.Services.Configure<LearningOptions>(builder.Configuration.GetSection(LearningOptions.SectionName));
