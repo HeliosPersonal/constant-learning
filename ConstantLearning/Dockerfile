@@ -18,7 +18,7 @@ RUN dotnet publish ConstantLearning/ConstantLearning.csproj --no-restore -c Rele
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS runtime
 WORKDIR /app
-ENV ASPNETCORE_HTTP_PORTS=8888 \
+ENV ASPNETCORE_URLS=http://+:8888 \
     DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 # Перевірка системних даних; виконуваний smoke додатково перевіряє .NET та NodaTime.
 RUN dpkg-query -W tzdata libicu74 \
