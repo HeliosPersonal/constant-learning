@@ -21,7 +21,7 @@ public static class NotificationsModule
             var key = new JobKey("SummaryPlanner");
             options.AddJob<SummaryPlannerJob>(job => job.WithIdentity(key));
             options.AddTrigger(trigger => trigger.ForJob(key).WithIdentity("SummaryPlanner-trigger")
-                .WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(30).RepeatForever()));
+                .WithSimpleSchedule(schedule => schedule.WithInterval(TimeSpan.FromSeconds(30)).RepeatForever()));
         });
         return services;
     }

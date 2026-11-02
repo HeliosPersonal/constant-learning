@@ -53,7 +53,7 @@ public static class Program
             q.AddJob<NotificationDispatcherJob>(opts => opts.WithIdentity(dispatcherJobKey));
             q.AddTrigger(opts => opts.ForJob(dispatcherJobKey)
                 .WithIdentity("NotificationDispatcher-trigger")
-                .WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(30).RepeatForever()));
+                .WithSimpleSchedule(schedule => schedule.WithInterval(TimeSpan.FromSeconds(30)).RepeatForever()));
 
             var repetitionJobKey = new JobKey("RepetitionJob");
             q.AddJob<RepetitionJob>(opts => opts.WithIdentity(repetitionJobKey));

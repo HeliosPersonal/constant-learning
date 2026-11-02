@@ -592,7 +592,7 @@ public sealed class ReminderNotificationsTests(PostgresFixture postgres) : Postg
         }).Build();
         var services = new ServiceCollection().AddLogging().AddSingleton<IClock>(Clock).AddPlatform(config)
             .AddIdentity(config).AddLearning().AddContent().AddNotifications().AddSingleton<ITelegramClient>(telegram)
-            .AddQuartz(options => options.SchedulerName = "reminders-" + Guid.NewGuid().ToString("N"));
+            .AddQuartz("reminders-" + Guid.NewGuid().ToString("N"), _ => { });
         configure?.Invoke(services);
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
     }

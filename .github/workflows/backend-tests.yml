@@ -10,15 +10,15 @@ permissions:
 jobs:
   backend-tests:
     name: Збирання й тести PostgreSQL
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
       CI: 'true'
     steps:
       - name: Отримати код
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Налаштувати .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
       - name: Перевірити Docker
