@@ -31,13 +31,19 @@ public sealed class TodayTests(PostgresFixture postgres) : PostgresIntegrationTe
         Db.LearningSessions.AddRange(Completed(learner, start), Completed(learner, start + Duration.FromHours(1)),
             Completed(learner, Clock.GetCurrentInstant()), Completed(learner, start - Duration.FromNanoseconds(1)),
             Completed(other, Clock.GetCurrentInstant()), Completed(learner, Day.PlusDays(1).AtStartOfDayInZone(zone).ToInstant()));
-        Db.LearningSessions.Add(new() { LearnerId = learner.Id, LearnerDay = Day,
-            Status = "incomplete", EndsAt = Clock.GetCurrentInstant(), CreatedAt = Clock.GetCurrentInstant() });
+        Db.LearningSessions.Add(new()
+        {
+            LearnerId = learner.Id,
+            LearnerDay = Day,
+            Status = "incomplete",
+            EndsAt = Clock.GetCurrentInstant(),
+            CreatedAt = Clock.GetCurrentInstant()
+        });
         await Db.SaveChangesAsync();
         await using var app = await StartAsync();
         var result = await GetAsync(app);
         Assert.Equal("2026-10-31", result["learner_day"]!.GetValue<string>());
-        AssertCounts(result, 7, 12, 3);
+        AssertCounts(result, 7, 13, 3);
         Assert.False(result["has_active_session"]!.GetValue<bool>());
         Assert.Equal("in_progress", result["course_state"]!.GetValue<string>());
         Assert.Equal(7, await Db.LearningSessions.CountAsync());
@@ -116,13 +122,24 @@ public sealed class TodayTests(PostgresFixture postgres) : PostgresIntegrationTe
         Db.Add(learner);
         var course = await CourseAsync(Db, 2);
         var now = Clock.GetCurrentInstant();
-        var session = new LearningSession { LearnerId = learner.Id, LearnerDay = Day, Status = "active",
-            EndsAt = now + Duration.FromHours(1), CreatedAt = now, LastActivityAt = now };
+        var session = new LearningSession
+        {
+            LearnerId = learner.Id,
+            LearnerDay = Day,
+            Status = "active",
+            EndsAt = now + Duration.FromHours(1),
+            CreatedAt = now,
+            LastActivityAt = now
+        };
         Db.Add(session);
         Db.SessionItems.AddRange(course.Select((entry, index) => new SessionItem
         {
-            SessionId = session.Id, EntryId = entry.Id, Position = (short)(index + 1), Kind = "new_word_card",
-            State = "pending", CreatedAt = now
+            SessionId = session.Id,
+            EntryId = entry.Id,
+            Position = (short)(index + 1),
+            Kind = "new_word_card",
+            State = "pending",
+            CreatedAt = now
         }));
         await Db.SaveChangesAsync();
         course[0].PublishedVersionId = null;
@@ -149,11 +166,24 @@ public sealed class TodayTests(PostgresFixture postgres) : PostgresIntegrationTe
         var learner = Learner(Clock);
         Db.Add(learner);
         var course = await CourseAsync(Db, 1);
-        var session = new LearningSession { LearnerId = learner.Id, LearnerDay = Day, Status = "active",
-            EndsAt = Clock.GetCurrentInstant() + Duration.FromHours(1), CreatedAt = Clock.GetCurrentInstant() };
+        var session = new LearningSession
+        {
+            LearnerId = learner.Id,
+            LearnerDay = Day,
+            Status = "active",
+            EndsAt = Clock.GetCurrentInstant() + Duration.FromHours(1),
+            CreatedAt = Clock.GetCurrentInstant()
+        };
         Db.Add(session);
-        Db.SessionItems.Add(new() { SessionId = session.Id, EntryId = course[0].Id,
-            Position = 1, Kind = "new_word_card", State = "pending", CreatedAt = Clock.GetCurrentInstant() });
+        Db.SessionItems.Add(new()
+        {
+            SessionId = session.Id,
+            EntryId = course[0].Id,
+            Position = 1,
+            Kind = "new_word_card",
+            State = "pending",
+            CreatedAt = Clock.GetCurrentInstant()
+        });
         await Db.SaveChangesAsync();
         course[0].PublishedVersionId = null;
         await Db.SaveChangesAsync();

@@ -27,9 +27,9 @@
 | [T47](./T47-session-limits-quotas.md) | Застосувати денний ліміт, зміну поясу й квоти під час старту session | app | Viacheslav Melnichenko | M | [T15](T15-start-session.md), [T08](T08-learner-day.md) | done |
 | [T16](./T16-session-continuation.md) | Реалізувати продовження session і закриття на межі доби | app | Viacheslav Melnichenko | M | [T15](T15-start-session.md) | done |
 | [T17](./T17-answer-item.md) | Реалізувати відповідь на картку з ідемпотентністю | app | Viacheslav Melnichenko | L | [T09](T09-answer-evaluation.md), [T10](T10-review-scheduler.md), [T16](T16-session-continuation.md) | done |
-| [T48](./T48-word-status-transitions.md) | Застосувати переходи word status і control repetition у відповіді | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md) | in_progress |
-| [T18](./T18-new-word-card.md) | Реалізувати картку нового слова, «Далі» і «Вже знаю» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T10](T10-review-scheduler.md) | todo |
-| [T19](./T19-today-api.md) | Реалізувати екран «Сьогодні» на сервері | app | Viacheslav Melnichenko | S | [T16](T16-session-continuation.md) | review |
+| [T48](./T48-word-status-transitions.md) | Застосувати переходи word status і control repetition у відповіді | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md) | done |
+| [T18](./T18-new-word-card.md) | Реалізувати картку нового слова, «Далі» і «Вже знаю» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T10](T10-review-scheduler.md) | in_progress |
+| [T19](./T19-today-api.md) | Реалізувати екран «Сьогодні» на сервері | app | Viacheslav Melnichenko | S | [T16](T16-session-continuation.md) | done |
 | [T20](./T20-dictionary-import.md) | Імпортувати редакторський CSV у версійований словник | infra | Viacheslav Melnichenko | L | [T04](T04-migrate-content-core.md), [T06](T06-migrate-reports-publication.md) | done |
 | [T21](./T21-search-forms.md) | Генерувати форми пошуку для опублікованих версій | infra | Viacheslav Melnichenko | M | [T20](T20-dictionary-import.md), [T07](T07-migrate-search-jobs-dispatches.md) | done |
 | [T22](./T22-dictionary-search-api.md) | Реалізувати пошук у словнику й картку запису | ports | Viacheslav Melnichenko | M | [T21](T21-search-forms.md), [T12](T12-initdata-auth.md) | done |
@@ -52,7 +52,7 @@
 | [T39](./T39-ui-dictionary.md) | Зробити пошук у словнику й картку запису | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T22](T22-dictionary-search-api.md) | done |
 | [T40](./T40-ui-content-report.md) | Зробити форму content report | ui | Viacheslav Melnichenko | M | [T39](T39-ui-dictionary.md), [T23](T23-content-report-api.md) | done |
 | [T41](./T41-ui-settings.md) | Зробити екран налаштувань | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T14](T14-settings-api.md) | done |
-| [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | todo |
+| [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | review |
 | [T43](./T43-retire-group-code.md) | Видалити код групової моделі | wiring | Viacheslav Melnichenko | M | [T32](T32-bot-webhook.md), [T07](T07-migrate-search-jobs-dispatches.md), [T20](T20-dictionary-import.md), [T34](T34-miniapp-skeleton.md) | blocked |
 | [T44](./T44-migrate-drop-group-model.md) | Перенести міграцію видалення таблиць групової моделі | migration | Viacheslav Melnichenko | S | [T43](T43-retire-group-code.md), [T07](T07-migrate-search-jobs-dispatches.md) | blocked |
 | [T45](./T45-deployment-fixes.md) | Оновити збірку й маніфести розгортання | wiring | Viacheslav Melnichenko | S | [T34](T34-miniapp-skeleton.md) | done |
@@ -167,3 +167,7 @@
 - Рішення користувача від 2026-11-02 щодо вартості: для подальшої роботи перевага Terra, максимум Sol; Astra не запускати. Незавершені призначення оновлено в [tasks.json](tasks.json) та [маршрутизації](../agent-routing.md). Завершені призначення залишено для аудиту; попередні часткові зміни збережено.
 
 - Після перевизначення моделей запуск Terra двічі відхилено сервісом: `agent thread limit reached`. Дорожчу модель не запускали; незавершений код і результати попередніх перевірок збережено. Потрібне відновлення доступності потоків виконавців, щоб продовжити нові запуски за погодженим обмеженням.
+
+- [T48](T48-word-status-transitions.md): незалежний спільний Release-прогін 94/94 без пропусків підтвердив 13 сценаріїв переходів статусу та 7 Today-сценаріїв. Виправлено зайвий поріг віку слова у [T19](T19-today-api.md); recalled count залежить від статусу й approved-видимості, а не KPI 7 діб. Перевірено різні заплановані доби, replay, нейтральні відповіді, mistake/recovery, new_word_check і control repetition. Політика планувальника та схема не змінені; format зелений, лише початкові NU1903. [T19](T19-today-api.md) повернуто done.
+
+- Ліміт потоків усунено завершенням завислого старого потоку Sol; новий виконавець Terra medium успішно продовжує [T18](T18-new-word-card.md). Astra повторно не запускали.

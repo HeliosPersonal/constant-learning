@@ -42,8 +42,7 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
         var due = words.Count(word => published.ContainsKey(word.EntryId) && word.Status != "not_started"
             && word.FirstShownDay != null && word.IntervalDays > 0 && word.DueOn <= day
             && !attempted.Contains(word.EntryId));
-        var recalled = words.Count(word => published.ContainsKey(word.EntryId) && word.Status == "recalled"
-            && word.FirstShownDay <= day.PlusDays(-7));
+        var recalled = words.Count(word => published.ContainsKey(word.EntryId) && word.Status == "recalled");
         var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
         var notices = limitsService.ApplyNotices(current, limits, now);
         await db.SaveChangesAsync(cancellationToken);
