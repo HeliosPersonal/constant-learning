@@ -34,7 +34,7 @@
 | [T21](./T21-search-forms.md) | Генерувати форми пошуку для опублікованих версій | infra | Viacheslav Melnichenko | M | [T20](T20-dictionary-import.md), [T07](T07-migrate-search-jobs-dispatches.md) | done |
 | [T22](./T22-dictionary-search-api.md) | Реалізувати пошук у словнику й картку запису | ports | Viacheslav Melnichenko | M | [T21](T21-search-forms.md), [T12](T12-initdata-auth.md) | done |
 | [T23](./T23-content-report-api.md) | Реалізувати надсилання content report з лімітом і дедуплікацією | app | Viacheslav Melnichenko | M | [T06](T06-migrate-reports-publication.md), [T07](T07-migrate-search-jobs-dispatches.md), [T12](T12-initdata-auth.md) | done |
-| [T24](./T24-answer-dispute.md) | Реалізувати «Моя відповідь теж правильна» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T23](T23-content-report-api.md) | todo |
+| [T24](./T24-answer-dispute.md) | Реалізувати «Моя відповідь теж правильна» | app | Viacheslav Melnichenko | M | [T17](T17-answer-item.md), [T23](T23-content-report-api.md) | in_progress |
 | [T25](./T25-reference-snapshots.md) | Завантажити довідкові знімки для звірки | infra | Viacheslav Melnichenko | L | [T07](T07-migrate-search-jobs-dispatches.md) | done |
 | [T26](./T26-auto-verification.md) | Реалізувати фонову звірку content reports | app | Viacheslav Melnichenko | M | [T23](T23-content-report-api.md), [T25](T25-reference-snapshots.md), [T20](T20-dictionary-import.md), [T21](T21-search-forms.md) | done |
 | [T27](./T27-editor-queue.md) | Реалізувати чергу й рішення content editor | app | Viacheslav Melnichenko | M | [T23](T23-content-report-api.md), [T20](T20-dictionary-import.md), [T21](T21-search-forms.md) | done |
@@ -52,7 +52,7 @@
 | [T39](./T39-ui-dictionary.md) | Зробити пошук у словнику й картку запису | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T22](T22-dictionary-search-api.md) | done |
 | [T40](./T40-ui-content-report.md) | Зробити форму content report | ui | Viacheslav Melnichenko | M | [T39](T39-ui-dictionary.md), [T23](T23-content-report-api.md) | done |
 | [T41](./T41-ui-settings.md) | Зробити екран налаштувань | ui | Viacheslav Melnichenko | M | [T34](T34-miniapp-skeleton.md), [T14](T14-settings-api.md) | done |
-| [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | review |
+| [T42](./T42-ui-editor.md) | Зробити чергу content editor і список застосованих змін | ui | Viacheslav Melnichenko | L | [T34](T34-miniapp-skeleton.md), [T27](T27-editor-queue.md), [T28](T28-applied-changes-rollback.md) | done |
 | [T43](./T43-retire-group-code.md) | Видалити код групової моделі | wiring | Viacheslav Melnichenko | M | [T32](T32-bot-webhook.md), [T07](T07-migrate-search-jobs-dispatches.md), [T20](T20-dictionary-import.md), [T34](T34-miniapp-skeleton.md) | blocked |
 | [T44](./T44-migrate-drop-group-model.md) | Перенести міграцію видалення таблиць групової моделі | migration | Viacheslav Melnichenko | S | [T43](T43-retire-group-code.md), [T07](T07-migrate-search-jobs-dispatches.md) | blocked |
 | [T45](./T45-deployment-fixes.md) | Оновити збірку й маніфести розгортання | wiring | Viacheslav Melnichenko | S | [T34](T34-miniapp-skeleton.md) | done |
@@ -173,3 +173,5 @@
 - Ліміт потоків усунено завершенням завислого старого потоку Sol; новий виконавець Terra medium успішно продовжує [T18](T18-new-word-card.md). Astra повторно не запускали.
 
 - [T30](T30-reminders.md): переглянуто planner/settings hook, read-only порти, дедуп за добою, DST і bounded defer. Код підготовлено до зміни моделей; незалежно завершений Release-прогін 94/94 без пропусків включає 22 reminders через основні DI-модулі та регресії Notifications. Підтверджена картка без AnswerEvent теж є активністю; старт і skipped не рахуються. На межі 2 год надсилання дозволене, після кінця доби — skip. Зміна поясу, 429, restart/concurrency, rollback і порядок FK/advisory перевірені. Dispatcher незмінний, зовнішніх відправлень не було; format зелений із початковим NU1903.
+
+- [T42](T42-ui-editor.md): незалежно переглянуто typed API, server-role gate, очищення кешу після 401/403, рішення з причиною, курсори та підтвердження відкату без оптимістичних підмін. Lint/typecheck/build і 205/205 Vitest зелені; виконавець пройшов 30/30 Playwright та повторні 4/4 після фінальної зміни відступів. Координатор переглянув темну чергу й світлий список змін; світлі й темні еталони прийнято. Lazy Editor 7.27 kB gzip, main 73.57 kB gzip; усі frontend-перевірки локальні, CI не змінено.
