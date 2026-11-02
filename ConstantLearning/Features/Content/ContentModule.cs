@@ -1,3 +1,4 @@
+using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Content.Import;
 using ConstantLearning.Features.Content.Notifications;
 using ConstantLearning.Features.Content.Publishing;
@@ -23,6 +24,7 @@ public static class ContentModule
         services.AddReportSummaryDispatch();
         services.AddReferenceSources();
         services.AddDictionarySearch();
+        services.AddPublishedCourseReader();
         services.AddContentReports();
         services.AddContentVerification();
         return services;
