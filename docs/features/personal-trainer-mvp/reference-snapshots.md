@@ -1,6 +1,6 @@
 # Довідкові знімки
 
-Реалізація [T25](tasks/T25-reference-snapshots.md) надає джерела для [автоматичної звірки AC-35](PRD.md#ac-35---cross-context), але не публікує змін сама. Вона відповідає [ADR-0011](adr/0011-verify-content-reports-asynchronously-against-reference-snapshots.md), враховує [ризики джерел](sad.md#11-risks-and-technical-debt) і зберігає [обмеження без мовних моделей у runtime](PRD.md#3-non-goals). Наступний споживач — [T26](tasks/T26-auto-verification.md).
+Реалізація [T25](tasks/T25-reference-snapshots.md) надає джерела для [автоматичної звірки AC-35](PRD.md), але не публікує змін сама. Вона відповідає [ADR-0011](adr/0011-verify-content-reports-asynchronously-against-reference-snapshots.md), враховує [ризики джерел](sad.md#11-risks-and-technical-debt) і зберігає [обмеження без мовних моделей у runtime](PRD.md#3-non-goals). Наступний споживач — [T26](tasks/T26-auto-verification.md).
 
 ## Поточна поведінка
 
@@ -15,7 +15,7 @@ flowchart LR
     Port --> Manual[Ручна перевірка з причиною]
 ```
 
-`AddReferenceSources()` реєструє `IEnumerable<IReferenceSource>` з іменами `wikislownik`, `wsjp`, `government`. `LookupAsync(new ReferenceQuery(lemma, field), cancellationToken)` підтримує поля `translation` та `transcription`; інші поля повертають `ManualReview`, як вимагає [AC-36](PRD.md#ac-36---cross-context). Результат містить статус, стабільну причину й кандидатів із URL, `RevisionId`, `SnapshotAt`, атрибуцією та ліцензією. `Available` означає доступний довідковий матеріал; фінальні перевірки версії й рішення про публікацію лишаються за [T26](tasks/T26-auto-verification.md).
+`AddReferenceSources()` реєструє `IEnumerable<IReferenceSource>` з іменами `wikislownik`, `wsjp`, `government`. `LookupAsync(new ReferenceQuery(lemma, field), cancellationToken)` підтримує поля `translation` та `transcription`; інші поля повертають `ManualReview`, як вимагає [AC-36](PRD.md). Результат містить статус, стабільну причину й кандидатів із URL, `RevisionId`, `SnapshotAt`, атрибуцією та ліцензією. `Available` означає доступний довідковий матеріал; фінальні перевірки версії й рішення про публікацію лишаються за [T26](tasks/T26-auto-verification.md).
 
 Після міграцій і [імпорту навчального словника](tasks/T20-dictionary-import.md) старт застосунку виконує `ReferenceSnapshotImporter.ImportPackagedAsync()`. Він читає упаковані `evidence.jsonl` та `sources-manifest.json` із `Resources/Dictionary`, а не звертається до мережі. Поточний набір містить 2 000 записів. Значення `RetrievedAt` у [наявній схемі](data-model.md) є датою отримання локального експорту з `retrieved_on` маніфесту; `CreatedAt` — часом імпорту в БД. Це не дата окремого редагування сторінки. Докладне походження випуску й дата базового дампу наведені в [маніфесті](../../dictionary/sources-manifest.json).
 
