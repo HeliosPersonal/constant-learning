@@ -5,6 +5,7 @@ using ConstantLearning.Features.Content.Search.Forms;
 using ConstantLearning.Features.Content.References;
 using ConstantLearning.Features.Content.Search.Api;
 using ConstantLearning.Features.Content.Reports;
+using ConstantLearning.Features.Content.Verification;
 
 namespace ConstantLearning.Features.Content;
 
@@ -23,6 +24,7 @@ public static class ContentModule
         services.AddReferenceSources();
         services.AddDictionarySearch();
         services.AddContentReports();
+        services.AddContentVerification();
         return services;
     }
 }
