@@ -44,8 +44,8 @@ describe('Каркас заняття', () => {
     mount(); await screen.findByRole('heading', { name: 'dom' }); fireEvent.click(screen.getByRole('button', { name: 'Вже знаю' })); await screen.findByRole('heading', { name: 'Заняття завершено' });
   });
   it('відкритий результат має пріоритет над preview', async () => {
-    const data = { ...session, last_result: { item_id: 'old', answer: {} as NonNullable<SessionResponse['last_result']>['answer'], dispute: null } }; vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json(data))); mount();
-    await screen.findByRole('heading', { name: 'Результат відповіді' }); expect(screen.queryByRole('heading', { name: 'dom' })).not.toBeInTheDocument();
+    const data = { ...session, last_result: { item_id: 'old', answer: { answer_event_id: 'event', outcome: 'correct', correct_form: 'dom', diff: [], pronunciation_uk: 'дом', example_pl: 'To dom.', example_uk: 'Це дім.', gender: 'm', dispute_allowed: false, word_status: 'review', next_review_on: null, next_item: null, session_completed: false }, dispute: null } }; vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json(data))); mount();
+    await screen.findByRole('heading', { name: 'Правильно!' }); expect(screen.queryByRole('heading', { name: 'dom' })).not.toBeInTheDocument();
   });
   it('показує повідомлення сервера про ліміт', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ ...session, notices: ['new_words_limit_reached', 'course_completed'] }))); mount();
