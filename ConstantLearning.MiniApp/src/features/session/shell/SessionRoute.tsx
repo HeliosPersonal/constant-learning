@@ -1,7 +1,7 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../../components/ui';
-import { todayQueryKey, type SessionResponse } from '../../today/api';
+import { openSession, todayQueryKey, TodayApiError, type SessionResponse } from '../../today/api';
 import { NewWordCard } from '../new-word/NewWordCard';
 import { actOnNewWord, currentSession, SessionApiError } from './api';
 import { Recall } from '../recall/Recall';
@@ -15,11 +15,22 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
   const [terminal, setTerminal] = useState<'expired' | 'missing' | 'auth' | 'complete'>();
   const [pending, setPending] = useState(false);
   const [recallBusy, setRecallBusy] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [startError, setStartError] = useState<string>();
   const updateBusy = (value: boolean) => { setRecallBusy(value); onBusy?.(value); };
   const locked = useRef(false);
   const refresh = async () => { const value = await currentSession(); client.setQueryData(['session', 'current'], value); return value; };
   const replace = (value: SessionResponse) => client.setQueryData(['session', 'current'], value);
   const leave = () => { client.removeQueries({ queryKey: ['session', 'current'] }); void client.invalidateQueries({ queryKey: todayQueryKey }); onToday(); };
+  async function startNew() {
+    setStarting(true); setStartError(undefined);
+    try {
+      const value = await openSession(false);
+      setTerminal(undefined); client.setQueryData(['session', 'current'], value); void client.invalidateQueries({ queryKey: todayQueryKey });
+    } catch (error) {
+      setStartError(error instanceof TodayApiError && error.status === 401 ? 'Відкрийте тренер знову в Telegram, щоб продовжити.' : 'Не вдалося відкрити заняття. Спробуйте ще раз.');
+    } finally { setStarting(false); }
+  }
   async function action(kind: 'acknowledge' | 'already-known') {
     if (locked.current || !session.data?.current_item) return;
     locked.current = true; setPending(true); onBusy?.(true); setMessage(undefined);
@@ -43,6 +54,7 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
   if (terminal === 'complete') return <Card><p className="eyebrow">ГОТОВО</p><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p><Button size="l" stretched onClick={leave}>← На головну</Button></Card>;
   if (terminal || session.isError) {
     const error = session.error;
+    if (error instanceof SessionApiError && error.code === 'session.not_found') return <Card><h1>Активного заняття немає</h1><p>Можна почати нове заняття.</p>{startError && <Result tone="error">{startError}</Result>}<Button size="l" stretched disabled={starting} onClick={() => { void startNew(); }}>{starting ? 'Відкриваємо заняття…' : 'Почати заняття'}</Button><Button size="l" mode="outline" stretched onClick={leave}>← На головну</Button></Card>;
     const text = terminal === 'expired' ? 'Час цього заняття минув. Поверніться на «Сьогодні», щоб продовжити навчання.' : terminal === 'auth' || (error instanceof SessionApiError && error.status === 401) ? 'Відкрийте тренер знову в Telegram, щоб продовжити.' : terminal === 'missing' || (error instanceof SessionApiError && error.status === 404) ? 'Заняття або картку не знайдено. Можливо, заняття вже закрито або належить іншому користувачу.' : 'Не вдалося завантажити заняття. Спробуйте ще раз.';
     return <Card><h1>Заняття недоступне</h1><Result tone="error">{text}</Result>{!terminal && !(error instanceof SessionApiError && [401, 404].includes(error.status)) && <Button size="l" stretched onClick={() => { void session.refetch(); }}>Спробувати ще раз</Button>}<Button size="l" mode="outline" stretched onClick={leave}>← На головну</Button></Card>;
   }
