@@ -481,6 +481,7 @@ export interface components {
         SessionItem: {
             /** Format: uuid */
             id: string;
+            /** @description Ключ порядку фізичних карток; може мати пропуски й не є номером серед total_items. */
             position: number;
             /** @enum {string} */
             kind: "review" | "new_word_card" | "new_word_check" | "control_repetition";
@@ -500,7 +501,9 @@ export interface components {
             ends_at: string;
             /** @enum {string} */
             status: "active" | "completed" | "incomplete";
+            /** @description Кількість фізичних карток разом із перевірками; ліміт session залишається 20 слів. */
             total_items: number;
+            /** @description Кількість опрацьованих або пропущених фізичних карток. */
             completed_items: number;
             notices: components["schemas"]["SessionNotice"][];
             current_item: components["schemas"]["SessionItem"] | null;

@@ -1111,7 +1111,7 @@ components:
       additionalProperties: false
       properties:
         id: { type: string, format: uuid }
-        position: { type: integer, minimum: 1, maximum: 20 }
+        position: { type: integer, minimum: 1, maximum: 50, description: Ключ порядку фізичних карток; може мати пропуски й не є номером серед total_items. }
         kind: { type: string, enum: [review, new_word_card, new_word_check, control_repetition] }
         prompt_uk: { type: string, maxLength: 200, description: українська підказка для вправи }
         context_uk:
@@ -1133,8 +1133,8 @@ components:
         learner_day: { type: string, format: date }
         ends_at: { type: string, format: date-time }
         status: { type: string, enum: [active, completed, incomplete] }
-        total_items: { type: integer, minimum: 0, maximum: 20 }
-        completed_items: { type: integer, minimum: 0, maximum: 20 }
+        total_items: { type: integer, minimum: 0, maximum: 50, description: Кількість фізичних карток разом із перевірками; ліміт session залишається 20 слів. }
+        completed_items: { type: integer, minimum: 0, maximum: 50, description: Кількість опрацьованих або пропущених фізичних карток. }
         notices:
           type: array
           items: { $ref: "#/components/schemas/SessionNotice" }

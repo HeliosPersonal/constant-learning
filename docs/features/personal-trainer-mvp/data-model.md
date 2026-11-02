@@ -209,7 +209,7 @@ erDiagram
 | `id` | UUID | PK | природний ключ ідемпотентності відповіді ([ADR-0008](adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)) |
 | `session_id` | UUID | NOT NULL, FK → `learning_sessions(id)` CASCADE | |
 | `entry_id` | UUID | NOT NULL, FK → `dictionary_entries(id)` | |
-| `position` | SMALLINT | NOT NULL | ≤ 20 — склад session ([PRD §5](PRD.md#5-acceptance-criteria)) |
+| `position` | SMALLINT | NOT NULL | ключ порядку 1–50 із можливими пропусками; 1–30 — повторення й покази з до 10 безкоштовними замінами, 31–50 — перевірки нових слів; ліміт 20 стосується слів, а не фізичних карток ([T18](tasks/T18-new-word-card.md), [PRD §5](PRD.md#5-acceptance-criteria)) |
 | `kind` | VARCHAR(24) | NOT NULL | `review` / `new_word_card` / `new_word_check` / `control_repetition` |
 | `state` | VARCHAR(16) | NOT NULL | `pending` / `answered` / `skipped` |
 | `answer_payload_hash` | VARCHAR(64) | NULL | порівняння повтору «той самий / інший вміст» |

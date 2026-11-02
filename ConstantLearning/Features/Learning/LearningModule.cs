@@ -1,3 +1,4 @@
+using ConstantLearning.Features.Learning.Sessions.NewWords;
 using ConstantLearning.Features.Learning.Notifications;
 using ConstantLearning.Features.Learning.Domain.LearnerDay;
 using ConstantLearning.Features.Learning.Words;
@@ -27,6 +28,7 @@ public static class LearningModule
         services.TryAddScoped<AnswerSessionService>();
         services.AddToday();
         services.AddLearningNotifications();
+        services.AddNewWords();
         return services;
     }
 }
