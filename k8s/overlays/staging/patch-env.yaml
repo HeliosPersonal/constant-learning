@@ -13,5 +13,5 @@ spec:
             - name: ConnectionStrings__DefaultConnection
               valueFrom:
                 secretKeyRef:
-                  name: db-credentials
+                  name: constant-learning-db
                   key: ConnectionStrings__DefaultConnection

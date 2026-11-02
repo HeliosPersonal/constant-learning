@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: constant-learning
+spec:
+  ingressClassName: nginx
+  # Спільний сертифікат Helios уже копіює Terraform Overflow у цей namespace.
+  tls:
+    - hosts:
+        - PUBLIC_HOST_REPLACED_BY_CICD
+      secretName: cloudflare-origin
+  rules:
+    - host: PUBLIC_HOST_REPLACED_BY_CICD
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: constant-learning
+                port:
+                  number: 8888
