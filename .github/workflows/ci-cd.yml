@@ -1,4 +1,4 @@
-name: Збирання та публікація образу
+name: Перевірки, образ і production-деплой
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 env:
   DOCKER_REGISTRY: ghcr.io
@@ -18,6 +17,12 @@ jobs:
     name: "Тести бекенду та образ"
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ghcr.io/${{ steps.owner.outputs.owner_lc }}/constant-learning
+      digest: ${{ steps.publish.outputs.digest }}
     env:
       CI: 'true'
 
@@ -54,6 +59,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Зібрати та опублікувати образ
+        id: publish
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -61,4 +67,35 @@ jobs:
           push: true
           tags: |
             ${{ env.DOCKER_REGISTRY }}/${{ steps.owner.outputs.owner_lc }}/constant-learning:${{ env.IMAGE_TAG }}
-            ${{ env.DOCKER_REGISTRY }}/${{ steps.owner.outputs.owner_lc }}/constant-learning:latest
+
+  deploy-production:
+    name: Розгорнути production
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AUTOMATIC_DEPLOYMENT_ENABLED == 'true'
+    runs-on: [self-hosted, Linux, X64, constant-learning-deploy]
+    environment: production
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    concurrency:
+      group: constant-learning-production
+      cancel-in-progress: false
+    steps:
+      - name: Отримати перевірений коміт
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Застосувати образ і перевірити здоров’я
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_IMAGE: ${{ needs.build-and-push.outputs.image }}
+          DEPLOY_DIGEST: ${{ needs.build-and-push.outputs.digest }}
+          PUBLIC_HOST: ${{ vars.PUBLIC_HOST }}
+          KUBECONFIG_BASE64: ${{ secrets.KUBECONFIG }}
+          CONNECTIONSTRINGS__DEFAULTCONNECTION: ${{ secrets.CONNECTIONSTRINGS__DEFAULTCONNECTION }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_SECRET_TOKEN: ${{ secrets.TELEGRAM_SECRET_TOKEN }}
+          GHCR_PULL_USERNAME: ${{ secrets.GHCR_PULL_USERNAME }}
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
+        run: python3 -u tools/deployment/deploy.py

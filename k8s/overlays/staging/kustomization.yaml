@@ -10,3 +10,5 @@ images:
 
 patches:
   - path: patch-env.yaml
+
+namespace: apps-staging
