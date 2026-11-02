@@ -27,3 +27,6 @@ README.md
 **/test-results
 **/.env.*
 ConstantLearning/wwwroot
+
+# Сирі локальні результати не входять до контексту образу.
+tests/load/results

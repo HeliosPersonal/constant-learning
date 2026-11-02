@@ -1,5 +1,6 @@
 using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Features.Content.Import;
+using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Content.Search.Forms;
 using ConstantLearning.Features.Content.References;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,8 @@ public class DatabaseInitializationService(
             foreach (var issue in references.Issues.Concat(configuredReferences.Issues))
                 logger.LogWarning("Довідковий запис потребує редактора: {Lemma}, причина {Reason}", issue.Lemma, issue.Reason);
             await scope.ServiceProvider.GetRequiredService<SearchFormsMaintenance>().InitializeAsync(cancellationToken);
+            // Незмінні версії готові до перших одночасних відкриттів тренера.
+            await scope.ServiceProvider.GetRequiredService<IPublishedCourseReader>().ReadAsync(cancellationToken);
 
             logger.LogInformation("Ініціалізацію бази даних завершено");
         }

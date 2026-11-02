@@ -1,0 +1,18 @@
+name: Локальний звіт навантаження
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/personal-trainer-mvp]
+    paths: ["docs/features/personal-trainer-mvp/test-output/load-**"]
+permissions:
+  contents: read
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: local-load-report
+          path: docs/features/personal-trainer-mvp/test-output/load-*
+          if-no-files-found: error
