@@ -182,6 +182,7 @@ def deploy():
         directory = Path(temporary)
         secret_file, manifests = prepare(directory, image, host, sha, run_number)
         kubectl("get", "namespace", NAMESPACE)
+        kubectl("get", "secret", "cloudflare-origin", "-o", "name")
         previous_json = kubectl("get", "deployment", APP, "--ignore-not-found", "-o", "json")
         previous = json.loads(previous_json) if previous_json.strip() else {}
         previous_images = [c["image"] for c in previous.get("spec", {}).get("template", {}).get("spec", {}).get("containers", [])]
