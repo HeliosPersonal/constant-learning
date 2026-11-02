@@ -35,10 +35,10 @@ public static class InfisicalConfigurationExtensions
                     configuration["INFISICAL_SECRET_PATH"] ?? "/app")
                 .ToDictionary(pair => pair.Key.Replace("__", ":"), pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         }
-        catch
+        catch (Exception error)
         {
             // SDK може додати credentials або відповідь сервера до винятку.
-            throw new InvalidOperationException("Не вдалося завантажити конфігурацію Infisical; перевірте machine identity, project, environment і path.");
+            throw new InvalidOperationException($"Не вдалося завантажити конфігурацію Infisical ({SafeFailure(error)}); перевірте machine identity, project, environment і path.");
         }
 
         if (required)
@@ -61,12 +61,46 @@ public static class InfisicalConfigurationExtensions
         string clientSecret, string projectId, string environment, string path)
     {
         var client = new InfisicalClient(new InfisicalSdkSettingsBuilder().WithHostUri(host).Build());
-        client.Auth().UniversalAuth().LoginAsync(clientId, clientSecret).GetAwaiter().GetResult();
-        var secrets = client.Secrets().ListAsync(new ListSecretsOptions
+        try
         {
-            ProjectId = projectId, EnvironmentSlug = environment, SecretPath = path,
-            Recursive = true, ExpandSecretReferences = true
-        }).GetAwaiter().GetResult();
-        return secrets.Select(secret => new KeyValuePair<string, string?>(secret.SecretKey, secret.SecretValue));
+            client.Auth().UniversalAuth().LoginAsync(clientId, clientSecret).GetAwaiter().GetResult();
+        }
+        catch (Exception error)
+        {
+            error.Data["InfisicalStage"] = "Universal Auth";
+            throw;
+        }
+        try
+        {
+            var secrets = client.Secrets().ListAsync(new ListSecretsOptions
+            {
+                ProjectId = projectId, EnvironmentSlug = environment, SecretPath = path,
+                Recursive = true, ExpandSecretReferences = true
+            }).GetAwaiter().GetResult();
+            return secrets.Select(secret => new KeyValuePair<string, string?>(secret.SecretKey, secret.SecretValue));
+        }
+        catch (Exception error)
+        {
+            error.Data["InfisicalStage"] = "List secrets";
+            throw;
+        }
+    }
+
+    private static string SafeFailure(Exception error)
+    {
+        var stage = error.Data["InfisicalStage"] as string;
+        if (stage is not ("Universal Auth" or "List secrets")) stage = "Configuration";
+        // Дозволені лише відомі назви статусів, без повідомлення або тіла відповіді SDK.
+        for (Exception? cause = error; cause is not null; cause = cause.InnerException)
+        {
+            if (cause is HttpRequestException { StatusCode: { } code })
+                return $"{stage}; HTTP {(int)code}";
+            if (cause is HttpRequestException)
+                foreach (var status in Enum.GetValues<System.Net.HttpStatusCode>())
+                    if (cause.Message.StartsWith($"Unexpected response: {status} ", StringComparison.Ordinal))
+                        return $"{stage}; HTTP {(int)status}";
+        }
+        var root = error.GetBaseException();
+        return $"{stage}; {root.GetType().Name}";
     }
 }
