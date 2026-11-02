@@ -49,6 +49,7 @@ input[aria-invalid="true"] { border-color: var(--cl-danger); }
 .brand-icon { display: grid; place-items: center; width: 44px; height: 44px; background: var(--cl-accent); color: var(--cl-onAccent); border-radius: 12px; font-size: 24px; letter-spacing: -2px; }
 .eyebrow, .card-index { color: var(--cl-muted); font-size: 11px; line-height: 16px; letter-spacing: 1.2px; font-weight: 650; }
 .app-header > .eyebrow { font-size: 10px; }
+.app-navigation { display: grid; gap: 12px; }
 .intro { margin-bottom: 24px; }
 h1 { margin: 8px 0; font-size: 32px; line-height: 40px; letter-spacing: -1px; font-weight: 650; }
 h2 { margin: 8px 0 12px; font-size: 24px; line-height: 32px; letter-spacing: -.6px; font-weight: 600; }

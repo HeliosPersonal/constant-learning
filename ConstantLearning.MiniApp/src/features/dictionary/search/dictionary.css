@@ -1,0 +1,33 @@
+.dictionary-navigation { margin: -8px 0 16px; }
+.dictionary-search { margin-bottom: 24px; }
+.dictionary-search label { display: block; font-size: 14px; margin-bottom: 8px; }
+.dictionary-input-row { display: flex; align-items: center; gap: 8px; }
+.dictionary-input-row input { min-width: 0; flex: 1; width: 0; }
+.dictionary-input-row > button { flex-shrink: 0; }
+.dictionary-search .caption { margin-top: 12px; }
+.dictionary-announcement:empty { display: none; }
+.dictionary-results-title { font-size: 16px; line-height: 24px; letter-spacing: 0; margin-bottom: 12px; }
+.dictionary-results { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 12px; }
+.dictionary-result { display: flex; flex-direction: column; align-items: stretch; text-align: left; width: 100%; padding: 16px; gap: 8px; border: 1px solid var(--cl-controlBorder); border-radius: 16px !important; background: var(--cl-surface); color: var(--cl-text); cursor: pointer; overflow-wrap: anywhere; }
+.dictionary-result-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dictionary-result-top strong { font-size: 24px; line-height: 32px; font-weight: 600; }
+.dictionary-result-top > span { color: var(--cl-accent); }
+.dictionary-match { font-size: 14px; line-height: 20px; color: var(--cl-muted); }
+.dictionary-status { align-self: flex-start; display: inline-block; padding: 4px 8px; border: 1px solid var(--cl-border); border-radius: 8px; color: var(--cl-accent); font-size: 12px; line-height: 20px; }
+.dictionary-pagination { display: flex; justify-content: space-between; gap: 8px; }
+.dictionary-entry > button { margin-bottom: 12px; }
+.dictionary-entry h2 { font-size: 32px; line-height: 40px; overflow-wrap: anywhere; }
+.dictionary-word-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; color: var(--cl-muted); font-size: 14px; line-height: 20px; }
+.dictionary-translations { margin: 24px 0; }
+.dictionary-translations > div + div { margin-top: 16px; }
+.dictionary-translations dt, .dictionary-entry h3 { color: var(--cl-muted); font-size: 14px; line-height: 20px; font-weight: 400; margin: 0 0 4px; }
+.dictionary-translations dd { margin: 0; overflow-wrap: anywhere; }
+.dictionary-example { border-top: 1px solid var(--cl-border); padding-top: 16px; }
+.dictionary-example p { margin-bottom: 8px; }
+.dictionary-footnote { margin: 24px 0 0; }
+.dictionary-query-quote { overflow-wrap: anywhere; }
+.dictionary-report-note { margin: 16px 0 0; }
+.dictionary-report-action { height: auto !important; min-height: 52px; }
+.dictionary-report-action > span:last-child { white-space: normal; }
+/* SMIL-анімація Spinner потребує окремого перевизначення SVG-transform. */
+@media (prefers-reduced-motion: reduce) { .dictionary .loading-state svg use { transform: none; } }
