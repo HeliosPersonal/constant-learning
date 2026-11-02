@@ -197,6 +197,21 @@ public sealed class TodayTests(PostgresFixture postgres) : PostgresIntegrationTe
     }
 
     [DockerFact]
+    public async Task ExhaustedDailyNewWordLimitMarksNewWordsUnavailableToday()
+    {
+        var learner = Learner(Clock);
+        learner.DailyNewWordsLimit = 1;
+        Db.Add(learner);
+        var course = await CourseAsync(Db, 2);
+        Db.LearnerWords.Add(Word(learner, course[0], shownDaysAgo: 0, dueDaysFromToday: 1));
+        await Db.SaveChangesAsync();
+        await using var app = await StartAsync();
+        var result = await GetAsync(app);
+        Assert.False(result["new_words_available_today"]!.GetValue<bool>());
+        AssertCounts(result, due: 0, recalled: 0, completed: 0);
+    }
+
+    [DockerFact]
     public async Task Ac29_OnlyVerifiedClaimsSelectProgressAndUnonboardedLearnersReceive404()
     {
         var learner = Learner(Clock);
