@@ -1,4 +1,4 @@
-﻿using ConstantLearning.Data;
+using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Data.Entities;
 using ConstantLearning.Services;
 using FluentAssertions;
@@ -28,17 +28,17 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task IsChatRegisteredAsync_ReturnsFalse_WhenChatNotRegistered()
     {
-        // Act
+        // Дія
         var result = await _service.IsChatRegisteredAsync(12345);
 
-        // Assert
+        // Перевірка
         result.Should().BeFalse();
     }
 
     [Fact]
     public async Task IsChatRegisteredAsync_ReturnsTrue_WhenChatIsActive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -46,17 +46,17 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var result = await _service.IsChatRegisteredAsync(12345);
 
-        // Assert
+        // Перевірка
         result.Should().BeTrue();
     }
 
     [Fact]
     public async Task IsChatRegisteredAsync_ReturnsFalse_WhenChatIsInactive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -64,20 +64,20 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var result = await _service.IsChatRegisteredAsync(12345);
 
-        // Assert
+        // Перевірка
         result.Should().BeFalse();
     }
 
     [Fact]
     public async Task RegisterChatAsync_CreatesNewRegistration_WhenChatNotExists()
     {
-        // Act
+        // Дія
         var result = await _service.RegisterChatAsync(12345, "Test Chat");
 
-        // Assert
+        // Перевірка
         result.Should().NotBeNull();
         result.ChatId.Should().Be(12345);
         result.ChatTitle.Should().Be("Test Chat");
@@ -94,7 +94,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task RegisterChatAsync_ReactivatesChat_WhenChatExistsButInactive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -103,10 +103,10 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var result = await _service.RegisterChatAsync(12345, "New Title");
 
-        // Assert
+        // Перевірка
         result.Should().NotBeNull();
         result.IsActive.Should().BeTrue();
         result.ChatTitle.Should().Be("New Title");
@@ -118,7 +118,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task RegisterChatAsync_ReturnsExisting_WhenChatAlreadyActive()
     {
-        // Arrange
+        // Підготовка
         var existing = new ChatRegistration
         {
             ChatId = 12345,
@@ -128,10 +128,10 @@ public class ChatRegistrationServiceTests : IDisposable
         _context.ChatRegistrations.Add(existing);
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var result = await _service.RegisterChatAsync(12345, "New Title");
 
-        // Assert
+        // Перевірка
         result.ChatId.Should().Be(12345);
         result.ChatTitle.Should().Be("Existing Chat");
 
@@ -142,7 +142,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task GetAllActiveChatIdsAsync_ReturnsOnlyActiveChats()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.AddRange(
             new ChatRegistration { ChatId = 1, IsActive = true },
             new ChatRegistration { ChatId = 2, IsActive = false },
@@ -150,10 +150,10 @@ public class ChatRegistrationServiceTests : IDisposable
         );
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var result = await _service.GetAllActiveChatIdsAsync();
 
-        // Assert
+        // Перевірка
         result.Should().HaveCount(2);
         result.Should().Contain(new[] { 1L, 3L });
     }
@@ -161,7 +161,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task DeactivateChatAsync_SetsIsActiveToFalse()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -169,10 +169,10 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         await _service.DeactivateChatAsync(12345);
 
-        // Assert
+        // Перевірка
         var chat = await _context.ChatRegistrations.FirstOrDefaultAsync(c => c.ChatId == 12345);
         chat.Should().NotBeNull();
         chat!.IsActive.Should().BeFalse();
@@ -181,7 +181,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task UpdateRepetitionTimeAsync_UpdatesTime_WhenChatIsActive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -190,10 +190,10 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         await _service.UpdateRepetitionTimeAsync(12345, "10:30");
 
-        // Assert
+        // Перевірка
         var chat = await _context.ChatRegistrations.FirstOrDefaultAsync(c => c.ChatId == 12345);
         chat!.RepetitionTime.Should().Be("10:30");
     }
@@ -201,7 +201,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task UpdateRepetitionTimeAsync_ThrowsException_WhenChatNotFound()
     {
-        // Act & Assert
+        // Дія та перевірка
         await FluentActions.Invoking(() => _service.UpdateRepetitionTimeAsync(12345, "10:30"))
             .Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*not registered*");
@@ -210,7 +210,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task UpdateNewWordsTimeAsync_UpdatesTime_WhenChatIsActive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -219,10 +219,10 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         await _service.UpdateNewWordsTimeAsync(12345, "21:00");
 
-        // Assert
+        // Перевірка
         var chat = await _context.ChatRegistrations.FirstOrDefaultAsync(c => c.ChatId == 12345);
         chat!.NewWordsTime.Should().Be("21:00");
     }
@@ -230,7 +230,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task UpdateWordsCountAsync_UpdatesCounts_WhenChatIsActive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -240,10 +240,10 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         await _service.UpdateWordsCountAsync(12345, 5, 8);
 
-        // Assert
+        // Перевірка
         var chat = await _context.ChatRegistrations.FirstOrDefaultAsync(c => c.ChatId == 12345);
         chat!.NewWordsCount.Should().Be(5);
         chat.RepetitionWordsCount.Should().Be(8);
@@ -252,7 +252,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task UpdateWordsCountAsync_ThrowsException_WhenChatNotFound()
     {
-        // Act & Assert
+        // Дія та перевірка
         await FluentActions.Invoking(() => _service.UpdateWordsCountAsync(12345, 5, 8))
             .Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*not registered*");
@@ -261,7 +261,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task GetChatRegistrationAsync_ReturnsChat_WhenActive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -270,10 +270,10 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var result = await _service.GetChatRegistrationAsync(12345);
 
-        // Assert
+        // Перевірка
         result.Should().NotBeNull();
         result!.ChatId.Should().Be(12345);
         result.ChatTitle.Should().Be("Test Chat");
@@ -282,7 +282,7 @@ public class ChatRegistrationServiceTests : IDisposable
     [Fact]
     public async Task GetChatRegistrationAsync_ReturnsNull_WhenChatInactive()
     {
-        // Arrange
+        // Підготовка
         _context.ChatRegistrations.Add(new ChatRegistration
         {
             ChatId = 12345,
@@ -290,10 +290,10 @@ public class ChatRegistrationServiceTests : IDisposable
         });
         await _context.SaveChangesAsync();
 
-        // Act
+        // Дія
         var result = await _service.GetChatRegistrationAsync(12345);
 
-        // Assert
+        // Перевірка
         result.Should().BeNull();
     }
 

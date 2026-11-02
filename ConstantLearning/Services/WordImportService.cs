@@ -1,5 +1,5 @@
 ﻿using ConstantLearning.Configuration;
-using ConstantLearning.Data;
+using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

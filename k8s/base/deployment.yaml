@@ -1,4 +1,4 @@
-﻿apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: constant-learning
@@ -6,6 +6,9 @@ metadata:
     app: constant-learning
 spec:
   replicas: 1
+  # У пілоті не допускаємо одночасного запуску двох планувальників.
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: constant-learning
@@ -31,13 +34,13 @@ spec:
                 name: db-credentials
           readinessProbe:
             httpGet:
-              path: /health
+              path: /api/telegram/health
               port: 8888
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /health
+              path: /api/telegram/health
               port: 8888
             initialDelaySeconds: 10
             periodSeconds: 20

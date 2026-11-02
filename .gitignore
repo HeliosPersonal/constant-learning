@@ -5,3 +5,21 @@ riderModule.iml
 /_ReSharper.Caches/
 /.idea/.idea.ConstantLearning/.idea/copilot.data.migration.edit.xml
 /ConstantLearning.sln.DotSettings.user
+
+# Локальні налаштування Claude Code та SDLC
+.claude/*.local.md
+.worktrees/
+
+# Локальні словникові знімки й кеш Python-інструментів.
+.dictionary-cache/
+__pycache__/
+
+# Згенеровані файли та локальні результати перевірок Mini App.
+ConstantLearning.MiniApp/node_modules/
+ConstantLearning.MiniApp/test-results/
+ConstantLearning.MiniApp/playwright-report/
+ConstantLearning.MiniApp/artifacts/
+ConstantLearning/wwwroot/*
+!ConstantLearning/wwwroot/.gitkeep
+ConstantLearning.MiniApp/.env.local
+ConstantLearning.MiniApp/.env.*.local

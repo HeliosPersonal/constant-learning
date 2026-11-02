@@ -1,0 +1,83 @@
+{
+  "answer": {
+    "count": 14833,
+    "within_budget": 14794,
+    "budget_ms": 500,
+    "p95_interval_ms": [
+      25.0,
+      50.0
+    ],
+    "fraction_within": 0.9973707274320771,
+    "wilson_95": [
+      0.996407956474063,
+      0.9980759463803387
+    ]
+  },
+  "search": {
+    "count": 40000,
+    "within_budget": 39771,
+    "budget_ms": 300,
+    "p95_interval_ms": [
+      100.0,
+      200.0
+    ],
+    "fraction_within": 0.994275,
+    "wilson_95": [
+      0.9934866842823783,
+      0.9949683879812165
+    ]
+  },
+  "browser": {
+    "opens": 50,
+    "successful": 50,
+    "within_1500": 48,
+    "p95_nearest_rank_ms": 664,
+    "wilson_95_within_1500": [
+      0.8653990931249297,
+      0.9889611156723802
+    ]
+  },
+  "reminders": {
+    "due": "2026-11-02T13:56:00+00:00",
+    "calls": 1000,
+    "distinct_recipients": 1000,
+    "within_120s": 1000,
+    "expected": 1000,
+    "wilson_95_expected": [
+      0.996173241514445,
+      1.0
+    ]
+  },
+  "log_classification": {
+    "start_utc": "2026-11-02T13:36:31.460615+00:00",
+    "grace_end_cancellation_lines": 12,
+    "unexpected_lines": 0,
+    "unexpected": []
+  },
+  "gates": {
+    "zero_baseline": true,
+    "100_vus": true,
+    "journey_checks": true,
+    "duration": true,
+    "server_answer": true,
+    "server_search": true,
+    "browser": true,
+    "reminders": true,
+    "reconciliation": true
+  },
+  "initial_counts": {
+    "trainer_answer_duration_ms": 0,
+    "trainer_dictionary_search_duration_ms": 0,
+    "trainer_today_ready_ms": 0
+  },
+  "reconciliation": {
+    "events": 14833,
+    "distinct_items": 14833,
+    "graded_items": 14833,
+    "unlinked": 0,
+    "duplicates": 0,
+    "missing_event": 0,
+    "missing_item": 0
+  },
+  "passed": true
+}

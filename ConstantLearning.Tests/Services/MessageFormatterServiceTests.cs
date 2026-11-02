@@ -1,4 +1,4 @@
-﻿using ConstantLearning.Data.Entities;
+using ConstantLearning.Data.Entities;
 using ConstantLearning.Enums;
 using ConstantLearning.Services;
 using FluentAssertions;
@@ -18,7 +18,7 @@ public class MessageFormatterServiceTests
         _templateServiceMock = new Mock<ITemplateService>();
         _service = new MessageFormatterService(_botMessagesMock.Object, _templateServiceMock.Object);
 
-        // Setup default messages
+        // Налаштувати типові повідомлення
         _botMessagesMock.Setup(x => x.GetMessage(BotMessageKey.NoRepetitionWords))
             .Returns("No words for repetition");
         _botMessagesMock.Setup(x => x.GetMessage(BotMessageKey.NoNewWords))
@@ -34,30 +34,30 @@ public class MessageFormatterServiceTests
     [Fact]
     public void FormatRepetitionQuestions_ReturnsNoWordsMessage_WhenListIsEmpty()
     {
-        // Arrange
+        // Підготовка
         var words = new List<Word>();
 
-        // Act
+        // Дія
         var result = _service.FormatRepetitionQuestions(words);
 
-        // Assert
+        // Перевірка
         result.Should().Be("No words for repetition");
     }
 
     [Fact]
     public void FormatRepetitionQuestions_FormatsCorrectly_WithMultipleWords()
     {
-        // Arrange
+        // Підготовка
         var words = new List<Word>
         {
             new() { SourceMeaning = "так", TargetWord = "tak", PhoneticTranscription = "tak" },
             new() { SourceMeaning = "для", TargetWord = "dla", PhoneticTranscription = "dla" }
         };
 
-        // Act
+        // Дія
         var result = _service.FormatRepetitionQuestions(words);
 
-        // Assert
+        // Перевірка
         result.Should().Contain("📚 Repetition");
         result.Should().Contain("1. так");
         result.Should().Contain("2. для");
@@ -66,7 +66,7 @@ public class MessageFormatterServiceTests
     [Fact]
     public void FormatRepetitionQuestions_NumbersWordsCorrectly()
     {
-        // Arrange
+        // Підготовка
         var words = new List<Word>
         {
             new() { SourceMeaning = "один", TargetWord = "one", PhoneticTranscription = "wʌn" },
@@ -74,10 +74,10 @@ public class MessageFormatterServiceTests
             new() { SourceMeaning = "три", TargetWord = "three", PhoneticTranscription = "θriː" }
         };
 
-        // Act
+        // Дія
         var result = _service.FormatRepetitionQuestions(words);
 
-        // Assert
+        // Перевірка
         result.Should().MatchRegex(@"1\.\s+один");
         result.Should().MatchRegex(@"2\.\s+два");
         result.Should().MatchRegex(@"3\.\s+три");
@@ -86,20 +86,20 @@ public class MessageFormatterServiceTests
     [Fact]
     public void FormatRepetitionAnswers_ReturnsEmpty_WhenListIsEmpty()
     {
-        // Arrange
+        // Підготовка
         var words = new List<Word>();
 
-        // Act
+        // Дія
         var result = _service.FormatRepetitionAnswers(words);
 
-        // Assert
+        // Перевірка
         result.Should().BeEmpty();
     }
 
     [Fact]
     public void FormatRepetitionAnswers_CallsTemplateService_WithCorrectParameters()
     {
-        // Arrange
+        // Підготовка
         var words = new List<Word>
         {
             new() { SourceMeaning = "так", TargetWord = "tak", PhoneticTranscription = "tak" }
@@ -107,10 +107,10 @@ public class MessageFormatterServiceTests
         _templateServiceMock.Setup(x => x.Render(It.IsAny<TemplateType>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns("rendered");
 
-        // Act
+        // Дія
         var result = _service.FormatRepetitionAnswers(words);
 
-        // Assert
+        // Перевірка
         _templateServiceMock.Verify(x => x.Render(
             TemplateType.RepetitionAnswers,
             "Answers",
@@ -121,20 +121,20 @@ public class MessageFormatterServiceTests
     [Fact]
     public void FormatNewWords_ReturnsNoWordsMessage_WhenListIsEmpty()
     {
-        // Arrange
+        // Підготовка
         var words = new List<Word>();
 
-        // Act
+        // Дія
         var result = _service.FormatNewWords(words);
 
-        // Assert
+        // Перевірка
         result.Should().Be("No new words");
     }
 
     [Fact]
     public void FormatNewWords_CallsTemplateService_WithCorrectParameters()
     {
-        // Arrange
+        // Підготовка
         var words = new List<Word>
         {
             new() { SourceMeaning = "так", TargetWord = "tak", PhoneticTranscription = "tak" }
@@ -142,10 +142,10 @@ public class MessageFormatterServiceTests
         _templateServiceMock.Setup(x => x.Render(It.IsAny<TemplateType>(), It.IsAny<string>(), It.IsAny<string>()))
             .Returns("rendered");
 
-        // Act
+        // Дія
         var result = _service.FormatNewWords(words);
 
-        // Assert
+        // Перевірка
         _templateServiceMock.Verify(x => x.Render(
             TemplateType.NewWords,
             "New words",

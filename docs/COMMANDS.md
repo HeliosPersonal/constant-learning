@@ -1,363 +1,117 @@
-﻿# Bot Commands Reference
+# Довідник команд бота
 
-Complete reference for all Telegram bot commands.
+Команди працюють у Telegram-групі. Команди розкладу, /stoplearning і /getalllearned потребують активної реєстрації групи. /restartprogress можна виконати й без активної реєстрації: команда видаляє збережений прогрес цієї групи.
 
-## Getting Started
+## Керування навчанням
 
-### `/startlearning`
+### /startlearning
 
-Register your group to start receiving daily word lessons.
+Реєструє групу й запускає заплановані уроки. Прогрес цієї групи зберігається окремо.
 
-**Usage:**
-```
+~~~text
 /startlearning
-```
+~~~
 
-**Response:**
-```
-✅ Чат успішно зареєстровано!
+Типовий час: повторення о 09:00, нові слова о 20:00.
 
-📚 Бот буде надсилати:
-• Повторення вивчених слів о 09:00
-• Нові слова для вивчення о 20:00
+### /stoplearning
 
-⏰ Налаштувати час відправки:
-• /setrepetitiontime HH:MM - час повторення
-• /setnewwordstime HH:MM - час нових слів
+Призупиняє заплановані повідомлення для групи. Накопичений прогрес зберігається. Щоб продовжити, знову надішліть /startlearning.
 
-Гарного навчання! 🎯
-```
+### /restartprogress
 
-**Notes:**
-- Group must be registered before receiving scheduled messages
-- Each group has independent progress
-- Default schedule: 09:00 (repetition), 20:00 (new words)
+Видаляє прогрес навчання групи й починає його з початку. Бот повідомляє, скільки вивчених слів видалено.
 
----
+### /getalllearned
 
-### `/stoplearning`
+Показує слова, які група вже вивчила. Якщо таких слів немає, бот повідомить про це. Великий список надсилається частинами — типово по 10 слів; розмір задається параметром `Learning__LearnedWordsChunkSize`.
 
-Pause scheduled messages for this group.
+## Розклад
 
-**Usage:**
-```
-/stoplearning
-```
+### /setrepetitiontime HH:MM
 
-**Response:**
-```
-✅ Навчання зупинено
+Задає щоденний час повторення у 24-годинному форматі.
 
-📭 Бот більше не надсилатиме повідомлення в цей чат.
-
-Ваш прогрес збережено. Використайте /startlearning щоб продовжити навчання.
-```
-
-**Notes:**
-- Progress is saved and not deleted
-- Use `/startlearning` to resume
-
----
-
-### `/restartprogress`
-
-Clear all learning progress for this group and start from scratch.
-
-**Usage:**
-```
-/restartprogress
-```
-
-**Response:**
-```
-✅ Прогрес скинуто!
-
-Видалено 42 вивчених слів.
-Починаємо навчання спочатку! 🎯
-```
-
-**Warning:** This deletes all learned words for this group!
-
----
-
-### `/getalllearned`
-
-Display all words you've learned so far in this group.
-
-**Usage:**
-```
-/getalllearned
-```
-
-**Response:**
-```
-📚 Вивчені слова (1-10/42):
-
-1. tak [tak] → так
-2. dla [dla] → для
-3. więc [vjenʦ] → отже
-4. być [być] → бути
-5. mieć [mjeć] → мати
-6. robić [robić] → робити
-7. móc [muʦ] → могти
-8. wiedzieć [vjeʣeć] → знати
-9. powiedzieć [povjedzieć] → сказати
-10. chcieć [hćeć] → хотіти
-
-📚 Вивчені слова (11-20/42):
-
-11. znaleźć [znaleźć] → знайти
-...
-```
-
-**Notes:**
-- Words are shown in the order you learned them
-- Messages are sent in chunks (configurable, default: 10 words per message)
-- Small delay between chunks to avoid spam
-- Only works if group is registered
-
-**Configuration:**
-Change chunk size in `docker-compose.yml`:
-```yaml
-Learning__LearnedWordsChunkSize: "10"  # Words per message
-```
-
----
-
-## Schedule Configuration
-
-### `/setrepetitiontime`
-
-Set the time when daily repetition messages are sent.
-
-**Usage:**
-```
-/setrepetitiontime HH:MM
-```
-
-**Examples:**
-```
+~~~text
 /setrepetitiontime 09:00
-/setrepetitiontime 08:30
-/setrepetitiontime 12:00
-```
+/setrepetitiontime 14:30
+~~~
 
-**Response:**
-```
-✅ Час повторення встановлено на 09:00
+### /setnewwordstime HH:MM
 
-Повторення буде надсилатися щодня о цій годині.
-```
+Задає час щоденного повідомлення з новими словами.
 
-**Notes:**
-- Time format: 24-hour (00:00 to 23:59)
-- Each group can have different schedule
-- Changes take effect immediately
-
----
-
-### `/setnewwordstime`
-
-Set the time when daily new words are sent.
-
-**Usage:**
-```
-/setnewwordstime HH:MM
-```
-
-**Examples:**
-```
+~~~text
 /setnewwordstime 20:00
 /setnewwordstime 19:30
-/setnewwordstime 21:00
-```
+~~~
 
-**Response:**
-```
-✅ Час нових слів встановлено на 20:00
+Для обох команд використовуйте години від 00:00 до 23:59. Налаштування застосовуються окремо до кожної групи.
 
-Нові слова будуть надсилатися щодня о цій годині.
-```
+## Кількість слів
 
-**Notes:**
-- Time format: 24-hour (00:00 to 23:59)
-- Independent from repetition time
-- Recommended: evening time for better retention
+### /setwordscount XY
 
----
+Дві цифри задають обсяг одного повідомлення:
 
-### `/setwordscount`
+- X — кількість нових слів від 1 до 9.
+- Y — кількість слів для повторення від 1 до 9.
 
-Set how many words to show per session (2-digit command).
+Наприклад:
 
-**Usage:**
-```
-/setwordscount XY
-```
+~~~text
+/setwordscount 35
+~~~
 
-Where:
-- **X** = New words count (1-9)
-- **Y** = Repetition words count (1-9)
+Це означає 3 нові слова та 5 слів для повторення. Типові параметри застосунку: 3 нових слова й 10 для повторення. Команда приймає лише одну цифру в кожній позиції, тобто значення від 1 до 9.
 
-**Examples:**
-```
-/setwordscount 35  (3 new, 5 repetition)
-/setwordscount 28  (2 new, 8 repetition)
-/setwordscount 55  (5 new, 5 repetition)
-```
+## Довідка
 
-**Response:**
-```
-✅ Кількість слів оновлено!
+### /help
 
-🆕 Нові слова: 3
-🔄 Повторення: 5
-```
+Показує список команд і короткі пояснення.
 
-**Notes:**
-- Each group can have different word counts
-- Default: 3 new, 10 repetition
-- Changes apply to next scheduled message
+## Коротка таблиця
 
----
+| Команда | Призначення | Потрібна реєстрація |
+|---|---|:---:|
+| /startlearning | Зареєструвати групу | Ні |
+| /stoplearning | Призупинити уроки | Так |
+| /restartprogress | Очистити прогрес | Ні |
+| /getalllearned | Показати вивчені слова | Так |
+| /setrepetitiontime HH:MM | Змінити час повторень | Так |
+| /setnewwordstime HH:MM | Змінити час нових слів | Так |
+| /setwordscount XY | Змінити кількість слів | Так |
+| /help | Показати довідку | Ні |
 
-## Help
+## Типові помилки
 
-### `/help`
+**Групу не зареєстровано.** Надішліть /startlearning.
 
-Show all available commands.
+**Невірний формат часу.** Використовуйте 24-годинний формат із двокрапкою, наприклад 09:30.
 
-**Usage:**
-```
-/help
-```
+**Бот не реагує на команди.** Переконайтеся, що задано Telegram webhook URL, бот доданий до групи й має право читати повідомлення відповідно до налаштувань Telegram.
 
----
+## Приклади повідомлень
 
-## Command Summary
+Повторення зазвичай показує переклади, які потрібно пригадати, а потім правильні відповіді:
 
-| Command | Description | Requires Registration |
-|---------|-------------|:---------------------:|
-| `/startlearning` | Register group | No |
-| `/stoplearning` | Pause messages | Yes |
-| `/restartprogress` | Clear progress | Yes |
-| `/getalllearned` | Show all learned words | Yes |
-| `/setrepetitiontime HH:MM` | Set repetition time | Yes |
-| `/setnewwordstime HH:MM` | Set new words time | Yes |
-| `/setwordscount XY` | Set word counts | Yes |
-| `/help` | Show commands | No |
-
-## Error Messages
-
-### Chat Not Registered
-
-```
-ℹ️ Цей чат ще не зареєстровано для навчання.
-
-Використайте /startlearning щоб розпочати.
-```
-
-**Solution:** Send `/startlearning` first
-
-### Invalid Time Format
-
-```
-❌ Невірний формат часу. Використовуйте HH:MM (наприклад, 09:30)
-```
-
-**Solution:** Use 24-hour format with colon (e.g., `09:00`, `14:30`)
-
----
-
-## Examples
-
-### Complete Setup
-
-```
-# 1. Register group
-/startlearning
-
-# 2. Set custom schedule
-/setrepetitiontime 08:00
-/setnewwordstime 19:00
-
-# 3. Start learning!
-# Bot will send messages automatically
-```
-
-### Reset and Restart
-
-```
-# Clear all progress
-/restartprogress
-
-# Optionally adjust schedule
-/setrepetitiontime 10:00
-
-# Learning continues with new schedule
-```
-
-### Pause Learning
-
-```
-# Pause messages
-/stoplearning
-
-# Resume when ready
-/startlearning
-```
-
----
-
-## Daily Messages
-
-### Repetition Flow (Default: 09:00)
-
-```
-📚 Повторення — згадайте переклад:
+~~~text
+Повторення — згадайте переклад:
 1. бути
 2. мати
-3. робити
-...
 
-[30 seconds later]
+Відповіді:
+1. бути → być
+2. мати → mieć
+~~~
 
-✅ Відповіді:
+Нове слово містить польське написання, транскрипцію та український відповідник:
 
-1.  бути      →  być  [być]
-2.  мати      →  mieć [mjeć]
-3.  робити    →  robić [robić]
-...
-```
+~~~text
+Нові слова:
+1. tak [так] → так
+2. dla [для] → для
+~~~
 
-### New Words Flow (Default: 20:00)
-
-```
-🆕 Нові слова:
-
-1.  tak   [tak]   → так
-2.  dla   [dla]   → для
-3.  więc  [vjenʦ] → отже
-```
-
----
-
-## Tips
-
-✅ **Best Practices:**
-- Set repetition time in the morning for better recall
-- Set new words time in the evening before sleep
-- Don't restart progress too often - consistency is key!
-- Each group can have different schedules
-
-❌ **Avoid:**
-- Changing schedule too frequently
-- Restarting progress without reason
-- Setting same time for both flows (they'll overlap)
-
----
-
-## Need Help?
-
-- 🏠 [Main README](../README.md)
-- 💬 Open an issue on GitHub
+Більше проєктних відомостей — у [головному описі](../README.md).

@@ -1,220 +1,111 @@
-﻿# Telegram Language Learning Bot
+# Telegram-бот для вивчення мов
 
-A Telegram bot for learning foreign words through spaced repetition. Built with .NET 10, PostgreSQL, and scheduled daily lessons.
+Бот надсилає групам короткі уроки польських слів і повторення за розкладом. Проєкт побудований на .NET 10 і PostgreSQL; вхідні оновлення Telegram надходять через webhook.
 
-## 🚀 Quick Start
+## Швидкий запуск
 
-### Prerequisites
-- Docker & Docker Compose
-- Telegram bot token from [@BotFather](https://t.me/BotFather)
+Потрібні Docker і Docker Compose, а також токен Telegram-бота від [@BotFather](https://t.me/BotFather).
 
-### Option 1: Use Pre-built Image (Recommended)
+1. Налаштуйте токен і рядок з’єднання в Docker Compose.
+2. Запустіть сервіси:
 
-1. **Create `docker-compose.yml`**
-   ```yaml
-   services:
-     db:
-       image: postgres:16
-       environment:
-         POSTGRES_DB: constant_learning
-         POSTGRES_USER: bot
-         POSTGRES_PASSWORD: your_password
-       volumes:
-         - postgres_data:/var/lib/postgresql/data
+~~~sh
+docker compose up -d
+~~~
 
-     app:
-       image: ghcr.io/viacheslavmelnichenko/constant-learning:latest
-       depends_on:
-         - db
-       environment:
-         Telegram__BotToken: "YOUR_BOT_TOKEN_HERE"
-         ConnectionStrings__DefaultConnection: "Host=db;Database=constant_learning;Username=bot;Password=your_password"
-       ports:
-         - "8888:8888"
+3. Додайте бота до групи й надішліть команду /startlearning.
 
-   volumes:
-     postgres_data:
-   ```
+Докладні кроки наведено в [короткому посібнику](docs/QUICKSTART.md).
 
-2. **Start**
-   ```bash
-   docker-compose up -d
-   ```
+## Як працює бот
 
-3. **Register your group**  
-   Add the bot to your Telegram group and send: `/startlearning`
+~~~mermaid
+flowchart LR
+    TG[Telegram: група] -->|webhook| API[ASP.NET Core бот]
+    API --> SVC[Сервіси навчання]
+    SVC --> DB[(PostgreSQL)]
+    JOB[Заплановані завдання Quartz] --> SVC
+    SVC -->|уроки та повторення| TG
+~~~
 
-### Option 2: Build from Source
+Бот надсилає повторення вивчених слів і нові слова у встановлений для групи час. Стан навчання зберігається окремо для кожної групи.
 
-1. **Clone and configure**
-   ```bash
-   git clone https://github.com/ViacheslavMelnichenko/constant-learning.git
-   cd constant-learning
-   ```
+## Можливості
 
-2. **Edit `docker-compose.yml`**
-   ```yaml
-   Telegram__BotToken: "YOUR_BOT_TOKEN_HERE"
-   ```
+- Незалежний прогрес і розклад для кожної групи.
+- Адаптивний до мов налаштовуваний список слів; типова пара — польська й українська.
+- Щоденні повідомлення з новими словами та повтореннями.
+- Імпорт CSV-файлів зі словами.
+- Команди для керування розкладом і прогресом.
+- Розгортання через Docker.
 
-3. **Start**
-   ```bash
-   docker-compose up -d
-   ```
+## Команди
 
-4. **Register your group**
-   
-   Add the bot to your Telegram group and send:
-   ```
-   /startlearning
-   ```
+| Команда | Призначення |
+|---|---|
+| /startlearning | Зареєструвати групу й увімкнути навчання |
+| /stoplearning | Призупинити заплановані повідомлення |
+| /restartprogress | Очистити прогрес групи |
+| /getalllearned | Показати вивчені слова |
+| /setrepetitiontime HH:MM | Задати час повторень |
+| /setnewwordstime HH:MM | Задати час нових слів |
+| /setwordscount XY | Задати кількість нових слів і повторень |
+| /help | Показати довідку бота |
 
-## ✨ Features
+Повний опис є в [довіднику команд](docs/COMMANDS.md).
 
-- 🔄 Multi-chat support with independent progress
-- 🌍 Language agnostic (Polish/Ukrainian by default)
-- ⏰ Per-chat scheduling
-- 🎯 Spaced repetition
-- 📚 Frequency-based word ordering
-- 🐳 Docker ready
+## Налаштування
 
-## 📖 Commands
+У Docker Compose задаються токен бота, параметри навчання, мовна пара та шлях до CSV-словника. Для робочого розгортання можна вказати публічну HTTPS-адресу webhook.
 
-| Command | Description |
-|---------|-------------|
-| `/startlearning` | Register group for learning |
-| `/stoplearning` | Pause scheduled messages |
-| `/restartprogress` | Clear learning progress |
-| `/getalllearned` | Show all learned words |
-| `/setrepetitiontime HH:MM` | Set daily repetition time |
-| `/setnewwordstime HH:MM` | Set daily new words time |
-| `/setwordscount XY` | Set word counts (X=new, Y=repetition) |
-| `/help` | Show all commands |
+| Параметр | Типове значення |
+|---|---|
+| Learning__NewWordsCount | 3 нові слова |
+| Learning__RepetitionWordsCount | 10 слів на повторення |
+| Learning__AnswerDelaySeconds | 30 секунд |
+| Learning__LearnedWordsChunkSize | 10 слів у повідомленні команди /getalllearned |
+| Language__TargetLanguage | Polish |
+| Language__SourceLanguage | Ukrainian |
+| Language__TargetLanguageCode | pl |
+| Language__SourceLanguageCode | uk |
 
-📚 **[Full Commands Reference →](docs/COMMANDS.md)**
+Докладніше про webhook: [налаштування webhook](docs/WEBHOOK-SETUP.md).
 
-## 🔧 Configuration
+У прикладі `docker-compose.yml` затримка перед показом відповідей змінена на 5 секунд для швидшої демонстрації; у `appsettings.json` та `appsettings.json.example` типове значення — 30 секунд.
 
-### Basic Settings (docker-compose.yml)
+## Розробка
 
-```yaml
-# Telegram
-Telegram__BotToken: "YOUR_TOKEN"
-Telegram__WebhookUrl: "https://yourdomain.com/api/telegram/webhook"  # Optional
-
-# Learning (defaults)
-Learning__NewWordsCount: "3"
-Learning__RepetitionWordsCount: "10"
-Learning__AnswerDelaySeconds: "30"
-Learning__LearnedWordsChunkSize: "10"
-
-# Language
-Language__TargetLanguage: "Polish"
-Language__SourceLanguage: "Ukrainian"
-Language__TargetLanguageCode: "pl"
-Language__SourceLanguageCode: "uk"
-```
-
-### Webhook Configuration (Optional)
-
-For production deployment, configure a webhook URL:
-
-```yaml
-Telegram__WebhookUrl: "https://yourdomain.com/api/telegram/webhook"
-```
-
-**For local development with ngrok:**
-
-1. Install ngrok: https://ngrok.com
-2. Start ngrok: `ngrok http 8888`
-3. Copy the HTTPS URL (e.g., `https://abc123.ngrok.io`)
-4. Set in docker-compose.yml:
-   ```yaml
-   Telegram__WebhookUrl: "https://abc123.ngrok.io/api/telegram/webhook"
-   ```
-
-**Note:** Leave empty to skip webhook registration (bot won't receive messages):
-```yaml
-Telegram__WebhookUrl: ""
-```
-
-📚 **[Complete Webhook Setup Guide →](docs/WEBHOOK-SETUP.md)**
-
-### Per-Chat Configuration
-
-Each group can customize:
-```
-/setrepetitiontime 09:00
-/setnewwordstime 20:00
-/setwordscount 35
-```
-
-### Change Language
-
-1. Add CSV file to `Resources/Words/`: `words-{target}-{source}.csv`
-2. Update `docker-compose.yml` language settings
-3. Restart: `docker-compose restart app`
-
-## 📊 How It Works
-
-**Morning (09:00)** - Repetition:
-```
-📚 Повторення — згадайте переклад:
-1. бути
-2. мати
-
-[30s later]
-
-✅ Відповіді:
-1. бути → być [być]
-2. мати → mieć [mjeć]
-```
-
-**Evening (20:00)** - New Words:
-```
-🆕 Нові слова:
-1. tak [tak] → так
-2. dla [dla] → для
-```
-
-## 🐳 Docker Commands
-
-```bash
-docker-compose up -d          # Start
-docker-compose logs -f app    # View logs
-docker-compose restart app    # Restart
-docker-compose down           # Stop
-```
-
-
-## 🛠️ Development
-
-```bash
-cd ConstantLearning
+~~~sh
 dotnet restore
 dotnet build
-dotnet run
-```
+dotnet run --project ConstantLearning
+~~~
 
-### Database Migrations
-```bash
-dotnet ef migrations add MigrationName
+Для міграцій бази даних:
+
+~~~sh
+dotnet ef migrations add НазваМіграції
 dotnet ef database update
-```
+~~~
 
-## 📁 Project Structure
+## Структура проєкту
 
-```
+~~~text
 ConstantLearning/
-├── Configuration/      # IOptions config
-├── Data/              # EF Core entities
-├── Services/          # Business logic
-├── Jobs/              # Quartz scheduled jobs
-├── Controllers/       # Telegram webhook
-├── Resources/         # Messages & word lists
-└── Migrations/        # Database migrations
-```
+├── Configuration/  Налаштування застосунку
+├── Controllers/    Telegram webhook
+├── Data/           Контекст і сутності бази даних
+├── Enums/          Переліки
+├── Jobs/           Заплановані завдання Quartz
+├── Migrations/     Міграції EF Core
+├── Resources/      Повідомлення й списки слів
+└── Services/       Логіка бота й навчання
+~~~
 
-## 📄 License
+## Напрям розвитку
 
-MIT License
+У [переліку ідей](docs/IDEAS.md) задокументовано перехід від групових повідомлень до персонального тренера в Telegram Mini App. Це план продукту, а не опис уже реалізованих функцій.
+
+## Готовність словникового контенту
+
+Підготовлено [2 000 схвалених унікальних лем](docs/dictionary/README.md) за погодженим методом Wikisłownik + LLM-редактура. [Звіт готовності](docs/dictionary/readiness.json) і [журнал доказів](docs/dictionary/evidence.jsonl) підтверджують склад випуску. Імпорт у персональну модель виконує [T20](docs/features/personal-trainer-mvp/tasks/T20-dictionary-import.md); чинний груповий бот поки використовує старий CSV. Статус реалізації — у [трекері задач](docs/features/personal-trainer-mvp/tasks/tracker.md).

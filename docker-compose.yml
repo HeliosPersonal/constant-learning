@@ -27,31 +27,31 @@
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8888
       
-      # Database connection
+      # Підключення до бази даних
       ConnectionStrings__DefaultConnection: "Host=postgres;Database=constantlearning;Username=postgres;Password=postgres"
       
-      # REQUIRED: Get bot token from @BotFather on Telegram
+      # ОБОВ’ЯЗКОВО: отримайте токен бота в Telegram через @BotFather
       Telegram__BotToken: "${TELEGRAM_BOT_TOKEN}"
       
-      # REQUIRED for webhook: Your public URL (e.g., https://yourdomain.com/api/telegram/webhook)
-      # For local dev use ngrok: https://abc123.ngrok.io/api/telegram/webhook
-      # Leave empty to skip automatic webhook registration
+      # ОБОВ’ЯЗКОВО для webhook: ваша публічна адреса (наприклад, https://yourdomain.com/api/telegram/webhook)
+      # Для локальної розробки використовуйте ngrok: https://abc123.ngrok.io/api/telegram/webhook
+      # Залиште порожнім, щоб не реєструвати webhook автоматично
       Telegram__WebhookUrl: "${TELEGRAM_WEBHOOK_URL:-}"
       
-      # Learning configuration
-      Learning__RepetitionWordsCount: "10"       # How many words to repeat
-      Learning__NewWordsCount: "3"               # How many new words per day
-      Learning__AnswerDelaySeconds: "5"          # Delay before showing answers
-      Learning__LearnedWordsChunkSize: "10"      # Words per message in /getalllearned
+      # Налаштування навчання
+      Learning__RepetitionWordsCount: "10"       # Кількість слів для повторення
+      Learning__NewWordsCount: "3"               # Кількість нових слів на день
+      Learning__AnswerDelaySeconds: "5"          # Затримка перед показом відповідей
+      Learning__LearnedWordsChunkSize: "10"      # Слів у повідомленні команди /getalllearned
       
-      # Language settings - change these to learn different languages
-      # For English: TargetLanguage="English", TargetLanguageCode="en", CsvPath="/app/Resources/Words/words-english-ukrainian.csv"
+      # Налаштування мовної пари
+      # Для англійської: TargetLanguage="English", TargetLanguageCode="en", CsvPath="/app/Resources/Words/words-english-ukrainian.csv"
       Language__TargetLanguage: "Polish"
       Language__SourceLanguage: "Ukrainian"
       Language__TargetLanguageCode: "pl"
-      Language__SourceLanguageCode: "uk"         # UI language: 'uk' or 'en'
+      Language__SourceLanguageCode: "uk"         # Мова інтерфейсу: 'uk' або 'en'
       
-      # Folder with CSV word files (all .csv files will be imported)
+      # Каталог із файлами слів CSV (імпортуються всі файли .csv)
       WordsImport__WordsFolder: "/app/Resources/Words"
     ports:
       - "8888:8888"

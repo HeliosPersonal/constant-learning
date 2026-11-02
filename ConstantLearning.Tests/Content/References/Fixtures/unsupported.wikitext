@@ -1,0 +1,7 @@
+== test ({{język polski}}) ==
+{{wymowa}}
+{{IPA|tɛ̃st}}
+{{znaczenia}}
+: (1.1) test
+{{tłumaczenia}}
+* ukraiński: (1.1) {{nieznany|тест}}

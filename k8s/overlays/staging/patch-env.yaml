@@ -1,4 +1,4 @@
-﻿apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: constant-learning
@@ -10,8 +10,8 @@ spec:
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: "Staging"
-            - name: CONNECTION_STRING
+            - name: ConnectionStrings__DefaultConnection
               valueFrom:
                 secretKeyRef:
                   name: db-credentials
-                  key: connection_string
+                  key: ConnectionStrings__DefaultConnection

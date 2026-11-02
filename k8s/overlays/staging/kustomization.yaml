@@ -1,4 +1,4 @@
-﻿apiVersion: kustomize.config.k8s.io/v1
+apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
@@ -8,5 +8,5 @@ images:
     newName: ghcr.io/GITHUB_USERNAME/constant-learning
     newTag: SHA_REPLACED_BY_CICD
 
-patchesStrategicMerge:
-  - patch-env.yaml
+patches:
+  - path: patch-env.yaml
