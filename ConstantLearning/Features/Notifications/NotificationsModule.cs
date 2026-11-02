@@ -1,5 +1,6 @@
 using ConstantLearning.Features.Notifications.Dispatch;
 using ConstantLearning.Features.Notifications.Summaries;
+using ConstantLearning.Features.Notifications.Reminders;
 using ConstantLearning.Features.Identity.Settings;
 using Quartz;
 
@@ -14,6 +15,7 @@ public static class NotificationsModule
         services.AddScoped<INotificationHandler, ReportOutcomesHandler>();
         services.AddScoped<INotificationHandler, EditorDigestHandler>();
         services.AddScoped<ILearnerSettingsChangedHandler, SummarySettingsChangedHandler>();
+        services.AddReminders();
         services.AddQuartz(options =>
         {
             var key = new JobKey("SummaryPlanner");

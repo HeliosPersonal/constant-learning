@@ -6,6 +6,7 @@ using ConstantLearning.Features.Identity.Messaging;
 using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Identity.Settings;
 using ConstantLearning.Features.Identity.NotificationAudience;
+using ConstantLearning.Features.Identity.ReminderAudience;
 using Microsoft.AspNetCore.Authentication;
 
 namespace ConstantLearning.Features.Identity;
@@ -24,6 +25,7 @@ public static class IdentityModule
         services.AddScoped<LearnerSettingsService>();
         services.AddScoped<IMessagingPermissionService, MessagingPermissionService>();
         services.AddScoped<INotificationAudienceReader, NotificationAudienceReader>();
+        services.AddReminderAudience();
         services.AddTransient<IClaimsTransformation, ContentEditorClaimsTransformation>();
         services.AddAuthentication(TelegramAuthentication.Scheme)
             .AddScheme<AuthenticationSchemeOptions, TelegramAuthenticationHandler>(TelegramAuthentication.Scheme, _ => { });

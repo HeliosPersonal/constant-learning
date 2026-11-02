@@ -1,3 +1,4 @@
+using ConstantLearning.Features.Learning.Notifications;
 using ConstantLearning.Features.Learning.Domain.LearnerDay;
 using ConstantLearning.Features.Learning.Words;
 using ConstantLearning.Features.Learning.Sessions.Start;
@@ -25,6 +26,7 @@ public static class LearningModule
         services.TryAddSingleton<IReviewScheduler, MemorizeReviewScheduler>();
         services.TryAddScoped<AnswerSessionService>();
         services.AddToday();
+        services.AddLearningNotifications();
         return services;
     }
 }
