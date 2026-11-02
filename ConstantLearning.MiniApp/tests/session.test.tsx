@@ -57,7 +57,18 @@ describe('Каркас заняття', () => {
     expect(screen.queryByRole('heading', { name: 'Заняття завершено' })).not.toBeInTheDocument();
   });
   it('404 при звичайному відкритті не видає за завершення', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ code: 'session.not_found' }, 404))); mount(); await screen.findByRole('heading', { name: 'Заняття недоступне' });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ code: 'session.not_found' }, 404))); mount(); await screen.findByRole('heading', { name: 'Активного заняття немає' });
     expect(screen.queryByRole('heading', { name: 'Заняття завершено' })).not.toBeInTheDocument();
+  });
+  it('без активного заняття пропонує почати нове, а не показує помилку', async () => {
+    const fetcher = vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'POST' ? json(session, 201) : json({ code: 'session.not_found' }, 404)));
+    vi.stubGlobal('fetch', fetcher); mount(); fireEvent.click(await screen.findByRole('button', { name: 'Почати заняття' }));
+    expect(await screen.findByRole('heading', { name: 'dom' })).toBeVisible(); expect(fetcher.mock.calls.filter(([r]) => r.method === 'POST')).toHaveLength(1);
+  });
+  it('показує повідомлення, якщо новий старт не вдався, і дозволяє повторити', async () => {
+    let posts = 0; const fetcher = vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'POST' ? (posts++ ? json(session, 201) : json({}, 503)) : json({ code: 'session.not_found' }, 404)));
+    vi.stubGlobal('fetch', fetcher); mount(); fireEvent.click(await screen.findByRole('button', { name: 'Почати заняття' }));
+    await screen.findByText('Не вдалося відкрити заняття. Спробуйте ще раз.'); fireEvent.click(screen.getByRole('button', { name: 'Почати заняття' }));
+    expect(await screen.findByRole('heading', { name: 'dom' })).toBeVisible();
   });
 });
