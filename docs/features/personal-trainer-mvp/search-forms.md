@@ -1,6 +1,6 @@
 # Пошукові форми словника
 
-Поточна реалізація [T21](tasks/T21-search-forms.md) виконує [ADR-0012](adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md), вимоги [PRD AC-30](PRD.md#ac-30---happy-path), [PRD AC-32](PRD.md#ac-32---cross-context) і [PRD AC-33](PRD.md#ac-33---cross-context). Місце пошуку в архітектурі описує [SAD](sad.md). Публікація та повторний імпорт спираються на [T20](tasks/T20-dictionary-import.md) і [ADR-0010](adr/0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md).
+Поточна реалізація [T21](tasks/T21-search-forms.md) виконує [ADR-0012](adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md), вимоги [PRD AC-30](PRD.md), [PRD AC-32](PRD.md) і [PRD AC-33](PRD.md). Місце пошуку в архітектурі описує [SAD](sad.md). Публікація та повторний імпорт спираються на [T20](tasks/T20-dictionary-import.md) і [ADR-0010](adr/0010-version-dictionary-entries-in-postgres-with-a-published-pointer.md).
 
 ```mermaid
 flowchart LR

@@ -74,7 +74,7 @@ public sealed class TodayBenchmarkTests(PostgresFixture postgres, ITestOutputHel
         var report = new StringBuilder();
         report.AppendLine("# Вимірювання затримки екрана «Сьогодні»");
         report.AppendLine();
-        report.AppendLine("Фактичний прогін для [T19](../tasks/T19-today-api.md), [AC-28](../PRD.md#ac-28---happy-path), [AC-29](../PRD.md#ac-29---authorization) та контракту [getToday](../contracts/openapi.yaml).");
+        report.AppendLine("Фактичний прогін для [T19](../tasks/T19-today-api.md), [AC-28](../PRD.md), [AC-29](../PRD.md) та контракту [getToday](../contracts/openapi.yaml).");
         report.AppendLine();
         report.AppendLine($"- Час UTC: {DateTimeOffset.UtcNow:O}.");
         report.AppendLine($"- ОС процесу: {RuntimeInformation.OSDescription}; архітектура: {RuntimeInformation.ProcessArchitecture}.");

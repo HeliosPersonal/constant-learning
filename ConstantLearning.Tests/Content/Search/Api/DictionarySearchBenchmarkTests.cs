@@ -91,7 +91,7 @@ public sealed class DictionarySearchBenchmarkTests(PostgresFixture postgres, ITe
         var report = new StringBuilder();
         report.AppendLine("# Вимірювання затримки пошуку у словнику");
         report.AppendLine();
-        report.AppendLine("Фактичний прогін для [T22](../tasks/T22-dictionary-search-api.md), [AC-30](../PRD.md#ac-30---happy-path) та [ADR-0012](../adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md).");
+        report.AppendLine("Фактичний прогін для [T22](../tasks/T22-dictionary-search-api.md), [AC-30](../PRD.md) та [ADR-0012](../adr/0012-search-via-a-precomputed-table-of-folded-word-forms.md).");
         report.AppendLine();
         report.AppendLine($"- Час UTC: {DateTimeOffset.UtcNow:O}.");
         report.AppendLine($"- ОС процесу: {RuntimeInformation.OSDescription}; архітектура: {RuntimeInformation.ProcessArchitecture}.");
