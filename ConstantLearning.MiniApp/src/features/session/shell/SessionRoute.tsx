@@ -56,6 +56,6 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
       : data.status === 'completed' ? <><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p></> : <><h1>Картка недоступна</h1><p>Не вдалося отримати поточну картку заняття. Поверніться на «Сьогодні».</p></>}
     {pending && <p role="status">Зберігаємо та оновлюємо заняття…</p>}
     {message && <><Result tone="error">{message}</Result><Button size="l" stretched disabled={pending} onClick={() => { setPending(true); void refresh().then(() => setMessage(undefined)).catch(() => setMessage('Не вдалося оновити заняття. Спробуйте ще раз.')).finally(() => setPending(false)); }}>Оновити стан</Button></>}
-    <Button size="l" mode="plain" stretched disabled={pending || recallBusy} onClick={leave}>На сьогодні</Button>
+    <Button className="session-leave" size="l" mode="plain" stretched disabled={pending || recallBusy} onClick={leave}>На сьогодні</Button>
   </Card>;
 }

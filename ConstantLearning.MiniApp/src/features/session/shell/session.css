@@ -6,3 +6,4 @@
 .session-example { border-left: 3px solid var(--cl-accent); padding-left: 16px; margin: 28px 0; overflow-wrap: anywhere; }
 .session-example p { margin: 4px 0; }
 .session-actions { display: grid; gap: 8px; }
+.session-leave { margin-top: 8px; }
