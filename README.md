@@ -1,115 +1,157 @@
-# Telegram-бот для вивчення мов
+# Constant Learning
 
-Бот надсилає групам короткі уроки польських слів і повторення за розкладом. Проєкт побудований на .NET 10 і PostgreSQL; вхідні оновлення Telegram надходять через webhook.
+Персональний тренер польської мови в Telegram: бот нагадує про заняття, а Mini App проводить урок, показує словник і налаштування. Бекенд на .NET 10 і PostgreSQL, фронтенд — React-застосунок, який ASP.NET Core роздає як SPA.
 
-## Швидкий запуск
+Груповий режим більше не підтримується. Старий код груп ще є в репозиторії й прибирається в [T43](docs/features/personal-trainer-mvp/tasks/T43-retire-group-code.md).
 
-Потрібні Docker і Docker Compose, а також токен Telegram-бота від [@BotFather](https://t.me/BotFather).
-
-1. Налаштуйте токен і рядок з’єднання в Docker Compose.
-2. Запустіть сервіси:
-
-~~~sh
-docker compose up -d
-~~~
-
-3. Додайте бота до групи й надішліть команду /startlearning.
-
-Докладні кроки наведено в [короткому посібнику](docs/QUICKSTART.md).
-
-## Як працює бот
+## Як це працює
 
 ~~~mermaid
 flowchart LR
-    TG[Telegram: група] -->|webhook| API[ASP.NET Core бот]
-    API --> SVC[Сервіси навчання]
-    SVC --> DB[(PostgreSQL)]
-    JOB[Заплановані завдання Quartz] --> SVC
-    SVC -->|уроки та повторення| TG
+    U[Учень] -->|чат з ботом| TG[Telegram Bot API]
+    U -->|відкриває Mini App| APP
+    TG -->|webhook: POST /api/telegram/webhook| APP[ASP.NET Core: бот, API і SPA]
+    APP -->|повідомлення і нагадування| TG
+    APP -->|EF Core| DB[(PostgreSQL)]
 ~~~
 
-Бот надсилає повторення вивчених слів і нові слова у встановлений для групи час. Стан навчання зберігається окремо для кожної групи.
+Mini App викликає API з підписом Telegram `initData` ([ADR-0005](docs/features/personal-trainer-mvp/adr/0005-authenticate-every-api-request-with-telegram-init-data.md)). Бот відповідає на повідомлення та надсилає нагадування з посиланням на Mini App. Заняття, відповіді й розклад повторень зберігаються на сервері ([ADR-0008](docs/features/personal-trainer-mvp/adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)).
 
-## Можливості
+## Швидкий запуск
 
-- Незалежний прогрес і розклад для кожної групи.
-- Адаптивний до мов налаштовуваний список слів; типова пара — польська й українська.
-- Щоденні повідомлення з новими словами та повтореннями.
-- Імпорт CSV-файлів зі словами.
-- Команди для керування розкладом і прогресом.
-- Розгортання через Docker.
+Потрібні Docker з Compose і токен бота від [@BotFather](https://t.me/BotFather).
 
-## Команди
+1. Задайте змінні середовища або локальний файл для Compose:
 
-| Команда | Призначення |
-|---|---|
-| /startlearning | Зареєструвати групу й увімкнути навчання |
-| /stoplearning | Призупинити заплановані повідомлення |
-| /restartprogress | Очистити прогрес групи |
-| /getalllearned | Показати вивчені слова |
-| /setrepetitiontime HH:MM | Задати час повторень |
-| /setnewwordstime HH:MM | Задати час нових слів |
-| /setwordscount XY | Задати кількість нових слів і повторень |
-| /help | Показати довідку бота |
+   ~~~text
+   TELEGRAM_BOT_TOKEN=<токен від BotFather>
+   TELEGRAM_WEBHOOK_URL=   # порожньо для локального запуску без webhook
+   ~~~
 
-Повний опис є в [довіднику команд](docs/COMMANDS.md).
+2. Запустіть сервіси:
 
-## Налаштування
+   ~~~sh
+   docker compose up -d
+   docker compose logs -f app
+   ~~~
 
-У Docker Compose задаються токен бота, параметри навчання, мовна пара та шлях до CSV-словника. Для робочого розгортання можна вказати публічну HTTPS-адресу webhook.
+3. Відкрийте чат із ботом і надішліть `/start`.
 
-| Параметр | Типове значення |
-|---|---|
-| Learning__NewWordsCount | 3 нові слова |
-| Learning__RepetitionWordsCount | 10 слів на повторення |
-| Learning__AnswerDelaySeconds | 30 секунд |
-| Learning__LearnedWordsChunkSize | 10 слів у повідомленні команди /getalllearned |
-| Language__TargetLanguage | Polish |
-| Language__SourceLanguage | Ukrainian |
-| Language__TargetLanguageCode | pl |
-| Language__SourceLanguageCode | uk |
+Без `TELEGRAM_WEBHOOK_URL` бот не отримуватиме повідомлення від Telegram. Щоб тестувати webhook локально, використайте ngrok (нижче).
 
-Докладніше про webhook: [налаштування webhook](docs/WEBHOOK-SETUP.md).
+## Локальна розробка
 
-У прикладі `docker-compose.yml` затримка перед показом відповідей змінена на 5 секунд для швидшої демонстрації; у `appsettings.json` та `appsettings.json.example` типове значення — 30 секунд.
-
-## Розробка
+Бекенд:
 
 ~~~sh
-dotnet restore
-dotnet build
+dotnet restore ConstantLearning.slnx
+dotnet build ConstantLearning.slnx
 dotnet run --project ConstantLearning
 ~~~
 
-Для міграцій бази даних:
+Mini App (з каталогу `ConstantLearning.MiniApp`):
+
+~~~sh
+npm ci
+npm run dev
+npm run build
+~~~
+
+`npm run dev` відкриває `http://127.0.0.1:5173`, а `/api` проксіюється на `http://127.0.0.1:8888`. `npm run build` записує готову SPA в `ConstantLearning/wwwroot`. Деталі — в [README Mini App](ConstantLearning.MiniApp/README.md).
+
+Тести бекенду потребують Docker: Testcontainers піднімає PostgreSQL 16.
+
+~~~sh
+dotnet test ConstantLearning.Tests/ConstantLearning.Tests.csproj
+~~~
+
+Міграції EF Core:
 
 ~~~sh
 dotnet ef migrations add НазваМіграції
 dotnet ef database update
 ~~~
 
-## Структура проєкту
+## Webhook через ngrok
 
-~~~text
-ConstantLearning/
-├── Configuration/  Налаштування застосунку
-├── Controllers/    Telegram webhook
-├── Data/           Контекст і сутності бази даних
-├── Enums/          Переліки
-├── Jobs/           Заплановані завдання Quartz
-├── Migrations/     Міграції EF Core
-├── Resources/      Повідомлення й списки слів
-└── Services/       Логіка бота й навчання
+Telegram приймає webhook лише через HTTPS. Для локального тесту:
+
+1. Запустіть тунель на порт застосунку: `ngrok http 8888`.
+2. Задайте `TELEGRAM_WEBHOOK_URL` як HTTPS-адресу ngrok із шляхом `/api/telegram/webhook`.
+3. Перезапустіть застосунок: `docker compose restart app`.
+
+Безкоштовна адреса ngrok змінюється після перезапуску тунелю, тоді оновіть `TELEGRAM_WEBHOOK_URL` і перезапустіть застосунок.
+
+~~~mermaid
+sequenceDiagram
+    participant A as Застосунок
+    participant T as Telegram Bot API
+    participant U as Учень
+    A->>T: Реєстрація webhook при старті
+    U->>T: Повідомлення боту
+    T->>A: POST /api/telegram/webhook
+    A-->>T: HTTP 200
+    Note over A,T: При зупинці застосунку webhook знімається
 ~~~
 
-## Напрям розвитку
+Перевірка через Bot API: `https://api.telegram.org/bot<TOKEN>/getWebhookInfo`. У полі `url` має бути ваша адреса, а `last_error_message` покаже причину збоїв.
 
-У [переліку ідей](docs/IDEAS.md) задокументовано перехід від групових повідомлень до персонального тренера в Telegram Mini App. Це план продукту, а не опис уже реалізованих функцій.
+Типові причини:
 
-## Готовність словникового контенту
+- **Адреса не HTTPS.** Telegram вимагає HTTPS.
+- **Неправильний шлях.** Має закінчуватися на `/api/telegram/webhook`.
+- **Адреса недоступна.** Перевірте тунель, DNS, TLS та брандмауер.
+- **Застосунок не відповідає.** Перевірте, що контейнер слухає порт 8888 і в журналі є запити.
 
-Підготовлено [2 000 схвалених унікальних лем](docs/dictionary/README.md) за погодженим методом Wikisłownik + LLM-редактура. [Звіт готовності](docs/dictionary/readiness.json) і [журнал доказів](docs/dictionary/evidence.jsonl) підтверджують склад випуску. Імпорт у персональну модель виконує [T20](docs/features/personal-trainer-mvp/tasks/T20-dictionary-import.md); чинний груповий бот поки використовує старий CSV. Статус реалізації — у [трекері задач](docs/features/personal-trainer-mvp/tasks/tracker.md).
+## Налаштування
 
-## Автоматичне розгортання
+| Ключ | Призначення |
+|---|---|
+| `Telegram__BotToken` | Токен бота (`TELEGRAM_BOT_TOKEN` у Compose). Обов'язковий. |
+| `Telegram__WebhookUrl` | Публічна HTTPS-адреса webhook. Порожнє значення вимикає реєстрацію. |
+| `Telegram__SecretToken` | Секрет webhook. У production задається в Infisical. |
+| `Telegram__MiniAppUrl` | Публічна адреса Mini App. |
+| `ConnectionStrings__DefaultConnection` | Рядок підключення до PostgreSQL. |
+| `Language__TargetLanguage`, `Language__SourceLanguage` | Мовна пара: Polish і Ukrainian. |
+| `Language__TargetLanguageCode`, `Language__SourceLanguageCode` | Коди мов: `pl` і `uk`. |
+| `WordsImport__WordsFolder` | Каталог CSV зі словами для імпорту. |
 
-Production-деплой після успішного CI, одноразові налаштування Helios/GitHub і rollback описані в [інструкції деплою](docs/deployment.md).
+Параметри `Learning__*` (кількість слів, затримка відповіді) діють лише для старих групових завдань і зникнуть разом із ними.
+
+Production-конфігурація, секрети та порядок деплою — в [документі про деплой](docs/deployment.md).
+
+## Структура репозиторію
+
+~~~text
+ConstantLearning/            Бекенд: webhook, API, сервіси, EF Core
+├── Controllers/             Telegram webhook і health
+├── Features/                Модулі функцій (див. ADR-0003)
+├── Platform/                Спільні компоненти
+├── Data/, Migrations/       Контекст БД і міграції EF Core
+├── Services/                Логіка бота та навчання
+├── HostedServices/          Старт: БД і webhook
+├── Jobs/                    Старі групові завдання Quartz
+├── Resources/               Тексти бота, шаблони, словники
+└── wwwroot/                 Збірка Mini App
+ConstantLearning.MiniApp/    Mini App (React, Vite)
+ConstantLearning.Tests/      Тести .NET (xUnit, Testcontainers)
+docs/                        Документація
+k8s/, tools/, tests/         Маніфести, інструменти, навантажувальні тести
+~~~
+
+Модулі персонального тренера описано в [ADR-0003](docs/features/personal-trainer-mvp/adr/0003-organise-code-into-feature-modules-inside-the-monolith.md).
+
+## Документація
+
+| Документ | Про що |
+|---|---|
+| [Деплой](docs/deployment.md) | Автоматичний production через GitHub Actions, Helios і Infisical, rollback |
+| [PRD персонального тренера](docs/features/personal-trainer-mvp/PRD.md) | Вимоги, критерії приймання, KPI |
+| [Ідеї та рішення](docs/IDEAS.md) | Журнал рішень інтерв'ю |
+| [Трекер задач](docs/features/personal-trainer-mvp/tasks/tracker.md) | Статус реалізації |
+| [Словник](docs/dictionary/README.md) | Випуск 2 000 схвалених лем і метод перевірки |
+| [Локальна LLM](docs/LOCAL-LLM.md) | Дослідження моделей; рішення в [ADR-0014](docs/features/personal-trainer-mvp/adr/0014-prepare-initial-dictionary-with-source-backed-llm-editing.md) |
+| [Mini App](ConstantLearning.MiniApp/README.md) | Фронтенд, теми, локальні перевірки |
+| [Інфраструктура тестів](ConstantLearning.Tests/Infrastructure/README.md) | Фікстури PostgreSQL і контрактні перевірки |
+| [Глосарій](CONTEXT.md) | Терміни домену |
+| [Правила для агентів](AGENTS.md) | Мова документації та авторство комітів |

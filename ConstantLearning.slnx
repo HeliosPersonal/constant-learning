@@ -1,9 +1,4 @@
 <Solution>
-  <Folder Name="/docs/">
-    <File Path="docs/COMMANDS.md" />
-    <File Path="docs/QUICKSTART.md" />
-    <File Path="docs/WEBHOOK-SETUP.md" />
-  </Folder>
   <Folder Name="/SolutionItems/">
     <File Path=".dockerignore" />
     <File Path=".github/workflows/ci-cd.yml" />
