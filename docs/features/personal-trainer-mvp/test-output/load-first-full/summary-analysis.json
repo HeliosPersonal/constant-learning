@@ -1,0 +1,51 @@
+{
+  "answer": {
+    "count": 14658,
+    "within_budget": 14334,
+    "budget_ms": 500,
+    "p95_interval_ms": [
+      100.0,
+      200.0
+    ],
+    "fraction_within": 0.9778960294719607,
+    "wilson_95": [
+      0.9753877553732593,
+      0.9801538823772606
+    ]
+  },
+  "search": {
+    "count": 40000,
+    "within_budget": 39563,
+    "budget_ms": 300,
+    "p95_interval_ms": [
+      100.0,
+      200.0
+    ],
+    "fraction_within": 0.989075,
+    "wilson_95": [
+      0.9880083090575994,
+      0.9900477618893789
+    ]
+  },
+  "browser": {
+    "opens": 50,
+    "successful": 50,
+    "within_1500": 47,
+    "p95_nearest_rank_ms": 1629,
+    "wilson_95_within_1500": [
+      0.8378290831116182,
+      0.979385029651026
+    ]
+  },
+  "reminders": {
+    "due": "2026-11-02T13:23:00+00:00",
+    "calls": 1000,
+    "distinct_recipients": 1000,
+    "within_120s": 1000,
+    "expected": 1000,
+    "wilson_95_expected": [
+      0.996173241514445,
+      1.0
+    ]
+  }
+}

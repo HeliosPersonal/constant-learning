@@ -1,7 +1,7 @@
-﻿using ConstantLearning.Configuration;
+using ConstantLearning.Configuration;
 using ConstantLearning.Enums;
 using Microsoft.Extensions.Options;
-using Telegram.Bot;
+using ConstantLearning.Platform.Telegram;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -14,7 +14,7 @@ public interface ITelegramBotService
 }
 
 public class TelegramBotService(
-    ITelegramBotClient botClient,
+    ITelegramClient botClient,
     IBotMessagesService botMessages,
     ILogger<TelegramBotService> logger,
     IServiceProvider serviceProvider,
@@ -25,7 +25,7 @@ public class TelegramBotService(
     {
         try
         {
-            await botClient.SendMessage(
+            await botClient.SendMessageAsync(
                 chatId: chatId,
                 text: text,
                 parseMode: parseMode);
@@ -120,14 +120,14 @@ public class TelegramBotService(
             if (isAlreadyRegistered)
             {
                 var message = botMessages.GetMessage(BotMessageKey.ChatAlreadyRegistered);
-                await botClient.SendMessage(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
                 return;
             }
 
             await chatRegistrationService.RegisterChatAsync(messageChatId, chatTitle);
 
             var successMessage = botMessages.GetMessage(BotMessageKey.ChatRegisteredSuccess);
-            await botClient.SendMessage(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
 
             logger.LogInformation("Chat {ChatId} ({ChatTitle}) successfully registered", messageChatId, chatTitle);
         }
@@ -136,7 +136,7 @@ public class TelegramBotService(
             logger.LogError(ex, "Error handling startlearning command for chat {ChatId}", messageChatId);
 
             var errorMessage = botMessages.GetMessage(BotMessageKey.RegistrationError);
-            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
         }
     }
 
@@ -155,7 +155,7 @@ public class TelegramBotService(
             await chatRegistrationService.DeactivateChatAsync(messageChatId);
 
             var successMessage = botMessages.GetMessage(BotMessageKey.LearningStopped);
-            await botClient.SendMessage(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
 
             logger.LogInformation("Chat {ChatId} deactivated", messageChatId);
         }
@@ -164,7 +164,7 @@ public class TelegramBotService(
             logger.LogError(ex, "Error handling stoplearning command for chat {ChatId}", messageChatId);
 
             var errorMessage = botMessages.GetMessage(BotMessageKey.StopLearningError);
-            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
         }
     }
 
@@ -180,7 +180,7 @@ public class TelegramBotService(
             var removedCount = await progressService.RestartProgressAsync(messageChatId);
 
             var message = botMessages.GetMessage(BotMessageKey.ProgressRestarted, removedCount);
-            await botClient.SendMessage(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
 
             logger.LogInformation("Progress restart completed for chat {ChatId}. Removed {Count} words", messageChatId,
                 removedCount);
@@ -190,7 +190,7 @@ public class TelegramBotService(
             logger.LogError(ex, "Error handling restartprogress command for chat {ChatId}", messageChatId);
 
             var errorMessage = botMessages.GetMessage(BotMessageKey.RestartProgressError);
-            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
         }
     }
 
@@ -203,7 +203,7 @@ public class TelegramBotService(
             {
                 var usageMessage = botMessages.GetMessage(BotMessageKey.InvalidTimeCommandFormat,
                     "/setrepetitiontime HH:MM", "/setrepetitiontime 09:30");
-                await botClient.SendMessage(chatId: messageChatId, text: usageMessage, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: usageMessage, parseMode: ParseMode.Markdown);
                 return;
             }
 
@@ -211,7 +211,7 @@ public class TelegramBotService(
             if (!IsValidTimeFormat(timeString))
             {
                 var errorMessage = botMessages.GetMessage(BotMessageKey.InvalidTimeFormat, "09:30");
-                await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
                 return;
             }
 
@@ -224,7 +224,7 @@ public class TelegramBotService(
             await chatRegistrationService.UpdateRepetitionTimeAsync(messageChatId, timeString);
 
             var successMessage = botMessages.GetMessage(BotMessageKey.RepetitionTimeSet, timeString);
-            await botClient.SendMessage(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
 
             logger.LogInformation("Repetition time updated to {Time} for chat {ChatId}", timeString, messageChatId);
         }
@@ -234,7 +234,7 @@ public class TelegramBotService(
                 messageChatId, ex.Message);
 
             var errorMessage = botMessages.GetMessage(BotMessageKey.UpdateTimeError);
-            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
         }
     }
 
@@ -247,7 +247,7 @@ public class TelegramBotService(
             {
                 var usageMessage = botMessages.GetMessage(BotMessageKey.InvalidTimeCommandFormat,
                     "/setnewwordstime HH:MM", "/setnewwordstime 20:00");
-                await botClient.SendMessage(chatId: messageChatId, text: usageMessage, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: usageMessage, parseMode: ParseMode.Markdown);
                 return;
             }
 
@@ -255,7 +255,7 @@ public class TelegramBotService(
             if (!IsValidTimeFormat(timeString))
             {
                 var errorMessage = botMessages.GetMessage(BotMessageKey.InvalidTimeFormat, "20:00");
-                await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
                 return;
             }
 
@@ -268,7 +268,7 @@ public class TelegramBotService(
             await chatRegistrationService.UpdateNewWordsTimeAsync(messageChatId, timeString);
 
             var successMessage = botMessages.GetMessage(BotMessageKey.NewWordsTimeSet, timeString);
-            await botClient.SendMessage(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
 
             logger.LogInformation("New words time updated to {Time} for chat {ChatId}", timeString, messageChatId);
         }
@@ -278,7 +278,7 @@ public class TelegramBotService(
                 messageChatId, ex.Message);
 
             var errorMessage = botMessages.GetMessage(BotMessageKey.UpdateTimeError);
-            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
         }
     }
 
@@ -290,7 +290,7 @@ public class TelegramBotService(
             if (parts.Length != 2 || parts[1].Length != 2)
             {
                 var usageMessage = botMessages.GetMessage(BotMessageKey.InvalidWordsCountFormat);
-                await botClient.SendMessage(chatId: messageChatId, text: usageMessage, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: usageMessage, parseMode: ParseMode.Markdown);
                 return;
             }
 
@@ -301,7 +301,7 @@ public class TelegramBotService(
                 repetitionWordsCount < 1 || repetitionWordsCount > 9)
             {
                 var errorMessage = botMessages.GetMessage(BotMessageKey.InvalidWordsCountFormat);
-                await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
                 return;
             }
 
@@ -314,7 +314,7 @@ public class TelegramBotService(
             await chatRegistrationService.UpdateWordsCountAsync(messageChatId, newWordsCount, repetitionWordsCount);
 
             var successMessage = botMessages.GetMessage(BotMessageKey.WordsCountSet, newWordsCount, repetitionWordsCount);
-            await botClient.SendMessage(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: successMessage, parseMode: ParseMode.Markdown);
 
             logger.LogInformation("Words count updated: new={NewCount}, repetition={RepCount} for chat {ChatId}", 
                 newWordsCount, repetitionWordsCount, messageChatId);
@@ -324,14 +324,14 @@ public class TelegramBotService(
             logger.LogError(ex, "Error handling setwordscount command for chat {ChatId}", messageChatId);
 
             var errorMessage = botMessages.GetMessage(BotMessageKey.UpdateWordsCountError);
-            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
         }
     }
 
     /// <summary>
-    /// Checks if chat is registered and sends error message if not
+    /// Перевіряє, чи зареєстровано чат, і за потреби надсилає повідомлення про помилку
     /// </summary>
-    /// <returns>True if chat is registered, false otherwise</returns>
+    /// <returns>true, якщо чат зареєстровано; інакше false</returns>
     private async Task<bool> EnsureChatRegisteredAsync(long chatId, IChatRegistrationService chatRegistrationService)
     {
         var isRegistered = await chatRegistrationService.IsChatRegisteredAsync(chatId);
@@ -339,7 +339,7 @@ public class TelegramBotService(
         if (!isRegistered)
         {
             var message = botMessages.GetMessage(BotMessageKey.ChatNotRegistered);
-            await botClient.SendMessage(chatId: chatId, text: message, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: chatId, text: message, parseMode: ParseMode.Markdown);
         }
 
         return isRegistered;
@@ -378,7 +378,7 @@ public class TelegramBotService(
             if (learnedWords.Count == 0)
             {
                 var noWordsMessage = botMessages.GetMessage(BotMessageKey.NoLearnedWords);
-                await botClient.SendMessage(chatId: messageChatId, text: noWordsMessage, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: noWordsMessage, parseMode: ParseMode.Markdown);
                 return;
             }
 
@@ -398,7 +398,7 @@ public class TelegramBotService(
                 
                 var message = $"{header}\n\n{wordsList}";
                 
-                await botClient.SendMessage(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
+                await botClient.SendMessageAsync(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
                 
                 if (i < chunks.Count - 1)
                 {
@@ -414,13 +414,13 @@ public class TelegramBotService(
             logger.LogError(ex, "Error handling getalllearned command for chat {ChatId}", messageChatId);
 
             var errorMessage = botMessages.GetMessage(BotMessageKey.GetAllLearnedError);
-            await botClient.SendMessage(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
+            await botClient.SendMessageAsync(chatId: messageChatId, text: errorMessage, parseMode: ParseMode.Markdown);
         }
     }
 
     private async Task HandleHelpCommand(long messageChatId)
     {
         var message = botMessages.GetMessage(BotMessageKey.Help);
-        await botClient.SendMessage(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
+        await botClient.SendMessageAsync(chatId: messageChatId, text: message, parseMode: ParseMode.Markdown);
     }
 }

@@ -6,4 +6,6 @@ public class TelegramOptions
     
     public required string BotToken { get; set; }
     public string? WebhookUrl { get; set; }
+    public string? SecretToken { get; set; }
+    public string? MiniAppUrl { get; set; }
 }

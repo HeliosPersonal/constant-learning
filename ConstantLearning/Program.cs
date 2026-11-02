@@ -1,11 +1,17 @@
 using ConstantLearning.Configuration;
-using ConstantLearning.Data;
+using ConstantLearning.Features.Bot;
+using ConstantLearning.Features.Content;
+using ConstantLearning.Features.Identity;
+using ConstantLearning.Features.Learning;
+using ConstantLearning.Features.Notifications;
+using ConstantLearning.Features.Notifications.Dispatch;
 using ConstantLearning.HostedServices;
 using ConstantLearning.Jobs;
+using ConstantLearning.Platform;
+using ConstantLearning.Platform.Metrics;
+using ConstantLearning.Platform.Telegram;
 using ConstantLearning.Services;
-using Microsoft.EntityFrameworkCore;
 using Quartz;
-using Telegram.Bot;
 
 namespace ConstantLearning;
 
@@ -24,20 +30,13 @@ public static class Program
 
         builder.Configuration.AddJsonFile("Resources/BotMessages.json", optional: false, reloadOnChange: true);
 
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                               ?? throw new InvalidOperationException(
-                                   "Connection string 'DefaultConnection' not found");
-
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
-
-        var telegramOptions = builder
-                                  .Configuration
-                                  .GetSection(TelegramOptions.SectionName)
-                                  .Get<TelegramOptions>()
-                              ?? throw new InvalidOperationException("Telegram configuration not found");
-
-        builder.Services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(telegramOptions.BotToken));
+        builder.Services.AddPlatform(builder.Configuration);
+        builder.Services.AddIdentity(builder.Configuration);
+        builder.Services.AddLearning();
+        builder.Services.AddContent();
+        builder.Services.AddNotifications();
+        builder.Services.AddBot();
+        builder.Services.AddTelegram();
         builder.Services.AddScoped<ITelegramBotService, TelegramBotService>();
 
         builder.Services.AddSingleton<IBotMessagesService, BotMessagesService>();
@@ -50,6 +49,11 @@ public static class Program
 
         builder.Services.AddQuartz(q =>
         {
+            var dispatcherJobKey = new JobKey("NotificationDispatcher");
+            q.AddJob<NotificationDispatcherJob>(opts => opts.WithIdentity(dispatcherJobKey));
+            q.AddTrigger(opts => opts.ForJob(dispatcherJobKey)
+                .WithIdentity("NotificationDispatcher-trigger")
+                .WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(30).RepeatForever()));
 
             var repetitionJobKey = new JobKey("RepetitionJob");
             q.AddJob<RepetitionJob>(opts => opts.WithIdentity(repetitionJobKey));
@@ -83,9 +87,20 @@ public static class Program
             app.MapOpenApi();
         }
 
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+
+        app.UseRouting();
+        app.UseMiddleware<ServerTimingMiddleware>();
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();
+        app.MapLocalMetrics();
+
+        // Невідомі API-маршрути не повинні повертати HTML оболонки.
+        app.MapFallback("/api/{**path}", () => Results.NotFound());
+        app.MapFallbackToFile("index.html");
 
         app.Run();
     }

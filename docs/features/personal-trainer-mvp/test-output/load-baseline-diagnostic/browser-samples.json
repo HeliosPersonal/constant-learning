@@ -1,0 +1,116 @@
+[
+  {
+    "open": 1,
+    "timestamp": "2026-11-02T12:34:40.410Z",
+    "value_ms": 1758,
+    "status": 204
+  },
+  {
+    "open": 2,
+    "timestamp": "2026-11-02T12:34:55.418Z",
+    "value_ms": 295,
+    "status": 204
+  },
+  {
+    "open": 3,
+    "timestamp": "2026-11-02T12:35:10.433Z",
+    "value_ms": 240,
+    "status": 204
+  },
+  {
+    "open": 4,
+    "timestamp": "2026-11-02T12:35:25.445Z",
+    "value_ms": 1534,
+    "status": 204
+  },
+  {
+    "open": 5,
+    "timestamp": "2026-11-02T12:35:40.451Z",
+    "value_ms": 1026,
+    "status": 204
+  },
+  {
+    "open": 6,
+    "timestamp": "2026-11-02T12:35:55.454Z",
+    "value_ms": 214,
+    "status": 204
+  },
+  {
+    "open": 7,
+    "timestamp": "2026-11-02T12:36:10.465Z",
+    "value_ms": 1219,
+    "status": 204
+  },
+  {
+    "open": 8,
+    "timestamp": "2026-11-02T12:36:25.472Z",
+    "value_ms": 727,
+    "status": 204
+  },
+  {
+    "open": 9,
+    "timestamp": "2026-11-02T12:36:40.481Z",
+    "value_ms": 1713,
+    "status": 204
+  },
+  {
+    "open": 10,
+    "timestamp": "2026-11-02T12:36:55.493Z",
+    "value_ms": 628,
+    "status": 204
+  },
+  {
+    "open": 11,
+    "timestamp": "2026-11-02T12:37:10.494Z",
+    "value_ms": 874,
+    "status": 204
+  },
+  {
+    "open": 12,
+    "timestamp": "2026-11-02T12:37:25.498Z",
+    "value_ms": 572,
+    "status": 204
+  },
+  {
+    "open": 13,
+    "timestamp": "2026-11-02T12:37:40.501Z",
+    "value_ms": 220,
+    "status": 204
+  },
+  {
+    "open": 14,
+    "timestamp": "2026-11-02T12:37:55.509Z",
+    "value_ms": 189,
+    "status": 204
+  },
+  {
+    "open": 15,
+    "timestamp": "2026-11-02T12:38:10.516Z",
+    "value_ms": 1688,
+    "status": 204
+  },
+  {
+    "open": 16,
+    "timestamp": "2026-11-02T12:38:25.517Z",
+    "value_ms": 6049,
+    "status": 204
+  },
+  {
+    "open": 17,
+    "timestamp": "2026-11-02T12:38:40.519Z",
+    "value_ms": 3528,
+    "status": 204
+  },
+  {
+    "open": 18,
+    "timestamp": "2026-11-02T12:38:55.525Z",
+    "value_ms": 575,
+    "status": 204
+  },
+  {
+    "open": 19,
+    "timestamp": "2026-11-02T12:39:10.538Z",
+    "value_ms": 3015,
+    "status": 204
+  }
+]

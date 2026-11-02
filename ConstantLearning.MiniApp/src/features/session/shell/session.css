@@ -1,0 +1,8 @@
+.session-progress { display: grid; gap: 8px; margin-bottom: 32px; color: var(--cl-muted); font-size: 14px; }
+.session-progress progress { width: 100%; height: 8px; accent-color: var(--cl-accent); }
+.session-word { overflow-wrap: anywhere; font-size: 40px; line-height: 1.15; margin-bottom: 8px; }
+.session-pronunciation { color: var(--cl-muted); }
+.session-translation { font-size: 22px; font-weight: 600; overflow-wrap: anywhere; }
+.session-example { border-left: 3px solid var(--cl-accent); padding-left: 16px; margin: 28px 0; overflow-wrap: anywhere; }
+.session-example p { margin: 4px 0; }
+.session-actions { display: grid; gap: 8px; }

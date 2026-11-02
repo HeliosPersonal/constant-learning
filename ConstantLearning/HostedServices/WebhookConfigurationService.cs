@@ -1,62 +1,50 @@
-﻿using ConstantLearning.Configuration;
+using ConstantLearning.Configuration;
+using ConstantLearning.Platform.Telegram;
 using Microsoft.Extensions.Options;
-using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 
 namespace ConstantLearning.HostedServices;
 
-public class WebhookConfigurationService(
-    ITelegramBotClient botClient,
-    IOptions<TelegramOptions> telegramOptions,
-    ILogger<WebhookConfigurationService> logger)
-    : IHostedService
+public class WebhookConfigurationService(ITelegramClient telegram, IOptions<TelegramOptions> telegramOptions,
+    ILogger<WebhookConfigurationService> logger) : IHostedService
 {
-    private readonly TelegramOptions _telegramOptions = telegramOptions.Value;
-
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var webhookUrl = _telegramOptions.WebhookUrl;
-        
-        if (string.IsNullOrEmpty(webhookUrl))
+        var options = telegramOptions.Value;
+        if (string.IsNullOrWhiteSpace(options.WebhookUrl))
         {
-            logger.LogWarning("Telegram:WebhookUrl is not configured. Webhook will not be set.");
+            logger.LogWarning("Telegram:WebhookUrl не налаштовано; реєстрацію webhook пропущено.");
             return;
         }
 
-        const string requiredEndpoint = "/api/telegram/webhook";
-        if (!webhookUrl.EndsWith(requiredEndpoint, StringComparison.OrdinalIgnoreCase))
+        if (options.SecretToken is not { Length: > 0 and <= 256 } secret
+            || secret.Any(character => !char.IsAsciiLetterOrDigit(character) && character is not ('_' or '-')))
         {
-            webhookUrl = webhookUrl.TrimEnd('/') + requiredEndpoint;
-            logger.LogInformation("WebhookUrl corrected to: {WebhookUrl}", webhookUrl);
+            throw new InvalidOperationException("Telegram:SecretToken має містити 1–256 символів A-Z, a-z, 0-9, _ або -.");
         }
 
+        if (!Uri.TryCreate(options.WebhookUrl, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps
+            || !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment) || !string.IsNullOrEmpty(uri.UserInfo))
+        {
+            throw new InvalidOperationException("Telegram:WebhookUrl має бути HTTPS-адресою без query, fragment і credentials.");
+        }
 
-        try
+        if (!Uri.TryCreate(options.MiniAppUrl, UriKind.Absolute, out var miniApp) || miniApp.Scheme != Uri.UriSchemeHttps)
         {
-            await botClient.SetWebhook(
-                url: webhookUrl,
-                allowedUpdates: Array.Empty<UpdateType>(),
-                cancellationToken: cancellationToken);
-            
-            logger.LogInformation("✅ Webhook set to: {WebhookUrl}", webhookUrl);
+            throw new InvalidOperationException("Потрібна HTTPS-адреса Telegram:MiniAppUrl.");
         }
-        catch (Exception ex)
+
+        const string endpoint = "/api/telegram/webhook";
+        var webhookUrl = options.WebhookUrl.TrimEnd('/');
+        if (!webhookUrl.EndsWith(endpoint, StringComparison.OrdinalIgnoreCase))
         {
-            logger.LogError(ex, "Failed to set webhook to: {WebhookUrl}", webhookUrl);
-            throw;
+            webhookUrl += endpoint;
         }
+
+        await telegram.ConfigureWebhookAsync(webhookUrl, secret, [UpdateType.Message, UpdateType.MyChatMember], cancellationToken);
+        logger.LogInformation("Telegram webhook налаштовано.");
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            await botClient.DeleteWebhook(cancellationToken: cancellationToken);
-            logger.LogInformation("Webhook deleted");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error deleting webhook");
-        }
-    }
+    // Спільний webhook зберігається під час зупинки або rolling deploy.
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

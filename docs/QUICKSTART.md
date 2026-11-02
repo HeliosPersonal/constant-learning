@@ -1,154 +1,87 @@
-﻿# Quick Setup Guide
+# Швидкий запуск
 
-## 🚀 Get Started in 5 Minutes
+## Потрібно підготувати
 
-### Step 1: Get a Bot Token
+- Docker і Docker Compose.
+- Токен Telegram-бота від [@BotFather](https://t.me/BotFather).
+- Доступ до Telegram-групи, де ви можете додати бота.
 
-1. Open Telegram and find [@BotFather](https://t.me/BotFather)
-2. Send `/newbot` and follow instructions
-3. Save your bot token (looks like: `1234567890:ABCdef...`)
+## 1. Отримайте токен
 
-### Step 2: Clone & Configure
+У Telegram відкрийте @BotFather, надішліть /newbot і виконайте його інструкції. Збережіть виданий токен і не додавайте його до Git.
 
-```bash
+## 2. Налаштуйте проєкт
+
+Клонуйте репозиторій:
+
+~~~sh
 git clone https://github.com/ViacheslavMelnichenko/constant-learning.git
 cd constant-learning
-```
+~~~
 
-Edit `docker-compose.yml`:
-```yaml
-Telegram__BotToken: "YOUR_TOKEN_HERE"
-```
+Задайте TELEGRAM_BOT_TOKEN у змінних середовища або у своєму локальному файлі налаштувань Docker Compose.
 
-**Optional - Webhook URL:**
-```yaml
-# For production: your public HTTPS URL
-Telegram__WebhookUrl: "https://yourdomain.com/api/telegram/webhook"
+Для робочого розгортання задайте публічну адресу HTTPS, що закінчується на /api/telegram/webhook. Локальне тестування через ngrok описане в розділі нижче. Якщо адресу webhook не задати, бот надсилатиме заплановані повідомлення, але не отримуватиме команди й інші вхідні оновлення Telegram.
 
-# For local dev with ngrok (see below)
-Telegram__WebhookUrl: "https://abc123.ngrok.io/api/telegram/webhook"
+## 3. Запустіть сервіси
 
-# Leave empty to skip webhook (bot won't receive messages)
-Telegram__WebhookUrl: ""
-```
+~~~sh
+docker compose up -d
+~~~
 
-### Step 3: Start
+Перевірте журнали:
 
-```bash
-docker-compose up -d
-```
+~~~sh
+docker compose logs -f app
+~~~
 
-### Step 4: Register Your Group
+## 4. Додайте бота до групи
 
-1. Add your bot to a Telegram group
-2. Send in the group: `/startlearning`
+Додайте бота до Telegram-групи та надішліть:
 
-**Done!** 🎉
+~~~text
+/startlearning
+~~~
 
-The bot will now send:
-- **09:00** - Repetition of learned words
-- **20:00** - New words to learn
+Типовий розклад: повторення о 09:00 і нові слова о 20:00. Його можна змінити командами /setrepetitiontime та /setnewwordstime.
 
-## 📝 Customize
+## Локальна розробка з webhook через ngrok
 
-### Change Schedule
+1. Встановіть ngrok із [офіційного сайту](https://ngrok.com/).
+2. Запустіть тунель на порт застосунку:
 
-```
+~~~sh
+ngrok http 8888
+~~~
+
+3. Скопіюйте HTTPS-адресу, яку показав ngrok, і задайте її як адресу webhook разом із шляхом /api/telegram/webhook.
+4. Перезапустіть застосунок:
+
+~~~sh
+docker compose restart app
+~~~
+
+Безкоштовна адреса ngrok зазвичай змінюється після перезапуску тунелю. Тоді оновіть адресу webhook і перезапустіть бота.
+
+## Типові дії
+
+Змінити розклад:
+
+~~~text
 /setrepetitiontime 08:00
 /setnewwordstime 21:00
-```
+~~~
 
-### Change Word Counts
+Змінити кількість нових слів і повторень, наприклад на 2 нових і 5 для повторення:
 
-```
+~~~text
 /setwordscount 25
-```
-(2 new words, 5 repetition words)
+~~~
 
-### View All Commands
+Зупинити сервіси:
 
-```
-/help
-```
+~~~sh
+docker compose down
+~~~
 
-## 🔧 Common Tasks
-
-### Local Development with ngrok
-
-To test the bot locally with webhook support:
-
-1. **Install ngrok**
-   ```bash
-   # Windows (using chocolatey)
-   choco install ngrok
-   
-   # Or download from https://ngrok.com
-   ```
-
-2. **Start ngrok tunnel**
-   ```bash
-   ngrok http 8888
-   ```
-
-3. **Copy the HTTPS URL** from ngrok output:
-   ```
-   Forwarding  https://abc123.ngrok.io -> http://localhost:8888
-   ```
-
-4. **Update docker-compose.yml**
-   ```yaml
-   Telegram__WebhookUrl: "https://abc123.ngrok.io/api/telegram/webhook"
-   ```
-
-5. **Restart the bot**
-   ```bash
-   docker-compose restart app
-   ```
-
-**Note:** ngrok URLs change on each restart. Update the webhook URL accordingly.
-
-### View Logs
-```bash
-docker-compose logs -f app
-```
-
-### Restart Bot
-```bash
-docker-compose restart app
-```
-
-### Stop Bot
-```bash
-docker-compose down
-```
-
-### Change Language
-
-1. Add your CSV file to `ConstantLearning/Resources/Words/`
-2. Format: `words-{target}-{source}.csv`
-3. Update `docker-compose.yml` language settings
-4. Restart: `docker-compose restart app`
-
-## 🆘 Troubleshooting
-
-### Bot not responding?
-```bash
-docker-compose logs -f app | grep ERROR
-```
-
-### Wrong time zone?
-Add to `docker-compose.yml`:
-```yaml
-TZ: "Europe/Kyiv"  # Your timezone
-```
-
-### Reset progress?
-```
-/restartprogress
-```
-
-## 📚 More Info
-
-- [Full README](../README.md)
-- [All Commands](COMMANDS.md)
-- [GitHub Secrets Setup](GITHUB-SECRETS.md)
+Дивіться також [довідник команд](COMMANDS.md), [налаштування webhook](WEBHOOK-SETUP.md) і [головний опис проєкту](../README.md).

@@ -1,0 +1,109 @@
+lemma_pl,reasons,review_note
+tylko,editorial_rejected,"blocked: перехресна вичитка: Приклад показує обмежувальну частку тільки, але source sense описує протиставний сполучник. Для цієї картки потрібен інший підтверджений sense."
+bez,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Частотний прийменник і seed-іменник бузини — різні значення.
+jako,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Ненормативний кандидат «в якості»; потрібен доказ для «як».
+niż,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Кандидати «низький/атмосферний» не перекладають іменник баричного мінімуму.
+stan,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Частотне загальне слово підмінено історичним суспільним станом.
+środek,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: «Осередок» не є точним сучасним відповідником геометричного середини.
+poza,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Частотне «поза» є прийменником; seed описує іменник поза тіла.
+prosty,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Рівний не підтверджує потрібне прямий у цьому значенні.
+zbyt,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Seed є іменником «збут», а частотне слово — прислівник «занадто»."
+postać,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Постать не є точним перекладом форми споруди в seed.
+kolej,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Кандидат «колія» не є точним відповідником залізниці як транспорту.
+ciekawy,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Кандидат цікавий не передає без двозначності допитливий у seed.
+podstawa,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: «Підстава» не є точним перекладом фізичної основи будівлі.
+biały,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Seed описує людину за расою, а не навчальний прикметник кольору."
+zarówno,editorial_rejected;unknown_part_of_speech,blocked: фінальна перевірка: частину мови не класифіковано в джерельному знімку; потрібне окреме підтвердження POS
+zgodnie,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Гармонійно у seed не відповідає окремому згідно.
+stopień,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Кандидат «ступінь» не перекладає східця сходів, описаного в seed."
+koszt,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: «Видатки» не відповідає однині й значенню koszt без контекстного уточнення.
+trafić,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Доконане trafić не відповідає недоконаному «вдаряти».
+znaczyć,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: «Мати/значення» — розірваний відповідник, окремо не перекладає значення."
+tytuł,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: «Титул» не є точним українським відповідником назви книжки чи твору.
+dziać,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Дієслово в цьому значенні потребує się; ізольована лема dziać неоднозначна.
+służba,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Seed описує прислугу, а кандидат служба має інший зміст."
+działać,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: «Робити» без додатка не є відповідником діяти/працювати в цьому значенні.
+rodzinny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: «Родовий» звужує загальне сімейне значення seed; потрібен доказ для «сімейний».
+przypominać,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: «Згадувати» не перекладає каузативне нагадувати/викликати спогад у seed.
+świadomość,editorial_rejected,blocked: перехресна вичитка: Source sense означає усвідомлення чогось; українське Свідомість загрози неприродне й не передає цього значення. Не підміняю на усвідомлення без нового підтвердження або іншого sense.
+jakikolwiek,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Відповідник абиякий не передає нейтральне dowolny; потрібен будь-який із додатковим підтвердженням.
+tymczasem,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Джерело розірвало відповідник тим часом на два окремі кандидати.
+stosunek,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибраний вузький математичний сенс stosunek не узгоджений з канонічним стосунок.
+właściwy,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Відповідник властивий не передає вибране значення відповідний.
+siostra,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано значення черниця замість основного родинного значення сестра.
+dana,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Однина dana не узгоджується з українським множинним відповідником дані.
+obywatel,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано історичне/ідеологізоване звертання obywatel, не основне значення громадянин."
+cieszyć,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Сенс і відповідник стосуються cieszyć się; потрібне підтвердження рефлексивної конструкції.
+postępowanie,editorial_rejected,"blocked: перехресна вичитка: Судочинство — система здійснення правосуддя, а не конкретне провадження/розгляд справи, що тривав кілька місяців. У seed немає точного відповідника для цього прикладу."
+stopa,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано одиницю довжини foot замість базового анатомічного значення стопа.
+wymiar,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано вузький фізичний сенс розмірність замість базового розмір.
+kategoria,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано вузький філософський сенс категорії, не базове розуміння категорія/клас."
+zewnątrz,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Zewnątrz у сучасній мові переважно частина na zewnątrz / z zewnątrz; відповідник ззовні потребує конструкційного уточнення.
+kawa,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Розірваний український переклад кавове дерево і небазовий ботанічний сенс.
+setka,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Українська сотка як назва числа100 не нормативний навчальний відповідник сотня.
+funkcjonariusz,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Функціонер є хибним другом для сучасного функціонарія служб; потрібен працівник/службовець.
+król,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано метафоричний сенс król і відповідник цар замість базового король.
+kolejka,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано технічну структуру даних queue замість базової побутової черги.
+poseł,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано застарілий дипломатичний сенс poseł і переклад амбасадор замість сучасного депутат.
+kieszeń,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано переносний фінансовий сенс кишені, не базову частину одягу."
+tożsamość,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Відповідник схожість не передає тотожність/ідентичність без різниць.
+zastanawiać,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Переклад роздумувати стосується zastanawiać się, джерельне перехідне скланяти до роздумів не узгоджене."
+producent,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Фабрикатор — застарілий і небажаний відповідник виробник для базового курсу.
+wyjaśniać,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Кандидат з'ясовувати не передає вибраного значення робити зрозумілим/пояснювати іншому.
+przód,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Канонічне перед як іменник неприродне в українській картці; потрібен передок/передня частина з доказом.
+dziennik,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Source sense означає класний журнал; український щоденник — інший навчальний предмет.
+służyć,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано історичний сенс служити лакеєм, а не базове призначення або служба."
+lekcja,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Хибний відповідник лекція для шкільного уроку.
+klatka,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Відповідник клітка не відповідає klatka schodowa у вибраному sense.
+południowy,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Sense стосується полудня, але переклад південний позначає напрямок."
+zbiór,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Збір/нарада не відповідає значенню сукупності предметів.
+oddech,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Джерельний віддих потребує нормативного дихання/вдиху для навчального значення.
+rachunek,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибраний sense стану капіталу недостатньо відповідає побутовому рахунку.
+zdolny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Sense здатний виконати дію не тотожний перекладу здібний.
+tor,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Хімічний торій не відповідає побутовому частотному значенню tor.
+potencjalny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Потенціальний замість нормативного потенційний потребує додаткової перевірки.
+niezbyt,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Розірваний переклад не/дуже не підтверджує цілісне значення не дуже.
+śmieć,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Частотний кандидат іменниковий, але seed містить дієслово сміти."
+odmiana,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Для мовної/іншої різновидності потрібен різновид, а не загальне зміна."
+zrozumienie,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Зрозуміння не є бажаним нормативним відповідником розуміння.
+trwały,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Тривалий не є точним відповідником стійкого незмінного у вибраному sense.
+odmienny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Іноземний/чужий не відповідає загальному різний у seed.
+mebel,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Меблі є збірним множинним відповідником; потрібен точний одиничний предмет меблів.
+prawnik,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибраний жіночий sense юристка не відповідає типовій чоловічій лемі.
+historyk,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибраний жіночий sense спеціалістка не відповідає чоловічому відповіднику історик.
+ściśle,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Стисло передає короткість, а sense визначає точність/precyzyjnie."
+wierny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Seed містить релігійний іменник, а частотна лема прикметникова."
+węgiel,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вуглець — хімічний sense, а не побутове вугілля частотної леми."
+podejmować,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Підбирати не відповідає вибраному sense зняття власних грошей.
+bar,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Хімічний барій не відповідає побутовому частотному значенню bar.
+wstyd,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Стид/встид не підходять як основний нормативний відповідник сором.
+podejrzany,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибране значення підозрюваний не тотожне загальному підозрілий.
+inteligencja,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Інтелігентність не є точним перекладом розумових здібностей у цьому sense.
+łaska,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Для помилування у вибраному sense українська ласка неоднозначна; потрібен точний відповідник.
+rzadki,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Рідкий не передає достатньо точно малочастотний; потрібне рідкісний.
+inteligentny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Інтелігентний не тотожний розумний у вибраному польському значенні.
+zmysł,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Почуття не підходить як загальний відповідник організмової здатності сприйняття.
+partyjny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано історичний іменниковий сенс члена комуністичної партії, не прикметник партійний."
+formuła,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано категорію автоперегонів, а не базовий сенс формула/формулювання."
+przetarg,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Przetarg означає тендер/торги з вибором виконавця, не загальний аукціон."
+królestwo,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано таксономічний сенс царство замість загального королівства.
+brązowy,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Матеріал бронза, не базовий колір коричневий; потрібне інше значення."
+romantyczny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Історико-літературний романтизм не базове значення романтичний.
+prawica,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Prawica як права рука — периферійне/стилістичне значення для початкового курсу.
+wrażliwy,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Чуттєвий не дорівнює чутливий до подразників у вибраному значенні.
+wspierać,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибране взаємне wspierać się потребує окремої конструкції; канонічне підтримуватися неприродне без взаємного пояснення.
+broda,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Broda у вибраному сенсі означає підборіддя, а переклад борода називає волосяний покрив."
+odpad,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Однина odpad і множинний відповідник відходи потребують узгодження для картки.
+graniczny,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Кандидат граничний не передає звичайне прикордонний у вибраному сенсі межі території.
+zabytek,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Пам'ятник не передає загальну історичну пам'ятку в сенсі zabytek.
+komplet,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вузький сенс аншлаг замість комплект/набір.
+olej,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано технічну мінеральну оливу, але кандидат олія стосується харчової рослинної."
+szefowa,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Шефова стилістично розмовний відповідник; для базового курсу потрібна керівниця з доказом.
+parter,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Джерело розірвало переклад перший поверх на окремі кандидати.
+stereotyp,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано спеціальний друкарський сенс стереотип, а не загальне значення."
+kwadrans,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Джерело розірвало переклад чверть години на окремі кандидати.
+faktura,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано сенс фактура поверхні замість базового для побуту рахунок-фактура.
+zdradzać,editorial_rejected,"blocked: перехресна вичитка: Виявляти чужі таємниці означає передусім відкривати/знаходити їх, тоді як seed говорить про розголошення стороннім. Для розголошувати потрібне підтвердження іншого українського відповідника."
+spożywczy,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано скорочений іменник магазин замість базового прикметника продуктовий/харчовий.
+kwadratowy,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,"blocked: Вибрано математичне значення другого степеня, де українською зазвичай квадратичний; не базова квадратна форма."
+orzeł,editorial_rejected;missing_translation_uk;missing_pronunciation_uk;missing_example_pl;missing_example_uk,blocked: Вибрано бік монети орел замість базового птаха.

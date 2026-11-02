@@ -1,4 +1,4 @@
-﻿**/.dockerignore
+**/.dockerignore
 **/.env
 **/.git
 **/.gitignore
@@ -22,3 +22,11 @@
 **/values.dev.yaml
 LICENSE
 README.md
+**/TestResults
+**/playwright-report
+**/test-results
+**/.env.*
+ConstantLearning/wwwroot
+
+# Сирі локальні результати не входять до контексту образу.
+tests/load/results

@@ -1,0 +1,14 @@
+== kot ({{język polski}}) ==
+{{wymowa}}
+{{IPA|kɔt}}
+{{znaczenia}}
+''rzeczownik''
+: (1.1) zwierzę
+{{tłumaczenia}}
+* ukraiński: (1.1) [[кіт]]
+{{źródła}}
+== kot ({{język czeski}}) ==
+{{wymowa}}
+{{IPA|BAD}}
+{{tłumaczenia}}
+* ukraiński: (1.1) [[неправильно]]

@@ -1,0 +1,1463 @@
+# Контракт HTTP API personal-trainer-mvp, згенерований /sdlc:api-forge (сценарій A).
+#   поля й обмеження     ← data-model.md (кожне поле має походження, див. api-sync-report.md)
+#   відповіді з помилками ← sad.md §6 (гілки alt/else)
+#   перелік ендпоінтів   ← PRD.md §4 user stories / §5 AC
+# Відхилення від дефолтів курсу (за ADR) записано в api-sync-report.md.
+openapi: 3.1.0
+
+info:
+  title: personal-trainer-mvp API
+  version: 0.1.0
+  description: |
+    API персонального тренера польських слів для україномовних learner. Mini App у Telegram
+    використовує його для онбордингу, щоденних session з вправами пригадування, екрана «Сьогодні»,
+    пошуку в словнику, налаштувань і content reports; content editor — для черги непідтверджених
+    content reports. Сервер — єдине джерело істини навчального стану (ADR-0008): оцінка відповіді,
+    межі доби learner і планування повторень відбуваються тут, а клієнт лише відмальовує результат.
+
+servers:
+  - url: https://trainer.example.test
+    description: Production (той самий origin, що й Mini App — ADR-0002)
+  - url: http://localhost:8888
+    description: Local
+
+# Глобальна автентифікація — підписані initData Telegram у кожному запиті (ADR-0005),
+# а не BearerAuth з дефолтів курсу. Публічні операції оголошують security: [].
+security:
+  - TelegramInitData: []
+
+tags:
+  - name: learner
+  - name: learning
+  - name: dictionary
+  - name: content-reports
+  - name: editor
+  - name: bot
+  - name: telemetry
+
+paths:
+  /api/v1/learners/me/onboarding:
+    post:
+      tags: [learner]
+      summary: Завершити онбординг (US-01)
+      operationId: completeOnboarding
+      description: |
+        Створює learner за ідентичністю з initData. Якщо часовий пояс не передано або він невідомий,
+        доба рахується за Europe/Warsaw, а `time_zone_confirmed` = false (AC-01). Якщо learner уже
+        існує, повертає його без змін і без помилки — значення з тіла запиту ігноруються (AC-53).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OnboardingRequest" }
+            example:
+              daily_new_words_limit: 5
+              time_zone: Europe/Warsaw
+              reminder: null
+      responses:
+        "201":
+          description: learner створено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Learner" }
+              example:
+                id: 0192f0a0-0000-7000-8000-000000000001
+                first_name: Test User
+                time_zone: Europe/Warsaw
+                time_zone_confirmed: true
+                daily_new_words_limit: 5
+                pending_daily_new_words_limit: null
+                reminder: null
+                onboarded_at: "2026-10-31T09:00:00Z"
+        "200":
+          description: learner уже існує — повернуто наявні налаштування без змін (AC-53)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Learner" }
+              example:
+                id: 0192f0a0-0000-7000-8000-000000000001
+                first_name: Test User
+                time_zone: Europe/Warsaw
+                time_zone_confirmed: true
+                daily_new_words_limit: 5
+                pending_daily_new_words_limit: null
+                reminder:
+                  local_time: "19:00"
+                  days_of_week: [mon, wed, fri]
+                onboarded_at: "2026-10-30T09:00:00Z"
+        "400":
+          description: Невалідні налаштування (AC-02, AC-45)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: settings.reminder_days_required
+                message: Виберіть хоча б один день або пропустіть налаштування нагадувань.
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/learners/me:
+    get:
+      tags: [learner]
+      summary: Профіль і налаштування learner
+      operationId: getCurrentLearner
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Learner" }
+              example:
+                id: 0192f0a0-0000-7000-8000-000000000001
+                first_name: Test User
+                time_zone: Europe/Warsaw
+                time_zone_confirmed: true
+                daily_new_words_limit: 5
+                pending_daily_new_words_limit: null
+                reminder:
+                  local_time: "19:00"
+                  days_of_week: [mon, wed, fri]
+                onboarded_at: "2026-10-31T09:00:00Z"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: Онбординг ще не завершено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: learner.not_onboarded
+                message: Спершу налаштуйте тренер.
+
+  /api/v1/learners/me/settings:
+    patch:
+      tags: [learner]
+      summary: Змінити темп, часовий пояс або нагадування (US-06, US-11)
+      operationId: updateLearnerSettings
+      description: |
+        Новий ліміт діє з початку наступної доби в новому поясі (AC-44). `reminder: null` вимикає
+        нагадування. Не більше одного нагадування на календарну дату, навіть після зміни поясу.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LearnerSettingsUpdate" }
+            example:
+              daily_new_words_limit: 10
+              time_zone: Europe/Kyiv
+      responses:
+        "200":
+          description: Налаштування збережено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Learner" }
+              example:
+                id: 0192f0a0-0000-7000-8000-000000000001
+                first_name: Test User
+                time_zone: Europe/Kyiv
+                time_zone_confirmed: true
+                daily_new_words_limit: 5
+                pending_daily_new_words_limit: 10
+                reminder:
+                  local_time: "19:00"
+                  days_of_week: [mon]
+                onboarded_at: "2026-10-31T09:00:00Z"
+        "400":
+          description: Невалідні налаштування (AC-02, AC-27, AC-45)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                invalid_limit:
+                  value:
+                    code: settings.invalid_limit
+                    message: Доступні лише 3, 5 або 10 нових слів на день.
+                time_zone_required:
+                  value:
+                    code: settings.time_zone_required
+                    message: Виберіть часовий пояс, щоб налаштувати нагадування.
+                invalid_time_zone:
+                  value:
+                    code: settings.invalid_time_zone
+                    message: Невідомий часовий пояс.
+                reminder_days_required:
+                  value:
+                    code: settings.reminder_days_required
+                    message: Виберіть хоча б один день тижня.
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/LearnerNotOnboarded" }
+
+  /api/v1/today:
+    get:
+      tags: [learning]
+      summary: Екран «Сьогодні» (US-07)
+      operationId: getToday
+      responses:
+        "200":
+          description: Лічильники лише цього learner (AC-28, AC-29)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TodaySummary" }
+              example:
+                learner_day: "2026-10-31"
+                due_review_count: 7
+                recalled_words_count: 12
+                completed_sessions_last_7_days: 3
+                has_active_session: false
+                course_state: in_progress
+                course_replenished_notice: false
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/LearnerNotOnboarded" }
+
+  /api/v1/sessions:
+    post:
+      tags: [learning]
+      summary: Почати session або повернути активну (US-02)
+      operationId: startSession
+      description: |
+        Складає session не більше ніж на 20 слів: спершу найбільш прострочені повторення, потім нові
+        слова у вільних місцях у межах залишку денного ліміту (AC-03–AC-10). Якщо активна session
+        цієї доби вже є, повертає її (200) — повторний виклик безпечний.
+      responses:
+        "200":
+          description: Активна session уже існує
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+              examples:
+                active:
+                  $ref: "#/components/examples/SessionExample"
+        "201":
+          description: Session створено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+              example:
+                id: 0192f0a0-0000-7000-8000-0000000000a1
+                learner_day: "2026-10-31"
+                ends_at: "2026-10-31T23:00:00Z"
+                status: active
+                total_items: 7
+                completed_items: 0
+                notices: [new_words_limit_reached]
+                last_result: null
+                current_item:
+                  id: 0192f0a0-0000-7000-8000-0000000000b1
+                  position: 1
+                  kind: review
+                  prompt_uk: так
+                  context_uk: null
+                  card: null
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/LearnerNotOnboarded" }
+
+  /api/v1/sessions/current:
+    get:
+      tags: [learning]
+      summary: Поточна session для продовження (US-05)
+      operationId: getCurrentSession
+      description: |
+        Повертає відкритий результат або наступну картку session тієї самої доби (AC-24).
+        Завершена session із відкритим результатом також повертається до кінця доби. Після
+        межі доби активна session закривається як незавершена (AC-25).
+      responses:
+        "200":
+          description: Активна session
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+              example:
+                id: 0192f0a0-0000-7000-8000-0000000000a1
+                learner_day: "2026-10-31"
+                ends_at: "2026-10-31T23:00:00Z"
+                status: active
+                total_items: 10
+                completed_items: 6
+                notices: []
+                last_result: null
+                current_item:
+                  id: 0192f0a0-0000-7000-8000-0000000000b7
+                  position: 7
+                  kind: review
+                  prompt_uk: мати
+                  context_uk: null
+                  card: null
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: Активної session немає (зокрема закрита після межі доби)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: session.not_found
+                message: Активного заняття немає — можна почати нове.
+
+  /api/v1/sessions/{session_id}/items/{item_id}/answer:
+    post:
+      tags: [learning]
+      summary: Відповісти на вправу пригадування (US-03, US-04)
+      operationId: answerSessionItem
+      description: |
+        Картка session — природний ключ ідемпотентності (ADR-0008): повтор із тим самим вмістом
+        повертає збережений результат, з іншим — відмову. Оцінка, запис події відповіді й стану
+        слова відбуваються в одній транзакції. Окремий заголовок Idempotency-Key не потрібен.
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ItemId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AnswerRequest" }
+            example:
+              answer: żaba
+              dont_know: false
+      responses:
+        "200":
+          description: Результат оцінки (AC-12, AC-14–AC-16, AC-18, AC-19, AC-22, AC-23)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnswerResult" }
+              example:
+                answer_event_id: 0192f0a0-0000-7000-8000-0000000000c1
+                outcome: mistake_diacritic
+                correct_form: żaba
+                diff:
+                  - { op: substitute, expected: ż, actual: z }
+                  - { op: equal, expected: aba, actual: aba }
+                pronunciation_uk: жаба
+                example_pl: To jest żaba.
+                example_uk: Це жаба.
+                gender: f
+                dispute_allowed: false
+                word_status: review
+                next_review_on: "2026-11-01"
+                next_item: null
+                session_completed: false
+        "400":
+          description: Порожня відповідь (AC-13) або кириличні літери після нормалізації (AC-57)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                empty:
+                  value:
+                    code: answer.empty
+                    message: Введіть слово або натисніть «Не знаю».
+                wrong_layout:
+                  value:
+                    code: answer.wrong_layout
+                    message: Перемкніть розкладку на польську або натисніть «Не знаю».
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/SessionItemNotFound" }
+        "409":
+          description: Картку вже оцінено іншою відповіддю або доба session минула (AC-52) — дію не зараховано, session закрито
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                answered_differently:
+                  value:
+                    code: answer.already_answered_differently
+                    message: Цю картку вже оцінено.
+                expired:
+                  value:
+                    code: session.expired
+                    message: Заняття минулої доби закрито — почніть нове.
+
+  /api/v1/sessions/{session_id}/items/{item_id}/acknowledge:
+    post:
+      tags: [learning]
+      summary: Позначити картку нового слова переглянутою — «Далі» (AC-11)
+      operationId: acknowledgeNewWordCard
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ItemId"
+      responses:
+        "200":
+          description: Картку зафіксовано як показану; повтор безпечний
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionProgress" }
+              example:
+                next_item:
+                  id: 0192f0a0-0000-7000-8000-0000000000b2
+                  position: 2
+                  kind: new_word_card
+                  prompt_uk: для
+                  context_uk: null
+                  card:
+                    lemma_pl: dla
+                    translations_uk: [для]
+                    pronunciation_uk: для
+                    example_pl: To dla ciebie.
+                    example_uk: Це для тебе.
+                    gender: null
+                session_completed: false
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/SessionItemNotFound" }
+        "409": { $ref: "#/components/responses/SessionExpired" }
+
+  /api/v1/sessions/{session_id}/items/{item_id}/already-known:
+    post:
+      tags: [learning]
+      summary: «Вже знаю» на картці нового слова (US-04)
+      operationId: markAlreadyKnown
+      description: |
+        Ставить control repetition через 7 діб і word status «На повторення». Додає нове слово на
+        заміну, якщо за добу позначено менше 10 слів (AC-20); інакше заміни немає, а слово
+        рахується до daily new words limit поточної доби (AC-21). Повтор безпечний.
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ItemId"
+      responses:
+        "200":
+          description: Слово відкладено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AlreadyKnownResult" }
+              example:
+                control_repetition_on: "2026-11-07"
+                replacement_added: true
+                next_item:
+                  id: 0192f0a0-0000-7000-8000-0000000000b3
+                  position: 3
+                  kind: new_word_card
+                  prompt_uk: мати
+                  context_uk: null
+                  card:
+                    lemma_pl: mieć
+                    translations_uk: [мати]
+                    pronunciation_uk: мєчь
+                    example_pl: Mam czas.
+                    example_uk: Я маю час.
+                    gender: null
+                session_completed: false
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/SessionItemNotFound" }
+        "409": { $ref: "#/components/responses/SessionExpired" }
+
+  /api/v1/sessions/{session_id}/items/{item_id}/continue:
+    post:
+      tags: [learning]
+      summary: Перейти з результату відповіді до наступної картки
+      operationId: continueSession
+      description: Повторний виклик не закриває результат новішої картки; повертає поточний стан заняття.
+      parameters:
+        - { in: path, name: session_id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: item_id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Поточний стан заняття
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/SessionItemNotFound" }
+        "409": { $ref: "#/components/responses/SessionExpired" }
+
+  /api/v1/answers/{answer_event_id}/dispute:
+    post:
+      tags: [learning, content-reports]
+      summary: «Моя відповідь теж правильна» (AC-17, AC-55)
+      operationId: disputeAnswer
+      description: |
+        Скасовує mistake, відновлює стан слова до відповіді й створює content report із введеним
+        варіантом. Для перевірки нового слова перше повторення лишається наступної доби (AC-55).
+        Не більше одного report на оцінену відповідь, тож він не рахується до денного ліміту
+        20 reports і доступний навіть після його вичерпання (AC-47). Повторний виклик повертає
+        той самий результат.
+      parameters:
+        - in: path
+          name: answer_event_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Відповідь нейтралізовано
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DisputeResult" }
+              example:
+                outcome: neutralized
+                content_report_id: 0192f0a0-0000-7000-8000-0000000000d1
+                message: Дякуємо, передали на перевірку
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: Відповідь не знайдено серед відповідей цього learner
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: answer.not_found
+                message: Відповідь не знайдено.
+        "409":
+          description: "Дія недоступна — відмінність у діакритиці (AC-15) або вікно минуло: показано наступну картку чи закінчилась доба (AC-17)"
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: answer.dispute_not_allowed
+                message: Для відмінності в діакритичному знаку ця дія недоступна.
+
+  /api/v1/dictionary/search:
+    get:
+      tags: [dictionary]
+      summary: Пошук у словнику (US-08)
+      operationId: searchDictionary
+      description: |
+        Запит з 1 символу — лише точний збіг, від 2 символів — і збіги за початком; діакритика
+        ігнорується; точний збіг першим, далі за порядком base course; лише записи `approved`
+        (AC-30, AC-32, AC-33). Клієнт скасовує застарілий запит, debounce немає.
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 200 }
+        - in: query
+          name: after
+          description: курсор — id останньої побаченої леми
+          schema: { type: string, format: uuid }
+        - in: query
+          name: before
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        "200":
+          description: Результати; порожній список означає «Не знайшли слово» (AC-31)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DictionarySearchPage" }
+              example:
+                items:
+                  - entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                    lemma_pl: urząd
+                    part_of_speech: noun
+                    short_meaning_uk: державна установа
+                    matched_form: urzedzie
+                    word_status: not_started
+                has_next: false
+                has_prev: false
+                next_cursor: null
+        "400":
+          description: Порожній запит
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: dictionary.query_empty
+                message: Введіть слово для пошуку.
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/dictionary/entries/{entry_id}:
+    get:
+      tags: [dictionary]
+      summary: Картка слова з особистим word status (US-08)
+      operationId: getDictionaryEntry
+      parameters:
+        - in: path
+          name: entry_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Опублікована версія запису; перегляд не змінює порядок занять
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DictionaryEntryCard" }
+              example:
+                entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                lemma_pl: urząd
+                part_of_speech: noun
+                gender: m
+                translations_uk:
+                  - { kind: canonical, text_uk: державна установа }
+                  - { kind: local, text_uk: ужонд }
+                pronunciation_uk: ужонд
+                example_pl: Idę do urzędu.
+                example_uk: Я йду до державної установи.
+                word_status: review
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: Запису немає або він не має статусу approved (AC-33)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: dictionary.entry_not_found
+                message: Слово не знайдено.
+
+  /api/v1/content-reports:
+    post:
+      tags: [content-reports]
+      summary: Повідомити про неточність або відсутній запис (US-09)
+      operationId: createContentReport
+      description: |
+        Переклад або транскрипція із запропонованим значенням ідуть на автоматичну звірку
+        (ADR-0011, AC-35); інше — у чергу content editor (AC-36). Відсутній запис передає
+        `search_query` без `entry_id` (AC-31). Не більше 20 повідомлень на learner за добу learner;
+        «Моя відповідь теж правильна» до ліміту не рахується (AC-46, AC-47). Ідентичний повтор
+        незакритого report (той самий запис, поле, значення й коментар або пошуковий запит без
+        урахування регістру й зайвих пробілів) не створює нового: відповідь 202 з `id` наявного
+        report, до ліміту зараховано одне повідомлення (AC-51).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContentReportCreate" }
+            example:
+              origin: card
+              entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+              field: translation
+              proposed_value: державна установа
+              comment: Тут краще стандартний відповідник.
+      responses:
+        "202":
+          description: Прийнято на перевірку (AC-34)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentReportAccepted" }
+              example:
+                id: 0192f0a0-0000-7000-8000-0000000000d2
+                status: pending_verification
+                message: Дякуємо, передали на перевірку
+        "400":
+          description: Невалідний report
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: report.entry_or_query_required
+                message: Вкажіть слово або текст пошуку.
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: Запис не знайдено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: dictionary.entry_not_found
+                message: Слово не знайдено.
+        "429":
+          description: Вичерпано 20 повідомлень за добу learner (AC-46); клієнт зберігає введені значення у формі
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: report.daily_limit_reached
+                message: Сьогоднішній ліміт 20 повідомлень вичерпано — нові можна надіслати після 00:00 за вашим часом.
+
+  /api/v1/editor/content-reports:
+    get:
+      tags: [editor]
+      summary: Черга непідтверджених content reports (US-10)
+      operationId: listEditorQueue
+      description: Лише для content editor; автор показаний псевдонімною міткою (PRD §6.1).
+      parameters:
+        - in: query
+          name: after
+          schema: { type: string, format: uuid }
+        - in: query
+          name: before
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Черга від найстаріших
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/EditorQueuePage" }
+              example:
+                items:
+                  - id: 0192f0a0-0000-7000-8000-0000000000d2
+                    reporter_alias: R-7F3A9C
+                    origin: card
+                    entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                    lemma_pl: urząd
+                    field: translation
+                    current_value: державна установа
+                    proposed_value: установа
+                    comment: Test comment
+                    search_query: null
+                    created_at: "2026-10-31T10:00:00Z"
+                has_next: false
+                has_prev: false
+                next_cursor: null
+        "400":
+          description: Некоректні параметри перегляду
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example: { code: editor.invalid_request, message: Перевірте параметри перегляду. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/EditorRoleRequired" }
+
+  /api/v1/editor/content-reports/{report_id}/decision:
+    post:
+      tags: [editor]
+      summary: Ухвалити рішення щодо content report (US-10)
+      operationId: decideContentReport
+      description: |
+        `approve` створює нову версію запису з можливістю відкату (AC-38); `reject` закриває з
+        причиною без зміни запису (AC-39); `add_to_candidates` додає лему в статусі draft для
+        відсутнього запису (AC-40). Результат learner отримує в щоденному підсумку (AC-37).
+      parameters:
+        - in: path
+          name: report_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EditorDecision" }
+            example:
+              decision: reject
+              rejection_reason: source_not_confirming
+      responses:
+        "200":
+          description: Рішення застосовано
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentReportClosed" }
+              example:
+                id: 0192f0a0-0000-7000-8000-0000000000d2
+                status: closed
+                outcome: rejected
+                rejection_reason: source_not_confirming
+                resulting_version_id: null
+                closed_at: "2026-10-31T12:00:00Z"
+        "400":
+          description: Неповне рішення
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: editor.rejection_reason_required
+                message: Вкажіть причину відхилення.
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/EditorRoleRequired" }
+        "404":
+          description: Report не знайдено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: report.not_found
+                message: Повідомлення не знайдено.
+        "409":
+          description: Report уже закрито
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: report.already_closed
+                message: Це повідомлення вже розглянуто.
+
+  /api/v1/editor/applied-changes:
+    get:
+      tags: [editor]
+      summary: Зміни словника, застосовані за content reports (US-12)
+      operationId: listAppliedChanges
+      description: |
+        Лише для content editor. Публікації, зроблені автоматичною звіркою чи схваленням content
+        editor за content report, від нових до старих (AC-48). `rollback_allowed` = true, лише
+        коли версія зміни досі опублікована (AC-49).
+      parameters:
+        - in: query
+          name: after
+          schema: { type: string, format: uuid }
+        - in: query
+          name: before
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        "200":
+          description: Застосовані зміни
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AppliedChangePage" }
+              example:
+                items:
+                  - id: 0192f0a0-0000-7000-8000-0000000000f1
+                    entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                    lemma_pl: urząd
+                    field: translation
+                    previous_value: державна установа
+                    new_value: установа
+                    confirmed_by: auto_verification
+                    content_report_id: 0192f0a0-0000-7000-8000-0000000000d2
+                    applied_at: "2026-10-31T12:00:00Z"
+                    rollback_allowed: true
+                has_next: false
+                has_prev: false
+                next_cursor: null
+        "400":
+          description: Некоректні параметри перегляду
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example: { code: editor.invalid_request, message: Перевірте параметри перегляду. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/EditorRoleRequired" }
+
+  /api/v1/editor/applied-changes/{change_id}/rollback:
+    post:
+      tags: [editor]
+      summary: Відкотити застосовану зміну до попередньої версії (US-12)
+      operationId: rollbackAppliedChange
+      description: |
+        Повертає опублікований вказівник запису на попередню версію й пише відкат у журнал
+        публікацій (AC-48). Word status, відповіді learner, закритий content report і вже
+        надісланий результат не змінюються. Відкотити можна лише поточну версію запису (AC-49).
+        Повторний виклик для вже відкоченої зміни повертає `editor.rollback_not_current`.
+      parameters:
+        - in: path
+          name: change_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Відкат застосовано
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RollbackResult" }
+              example:
+                change_id: 0192f0a0-0000-7000-8000-0000000000f1
+                entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                published_version_id: 0192f0a0-0000-7000-8000-0000000000a9
+                rolled_back_at: "2026-10-31T15:00:00Z"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/EditorRoleRequired" }
+        "404":
+          description: Застосовану зміну не знайдено
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: editor.change_not_found
+                message: Зміну не знайдено.
+        "409":
+          description: Версія зміни вже не поточна — запис має новішу версію або зміну вже відкочено (AC-49)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: editor.rollback_not_current
+                message: Відкотити можна лише поточну версію запису.
+
+  /api/telegram/webhook:
+    post:
+      tags: [bot]
+      summary: Webhook оновлень Telegram
+      operationId: receiveTelegramUpdate
+      description: |
+        Публічний для Telegram: автентифікація заголовком секрету, а не initData. Обробляє `/start`
+        з кнопкою Mini App і `my_chat_member` (блокування бота вимикає нагадування). Помилки
+        обробника логуються, а відповідь лишається успішною, щоб Telegram не повторював update.
+      security: []
+      parameters:
+        - in: header
+          name: X-Telegram-Bot-Api-Secret-Token
+          required: true
+          schema: { type: string, maxLength: 256 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/TelegramUpdate" }
+            example:
+              update_id: 100000001
+              message:
+                message_id: 1
+                text: /start
+                chat: { id: 900000001, type: private }
+                from: { id: 900000001, first_name: Test User }
+      responses:
+        "200":
+          description: Прийнято
+        "401":
+          description: Невірний секрет webhook
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: webhook.invalid_secret
+                message: Невірний секрет.
+
+  /api/v1/telemetry/client-timings:
+    post:
+      tags: [telemetry]
+      summary: Клієнтська метрика часу відкриття «Сьогодні» (PRD §6, SAD §7)
+      operationId: reportClientTiming
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClientTiming" }
+            example:
+              metric: today_ready_ms
+              value_ms: 840
+      responses:
+        "204":
+          description: Прийнято
+        "400":
+          description: Невідома метрика або значення поза межами
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: telemetry.invalid_metric
+                message: Невідома метрика.
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+components:
+  securitySchemes:
+    TelegramInitData:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        Значення `tma <initData>` — рядок запуску Mini App, підписаний Telegram. Сервер перевіряє
+        HMAC-SHA256 з ключем від bot token і свіжість `auth_date` (не старше 24 год). Learner
+        визначається лише з цих даних, ніколи з URL (ADR-0005).
+
+  parameters:
+    SessionId:
+      in: path
+      name: session_id
+      required: true
+      schema: { type: string, format: uuid }
+    ItemId:
+      in: path
+      name: item_id
+      required: true
+      schema: { type: string, format: uuid }
+
+  examples:
+    SessionExample:
+      value:
+        id: 0192f0a0-0000-7000-8000-0000000000a1
+        learner_day: "2026-10-31"
+        ends_at: "2026-10-31T23:00:00Z"
+        status: active
+        total_items: 7
+        completed_items: 2
+        notices: []
+        last_result: null
+        current_item:
+          id: 0192f0a0-0000-7000-8000-0000000000b3
+          position: 3
+          kind: review
+          prompt_uk: так
+          context_uk: null
+          card: null
+
+  responses:
+    Unauthorized:
+      description: Немає або невалідні initData, або вони старші за 24 год
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example:
+            code: auth.invalid_init_data
+            message: Перевідкрийте тренер у Telegram.
+    LearnerNotOnboarded:
+      description: Онбординг ще не завершено
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example:
+            code: learner.not_onboarded
+            message: Спершу налаштуйте тренер.
+    SessionItemNotFound:
+      description: Session або картки немає серед session цього learner (приховування існування)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example:
+            code: session.item_not_found
+            message: Картку не знайдено.
+    SessionExpired:
+      description: Доба session минула — дію не зараховано, session закрито (AC-25, AC-52)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example:
+            code: session.expired
+            message: Заняття минулої доби закрито — почніть нове.
+    EditorRoleRequired:
+      description: Користувач не має ролі content editor (AC-41, AC-50)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+          example:
+            code: editor.role_required
+            message: Розгляд повідомлень доступний лише редактору.
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          pattern: "^[a-z_]+\\.[a-z_]+$"
+          example: session.expired
+        message: { type: string }
+        details:
+          type: object
+          description: необов'язковий структурований контекст (поля з помилками тощо)
+
+    DailyNewWordsLimit:
+      type: integer
+      enum: [3, 5, 10]
+      description: learners.daily_new_words_limit (SMALLINT); допустимі значення — правило застосунку (AC-45)
+
+    TimeZone:
+      type: string
+      maxLength: 64
+      description: IANA id; learners.time_zone VARCHAR(64)
+      example: Europe/Warsaw
+
+    DayOfWeek:
+      type: string
+      enum: [mon, tue, wed, thu, fri, sat, sun]
+
+    ReminderSchedule:
+      type: object
+      required: [local_time, days_of_week]
+      additionalProperties: false
+      properties:
+        local_time:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+          description: reminder_schedules.local_time (TIME) у поясі learner
+        days_of_week:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items: { $ref: "#/components/schemas/DayOfWeek" }
+          description: reminder_schedules.days_of_week (бітова маска); хоча б один день (AC-02)
+
+    OnboardingRequest:
+      type: object
+      required: [daily_new_words_limit]
+      additionalProperties: false
+      properties:
+        daily_new_words_limit: { $ref: "#/components/schemas/DailyNewWordsLimit" }
+        time_zone:
+          oneOf:
+            - $ref: "#/components/schemas/TimeZone"
+            - type: "null"
+        reminder:
+          oneOf:
+            - $ref: "#/components/schemas/ReminderSchedule"
+            - type: "null"
+
+    LearnerSettingsUpdate:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        daily_new_words_limit: { $ref: "#/components/schemas/DailyNewWordsLimit" }
+        time_zone: { $ref: "#/components/schemas/TimeZone" }
+        reminder:
+          oneOf:
+            - $ref: "#/components/schemas/ReminderSchedule"
+            - type: "null"
+
+    Learner:
+      type: object
+      required: [id, time_zone, time_zone_confirmed, daily_new_words_limit, reminder, onboarded_at]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid }
+        first_name: { type: [string, "null"], maxLength: 64 }
+        time_zone: { $ref: "#/components/schemas/TimeZone" }
+        time_zone_confirmed: { type: boolean }
+        daily_new_words_limit: { $ref: "#/components/schemas/DailyNewWordsLimit" }
+        pending_daily_new_words_limit:
+          oneOf:
+            - $ref: "#/components/schemas/DailyNewWordsLimit"
+            - type: "null"
+        reminder:
+          oneOf:
+            - $ref: "#/components/schemas/ReminderSchedule"
+            - type: "null"
+        onboarded_at: { type: [string, "null"], format: date-time }
+
+    WordStatus:
+      type: string
+      enum: [not_started, review, recalled]
+      description: learner_words.status; «Ще не вчив» / «На повторення» / «Вже пригадую»
+
+    TodaySummary:
+      type: object
+      required: [learner_day, due_review_count, recalled_words_count, completed_sessions_last_7_days, has_active_session, course_state, course_replenished_notice]
+      additionalProperties: false
+      properties:
+        learner_day: { type: string, format: date }
+        due_review_count: { type: integer, minimum: 0 }
+        recalled_words_count: { type: integer, minimum: 0 }
+        completed_sessions_last_7_days: { type: integer, minimum: 0 }
+        has_active_session: { type: boolean }
+        course_state: { type: string, enum: [in_progress, completed] }
+        course_replenished_notice: { type: boolean, description: одноразове повідомлення про поповнення base course (AC-10) }
+
+    SessionNotice:
+      type: string
+      enum: [new_words_limit_reached, course_completed, course_replenished]
+
+    NewWordCard:
+      type: object
+      required: [lemma_pl, translations_uk, pronunciation_uk, example_pl, example_uk, gender]
+      additionalProperties: false
+      properties:
+        lemma_pl: { type: string, maxLength: 200 }
+        translations_uk:
+          type: array
+          items: { type: string, maxLength: 200 }
+        pronunciation_uk: { type: string, maxLength: 200 }
+        example_pl: { type: string, maxLength: 500 }
+        example_uk: { type: string, maxLength: 500 }
+        gender: { type: [string, "null"], maxLength: 8 }
+
+    SessionItem:
+      type: object
+      required: [id, position, kind, prompt_uk, context_uk, card]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer, minimum: 1, maximum: 50, description: Ключ порядку фізичних карток; може мати пропуски й не є номером серед total_items. }
+        kind: { type: string, enum: [review, new_word_card, new_word_check, control_repetition] }
+        prompt_uk: { type: string, maxLength: 200, description: українська підказка для вправи }
+        context_uk:
+          type: [string, "null"]
+          maxLength: 500
+          description: example_uk до відповіді, якщо show_context_before
+        card:
+          oneOf:
+            - $ref: "#/components/schemas/NewWordCard"
+            - type: "null"
+          description: лише для kind = new_word_card
+
+    Session:
+      type: object
+      required: [id, learner_day, ends_at, status, total_items, completed_items, notices, current_item, last_result]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid }
+        learner_day: { type: string, format: date }
+        ends_at: { type: string, format: date-time }
+        status: { type: string, enum: [active, completed, incomplete] }
+        total_items: { type: integer, minimum: 0, maximum: 50, description: Кількість фізичних карток разом із перевірками; ліміт session залишається 20 слів. }
+        completed_items: { type: integer, minimum: 0, maximum: 50, description: Кількість опрацьованих або пропущених фізичних карток. }
+        notices:
+          type: array
+          items: { $ref: "#/components/schemas/SessionNotice" }
+        current_item:
+          oneOf:
+            - $ref: "#/components/schemas/SessionItem"
+            - type: "null"
+
+        last_result:
+          oneOf:
+            - $ref: "#/components/schemas/LastResult"
+            - type: "null"
+          description: Відкритий результат; перед показом наступної картки викличте continueSession.
+
+    LastResult:
+      type: object
+      required: [item_id, answer, dispute]
+      additionalProperties: false
+      properties:
+        item_id: { type: string, format: uuid }
+        answer: { $ref: "#/components/schemas/AnswerResult" }
+        dispute:
+          oneOf:
+            - $ref: "#/components/schemas/DisputeResult"
+            - type: "null"
+
+    SessionProgress:
+      type: object
+      required: [next_item, session_completed]
+      additionalProperties: false
+      properties:
+        next_item:
+          oneOf:
+            - $ref: "#/components/schemas/SessionItem"
+            - type: "null"
+        session_completed: { type: boolean }
+
+    AnswerRequest:
+      type: object
+      required: [dont_know]
+      additionalProperties: false
+      properties:
+        answer: { type: [string, "null"], maxLength: 200 }
+        dont_know: { type: boolean }
+
+    DiffSegment:
+      type: object
+      required: [op, expected, actual]
+      additionalProperties: false
+      properties:
+        op: { type: string, enum: [equal, insert, delete, substitute] }
+        expected: { type: string }
+        actual: { type: string }
+
+    AnswerOutcome:
+      type: string
+      enum: [correct, mistake_typo, mistake_diacritic, dont_know, synonym]
+      description: answer_events.outcome для вправи пригадування; synonym — нейтральна відповідь (AC-56)
+
+    AnswerResult:
+      description: next_item є попереднім переглядом; перехід відбувається лише через continueSession.
+      type: object
+      required: [answer_event_id, outcome, correct_form, diff, pronunciation_uk, example_pl, example_uk, gender, dispute_allowed, word_status, next_review_on, next_item, session_completed]
+      additionalProperties: false
+      properties:
+        answer_event_id: { type: string, format: uuid }
+        outcome: { $ref: "#/components/schemas/AnswerOutcome" }
+        correct_form: { type: string, maxLength: 200 }
+        diff:
+          type: array
+          items: { $ref: "#/components/schemas/DiffSegment" }
+        pronunciation_uk: { type: string, maxLength: 200 }
+        example_pl: { type: string, maxLength: 500 }
+        example_uk: { type: string, maxLength: 500 }
+        gender: { type: [string, "null"], maxLength: 8 }
+        dispute_allowed: { type: boolean, description: дія «Моя відповідь теж правильна» доступна (AC-16), недоступна для діакритики (AC-15) }
+        word_status: { $ref: "#/components/schemas/WordStatus" }
+        next_review_on: { type: [string, "null"], format: date }
+        next_item:
+          oneOf:
+            - $ref: "#/components/schemas/SessionItem"
+            - type: "null"
+        session_completed: { type: boolean }
+
+    AlreadyKnownResult:
+      type: object
+      required: [control_repetition_on, replacement_added, next_item, session_completed]
+      additionalProperties: false
+      properties:
+        control_repetition_on: { type: string, format: date }
+        replacement_added: { type: boolean }
+        next_item:
+          oneOf:
+            - $ref: "#/components/schemas/SessionItem"
+            - type: "null"
+        session_completed: { type: boolean }
+
+    DisputeResult:
+      type: object
+      required: [outcome, content_report_id, message]
+      additionalProperties: false
+      properties:
+        outcome: { type: string, enum: [neutralized] }
+        content_report_id: { type: string, format: uuid }
+        message: { type: string }
+
+    DictionarySearchItem:
+      type: object
+      required: [entry_id, lemma_pl, part_of_speech, short_meaning_uk, matched_form, word_status]
+      additionalProperties: false
+      properties:
+        entry_id: { type: string, format: uuid }
+        lemma_pl: { type: string, maxLength: 200 }
+        part_of_speech: { type: string, maxLength: 32 }
+        short_meaning_uk: { type: string, maxLength: 200 }
+        matched_form: { type: string, maxLength: 200 }
+        word_status: { $ref: "#/components/schemas/WordStatus" }
+
+    DictionarySearchPage:
+      type: object
+      required: [items, has_next, has_prev, next_cursor]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/DictionarySearchItem" }
+        has_next: { type: boolean }
+        has_prev: { type: boolean }
+        next_cursor: { type: [string, "null"], format: uuid }
+
+    Translation:
+      type: object
+      required: [kind, text_uk]
+      additionalProperties: false
+      properties:
+        kind: { type: string, enum: [canonical, variant, local] }
+        text_uk: { type: string, maxLength: 200 }
+
+    DictionaryEntryCard:
+      type: object
+      required: [entry_id, lemma_pl, part_of_speech, gender, translations_uk, pronunciation_uk, example_pl, example_uk, word_status]
+      additionalProperties: false
+      properties:
+        entry_id: { type: string, format: uuid }
+        lemma_pl: { type: string, maxLength: 200 }
+        part_of_speech: { type: string, maxLength: 32 }
+        gender: { type: [string, "null"], maxLength: 8 }
+        translations_uk:
+          type: array
+          items: { $ref: "#/components/schemas/Translation" }
+        pronunciation_uk: { type: string, maxLength: 200 }
+        example_pl: { type: string, maxLength: 500 }
+        example_uk: { type: string, maxLength: 500 }
+        word_status: { $ref: "#/components/schemas/WordStatus" }
+
+    ReportField:
+      type: string
+      enum: [lemma, translation, pronunciation, example]
+
+    ContentReportCreate:
+      type: object
+      required: [origin]
+      additionalProperties: false
+      properties:
+        origin: { type: string, enum: [card, missing_word] }
+        entry_id: { type: [string, "null"], format: uuid }
+        field:
+          oneOf:
+            - $ref: "#/components/schemas/ReportField"
+            - type: "null"
+        proposed_value: { type: [string, "null"], maxLength: 500 }
+        comment: { type: [string, "null"], maxLength: 1000 }
+        search_query: { type: [string, "null"], maxLength: 200 }
+
+    ContentReportAccepted:
+      type: object
+      required: [id, status, message]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [pending_verification, in_editor_queue] }
+        message: { type: string }
+
+    EditorQueueItem:
+      type: object
+      required: [id, reporter_alias, origin, entry_id, lemma_pl, field, current_value, proposed_value, comment, search_query, created_at]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid }
+        reporter_alias: { type: string, maxLength: 16, description: псевдонімна мітка, без імені й Telegram id }
+        origin: { type: string, enum: [card, answer_dispute, missing_word] }
+        entry_id: { type: [string, "null"], format: uuid }
+        lemma_pl: { type: [string, "null"], maxLength: 200 }
+        field:
+          oneOf:
+            - $ref: "#/components/schemas/ReportField"
+            - type: "null"
+        current_value: { type: [string, "null"], maxLength: 500 }
+        proposed_value: { type: [string, "null"], maxLength: 500 }
+        comment: { type: [string, "null"], maxLength: 1000, description: показувати лише як звичайний текст }
+        search_query: { type: [string, "null"], maxLength: 200 }
+        created_at: { type: string, format: date-time }
+
+    EditorQueuePage:
+      type: object
+      required: [items, has_next, has_prev, next_cursor]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/EditorQueueItem" }
+        has_next: { type: boolean }
+        has_prev: { type: boolean }
+        next_cursor: { type: [string, "null"], format: uuid }
+
+    RejectionReason:
+      type: string
+      enum: [source_not_confirming, already_correct, out_of_scope, duplicate, already_in_dictionary, phrase_not_lemma]
+
+    EditorDecision:
+      type: object
+      required: [decision]
+      additionalProperties: false
+      properties:
+        decision: { type: string, enum: [approve, reject, add_to_candidates] }
+        rejection_reason:
+          oneOf:
+            - $ref: "#/components/schemas/RejectionReason"
+            - type: "null"
+        corrected_value: { type: [string, "null"], maxLength: 500, description: остаточне значення, якщо редактор уточнює запропоноване }
+
+    ContentReportClosed:
+      type: object
+      required: [id, status, outcome, rejection_reason, resulting_version_id, closed_at]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [closed] }
+        outcome: { type: string, enum: [applied, added_to_candidates, rejected] }
+        rejection_reason:
+          oneOf:
+            - $ref: "#/components/schemas/RejectionReason"
+            - type: "null"
+        resulting_version_id: { type: [string, "null"], format: uuid }
+        closed_at: { type: string, format: date-time }
+
+    AppliedChange:
+      type: object
+      required: [id, entry_id, lemma_pl, field, previous_value, new_value, confirmed_by, content_report_id, applied_at, rollback_allowed]
+      additionalProperties: false
+      properties:
+        id: { type: string, format: uuid, description: ідентифікатор рядка журналу публікацій }
+        entry_id: { type: string, format: uuid }
+        lemma_pl: { type: string, maxLength: 200 }
+        field:
+          type: string
+          enum: [lemma, translation, pronunciation, example, accepted_answer]
+          description: accepted_answer позначає доданий варіант відповіді; previous_value тоді null, new_value містить фактично схвалений варіант.
+        previous_value: { type: [string, "null"], maxLength: 500 }
+        new_value: { type: string, maxLength: 500 }
+        confirmed_by: { type: string, enum: [auto_verification, editor] }
+        content_report_id: { type: string, format: uuid }
+        applied_at: { type: string, format: date-time }
+        rollback_allowed: { type: boolean }
+
+    AppliedChangePage:
+      type: object
+      required: [items, has_next, has_prev, next_cursor]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/AppliedChange" }
+        has_next: { type: boolean }
+        has_prev: { type: boolean }
+        next_cursor: { type: [string, "null"], format: uuid }
+
+    RollbackResult:
+      type: object
+      required: [change_id, entry_id, published_version_id, rolled_back_at]
+      additionalProperties: false
+      properties:
+        change_id: { type: string, format: uuid }
+        entry_id: { type: string, format: uuid }
+        published_version_id: { type: string, format: uuid, description: попередня версія, що знову опублікована }
+        rolled_back_at: { type: string, format: date-time }
+
+    TelegramUpdate:
+      type: object
+      description: Об'єкт Update з Telegram Bot API; контракт визначає Telegram, сервер читає лише потрібні поля.
+      required: [update_id]
+      properties:
+        update_id: { type: integer }
+        message: { type: object }
+        my_chat_member: { type: object }
+
+    ClientTiming:
+      type: object
+      required: [metric, value_ms]
+      additionalProperties: false
+      properties:
+        metric: { type: string, enum: [today_ready_ms] }
+        value_ms: { type: integer, minimum: 0, maximum: 60000 }

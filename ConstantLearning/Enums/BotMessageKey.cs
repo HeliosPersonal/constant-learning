@@ -1,42 +1,42 @@
-﻿namespace ConstantLearning.Enums;
+namespace ConstantLearning.Enums;
 
 public enum BotMessageKey
 {
-    // Registration
+    // Реєстрація
     ChatAlreadyRegistered,
     ChatRegisteredSuccess,
     RegistrationError,
     
-    // Stop Learning
+    // Зупинка навчання
     ChatNotRegistered,
     LearningStopped,
     StopLearningError,
     
-    // Progress
+    // Прогрес
     ProgressRestarted,
     RestartProgressError,
     
-    // Time Configuration
+    // Налаштування часу
     InvalidTimeCommandFormat,
     InvalidTimeFormat,
     RepetitionTimeSet,
     NewWordsTimeSet,
     UpdateTimeError,
     
-    // Words Count Configuration
+    // Налаштування кількості слів
     InvalidWordsCountFormat,
     WordsCountSet,
     UpdateWordsCountError,
     
-    // Help
+    // Довідка
     Help,
     
-    // Get All Learned
+    // Отримання всіх вивчених слів
     NoLearnedWords,
     LearnedWordsHeader,
     GetAllLearnedError,
     
-    // Message Formatter
+    // Форматування повідомлень
     NoRepetitionWords,
     RepetitionHeader,
     AnswersHeader,

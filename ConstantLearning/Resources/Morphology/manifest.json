@@ -1,0 +1,17 @@
+{
+  "source": "PoliMorf 0.6.7",
+  "source_url": "https://zil.ipipan.waw.pl/PoliMorf?action=AttachFile&do=get&target=PoliMorf-0.6.7.tab.gz",
+  "source_sha256": "e9b2633bf384b7a778bdb4d17dd4c8055b1d040da9f5113dae513718854216b2",
+  "license": "BSD-2-Clause",
+  "license_url": "https://morfeusz.sgjp.pl/doc/license/en",
+  "course_sha256": "0b1151e178cfd951a7fa86de28c752fda5210eb1a718fb95c16804fc890bcc53",
+  "subset_sha256": "136a70637738937822891be9b9229cabe3c2ec848be428dfd78f97794ee6bf44",
+  "forms": 58971,
+  "seeds": 2000,
+  "covered_seeds": 1998,
+  "missing_seeds": [
+    "siebie",
+    "związany"
+  ],
+  "changes": "Вибірка за лемами та прийнятними відповідями курсу; NFC/lowercase лем; вилучення омонімного суфікса та необов'язкових колонок; усунення тотожних рядків."
+}

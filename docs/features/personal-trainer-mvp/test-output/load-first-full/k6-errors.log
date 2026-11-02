@@ -1,0 +1,12 @@
+time="2026-11-02T13:19:12Z" level=error msg="HTTP 0 /api/v1/sessions/01a19c69-6175-7690-add6-3bb47ab199d3/items/01a19c69-6175-75bd-aa76-d2882f9fcea3/answer: null" source=console
+time="2026-11-02T13:19:12Z" level=error msg="Хибна оцінка: undefined" source=console
+time="2026-11-02T13:19:12Z" level=error msg="HTTP 0 /api/v1/sessions/01a19c69-5d38-7787-af2e-06806bb25f0e/items/01a19c69-5d38-7744-8420-42c49c7c76f6/answer: null" source=console
+time="2026-11-02T13:19:12Z" level=error msg="Хибна оцінка: undefined" source=console
+time="2026-11-02T13:19:12Z" level=error msg="HTTP 0 /api/v1/sessions/01a19c69-6c21-7d97-80e6-e7dccd4c9e6b/items/01a19c69-6c21-7d9c-92ce-2210edc55da7/answer: null" source=console
+time="2026-11-02T13:19:12Z" level=error msg="Хибна оцінка: undefined" source=console
+time="2026-11-02T13:19:12Z" level=error msg="HTTP 0 /api/v1/sessions/01a19c69-5b14-7a2b-ab4d-9494f1b12035/items/01a19c69-5b14-7f94-a345-084378739bc7/answer: null" source=console
+time="2026-11-02T13:19:12Z" level=error msg="Хибна оцінка: undefined" source=console
+time="2026-11-02T13:19:12Z" level=error msg="HTTP 0 /api/v1/sessions/01a19c69-5e9e-7cd2-ac89-86dcc6cb232a/items/01a19c69-5e9e-72cb-986e-1dbd2e14046e/answer: null" source=console
+time="2026-11-02T13:19:12Z" level=error msg="HTTP 0 /api/v1/sessions/01a19c69-6e84-77f6-923d-acb6fa4d3f06/items/01a19c69-6e84-7bbe-8fd2-e0ae198f7bf7/answer: null" source=console
+time="2026-11-02T13:19:12Z" level=error msg="Хибна оцінка: undefined" source=console
+time="2026-11-02T13:19:12Z" level=error msg="Хибна оцінка: undefined" source=console
