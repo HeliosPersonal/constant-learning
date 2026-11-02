@@ -3,6 +3,7 @@ using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Learning.Sessions.Current;
 using ConstantLearning.Features.Learning.Sessions.DayBoundary;
 using ConstantLearning.Features.Learning.Sessions.Start.Limits;
+using ConstantLearning.Features.Learning.Sessions.Results;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -22,7 +23,8 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
 
         var now = clock.GetCurrentInstant();
         var day = current.Day.Date;
-        var session = await boundary.GetActiveAsync(learnerId, now, cancellationToken);
+        var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
+            ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
         var course = await courseReader.ReadAsync(cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
         if (session is not null)
@@ -55,7 +57,7 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
             && value.Status == "completed" && value.CompletedAt >= from && value.CompletedAt < until,
             cancellationToken);
         var response = new TodayResponse(LocalDatePattern.Iso.Format(day), due, recalled, completed,
-            session?.Status == "active", limits.CourseCompleted ? "completed" : "in_progress",
+            session is not null && (session.Status == "active" || session.ResultItemId is not null), limits.CourseCompleted ? "completed" : "in_progress",
             notices.Contains("course_replenished"));
         await transaction.CommitAsync(cancellationToken);
         return response;

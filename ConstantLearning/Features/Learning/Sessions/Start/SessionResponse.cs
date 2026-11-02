@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Learning.Data;
+using ConstantLearning.Features.Learning.Sessions.Results;
 using NodaTime.Text;
 
 namespace ConstantLearning.Features.Learning.Sessions.Start;
@@ -39,10 +40,11 @@ public sealed record SessionResponse(
     [property: JsonPropertyName("total_items")] int TotalItems,
     [property: JsonPropertyName("completed_items")] int CompletedItems,
     [property: JsonPropertyName("notices")] IReadOnlyList<string> Notices,
-    [property: JsonPropertyName("current_item")] SessionItemResponse? CurrentItem)
+    [property: JsonPropertyName("current_item")] SessionItemResponse? CurrentItem,
+    [property: JsonPropertyName("last_result")] LastResultResponse? LastResult)
 {
     public static SessionResponse From(LearningSession session, IReadOnlyList<SessionItem> items,
-        IReadOnlyList<string> notices, SessionItemResponse? current) => new(session.Id,
+        IReadOnlyList<string> notices, SessionItemResponse? current, LastResultResponse? result = null) => new(session.Id,
         LocalDatePattern.Iso.Format(session.LearnerDay), InstantPattern.ExtendedIso.Format(session.EndsAt),
-        session.Status, items.Count, items.Count(item => item.State is "answered" or "skipped"), notices, current);
+        session.Status, items.Count, items.Count(item => item.State is "answered" or "skipped"), notices, current, result);
 }

@@ -13,6 +13,9 @@ internal sealed class LearningSessionConfiguration : IEntityTypeConfiguration<Le
         builder.Property(session => session.Status).HasMaxLength(16).IsRequired();
         builder.Property(session => session.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(session => session.Version).IsRowVersion();
+        builder.HasIndex(session => session.ResultItemId).HasDatabaseName("ix_learning_sessions_result_item_id");
+        builder.HasOne<SessionItem>().WithMany().HasForeignKey(session => session.ResultItemId)
+            .HasConstraintName("fk_learning_sessions_result_item_id").OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(session => session.LearnerId).IsUnique()
             .HasFilter("status = 'active'")
             .HasDatabaseName("ux_learning_sessions_one_active");

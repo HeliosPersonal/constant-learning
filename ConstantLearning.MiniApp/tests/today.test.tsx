@@ -12,7 +12,7 @@ import { learnerQueryKey, type Learner } from '../src/features/onboarding/api';
 import { todaySummary } from './fixtures/today';
 
 const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: 10, reminder: { local_time: '19:00', days_of_week: ['mon'] }, onboarded_at: '2026-11-01T09:00:00Z' };
-const active: SessionResponse = { id: '0192f0a0-0000-7000-8000-000000000002', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', total_items: 5, completed_items: 2, notices: [], current_item: { id: '0192f0a0-0000-7000-8000-000000000003', position: 3, kind: 'review', prompt_uk: 'дім', context_uk: null, card: null } };
+const active: SessionResponse = { id: '0192f0a0-0000-7000-8000-000000000002', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', total_items: 5, completed_items: 2, notices: [], last_result: null, current_item: { id: '0192f0a0-0000-7000-8000-000000000003', position: 3, kind: 'review', prompt_uk: 'дім', context_uk: null, card: null } };
 const clients: ReturnType<typeof createQueryClient>[] = [];
 function json(body: unknown, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
 function network(handler?: (request: Request) => Response | Promise<Response>) {

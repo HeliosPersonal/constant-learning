@@ -2,6 +2,7 @@ using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Learning.Sessions.DayBoundary;
 using ConstantLearning.Features.Learning.Sessions.Start;
+using ConstantLearning.Features.Learning.Sessions.Results;
 using ConstantLearning.Features.Learning.Sessions.Start.Limits;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,8 @@ public sealed class CurrentSessionService(AppDbContext db, ILearnerDayStateServi
         if (current is null) return null;
 
         var now = clock.GetCurrentInstant();
-        var session = await boundary.GetActiveAsync(learnerId, now, cancellationToken);
+        var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
+            ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
         SessionResponse? response = null;
         if (session is not null)
         {
@@ -29,13 +31,13 @@ public sealed class CurrentSessionService(AppDbContext db, ILearnerDayStateServi
                 .OrderBy(item => item.Position).ToArrayAsync(cancellationToken);
             var next = SessionViewBuilder.PrepareNextItem(session, items,
                 course.ToDictionary(word => word.EntryId), now);
-            if (next is not null)
+            if (next is not null || session.ResultItemId is not null)
             {
                 var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId)
                     .ToArrayAsync(cancellationToken);
                 var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
                 var notices = limitsService.ApplyNotices(current, limits, now);
-                response = SessionResponse.From(session, items, notices, next);
+                response = SessionResponse.From(session, items, notices, next, await SessionResultView.ReadAsync(db, session, cancellationToken));
             }
         }
 

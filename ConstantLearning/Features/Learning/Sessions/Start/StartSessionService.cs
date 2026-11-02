@@ -6,6 +6,7 @@ using ConstantLearning.Features.Learning.Domain.Scheduling;
 using ConstantLearning.Features.Learning.Sessions.Current;
 using ConstantLearning.Features.Learning.Sessions.DayBoundary;
 using ConstantLearning.Features.Learning.Sessions.Start.Limits;
+using ConstantLearning.Features.Learning.Sessions.Results;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -24,7 +25,8 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
         if (current is null) return null;
 
         var now = clock.GetCurrentInstant();
-        var session = await boundary.GetActiveAsync(learnerId, now, cancellationToken);
+        var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
+            ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
 
         var course = await courseReader.ReadAsync(cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
@@ -82,7 +84,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
 
         var next = SessionViewBuilder.PrepareNextItem(session, items, published, now);
         var notices = limitsService.ApplyNotices(current, limits, now);
-        var response = SessionResponse.From(session, items, notices, next);
+        var response = SessionResponse.From(session, items, notices, next, await SessionResultView.ReadAsync(db, session, cancellationToken));
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new StartSessionResult(created, response);

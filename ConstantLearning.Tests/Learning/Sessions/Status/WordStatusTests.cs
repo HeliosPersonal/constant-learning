@@ -27,6 +27,7 @@ public sealed class WordStatusTests(PostgresFixture postgres) : PostgresIntegrat
         Assert.True(JsonNode.DeepEquals(first, replay));
         Assert.Single(await Db.AnswerEvents.ToArrayAsync());
         await AssertStateAsync(app, fixture, replay, "review", 1, 0);
+        await ContinueAsync(app, firstCard);
         var sameDay = await StartSessionAsync(app);
         Assert.Equal(0, sameDay["total_items"]!.GetValue<int>());
 
@@ -92,10 +93,12 @@ public sealed class WordStatusTests(PostgresFixture postgres) : PostgresIntegrat
         var before = AnswerWordState.Read(word);
         await using var app = await StartAsync();
         await AssertTodayAsync(app, recalled);
-        var result = await AnswerAsync(app, await StartSessionAsync(app), "slowo1");
+        var session = await StartSessionAsync(app);
+        var result = await AnswerAsync(app, session, "slowo1");
         Assert.Equal("synonym", result["outcome"]!.GetValue<string>());
         var after = await AssertStateAsync(app, fixture, result, status, streak, recalled);
         Assert.Equal(before with { LastScheduledAttemptDay = Today }, AnswerWordState.Read(after));
+        await ContinueAsync(app, session);
         Assert.Equal(0, (await StartSessionAsync(app))["total_items"]!.GetValue<int>());
         Advance(Today.PlusDays(1));
         var next = await AnswerAsync(app, await StartSessionAsync(app));
@@ -249,6 +252,14 @@ public sealed class WordStatusTests(PostgresFixture postgres) : PostgresIntegrat
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         await ContractAssert.ResponseAsync("startSession", response);
         return JsonNode.Parse(await response.Content.ReadAsStringAsync())!;
+    }
+
+    private static async Task ContinueAsync(AnswerTestApplication app, JsonNode session)
+    {
+        using var response = await app.Client.PostAsync(
+            $"/api/v1/sessions/{session["id"]!.GetValue<Guid>()}/items/{session["current_item"]!["id"]!.GetValue<Guid>()}/continue", null);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ContractAssert.ResponseAsync("continueSession", response);
     }
 
     private async Task<JsonNode> AnswerAsync(AnswerTestApplication app, JsonNode session, string? answer = "żaba", bool dontKnow = false)

@@ -43,6 +43,8 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
             if (replay.Answer is not null) await transaction.CommitAsync(cancellationToken);
             return replay;
         }
+        if (session.ResultItemId is not null)
+            return Error(409, "answer.result_not_continued", "Спершу перейдіть із результату до наступної картки.");
         if (item.State != "pending") return Error(409, "answer.content_unavailable", "Слово більше недоступне в цьому занятті.");
         if (session.Status != "active") return Error(409, "answer.session_inactive", "Заняття вже закрито.");
         if (item.Kind is not ("review" or "control_repetition" or "new_word_check"))
@@ -110,6 +112,7 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
             target.PronunciationUk, target.ExamplePl, target.ExampleUk, target.Gender, evaluation.DisputeAllowed,
             word.Status, LocalDatePattern.Iso.Format(after.DueOn), next, session.Status == "completed");
         item.ResponsePayload = JsonSerializer.Serialize(response);
+        session.ResultItemId = item.Id;
         await CommitAsync();
         return new(200, response, null);
 

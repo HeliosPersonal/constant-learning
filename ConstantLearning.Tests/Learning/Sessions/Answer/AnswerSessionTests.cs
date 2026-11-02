@@ -177,6 +177,8 @@ public sealed class AnswerSessionTests(PostgresFixture postgres) : PostgresInteg
         await using (var app = await StartAsync())
         {
             original = await PostAsync(app, fixture, json);
+            using var continued = await app.Client.PostAsync($"/api/v1/sessions/{fixture.Session!.Id}/items/{fixture.Items[0].Id}/continue", null);
+            Assert.Equal(HttpStatusCode.OK, continued.StatusCode);
             await PostAsync(app, fixture, """{"answer":"slowo1","dont_know":false}""", itemIndex: 1);
         }
         fixture.Entries[0].PublishedVersionId = null;
@@ -257,7 +259,11 @@ public sealed class AnswerSessionTests(PostgresFixture postgres) : PostgresInteg
         Assert.Equal(before.Lapses, after.Lapses);
         Assert.Equal(AnswerTestData.Day, AnswerWordState.Read(after).LastScheduledAttemptDay);
         Assert.Empty(await Db.ContentReports.ToArrayAsync());
+        using var firstContinue = await app.Client.PostAsync($"/api/v1/sessions/{fixture.Session!.Id}/items/{fixture.Items[0].Id}/continue", null);
+        Assert.Equal(HttpStatusCode.OK, firstContinue.StatusCode);
         await PostAsync(app, fixture, """{"answer":"slowo1","dont_know":false}""", itemIndex: 1);
+        using var secondContinue = await app.Client.PostAsync($"/api/v1/sessions/{fixture.Session!.Id}/items/{fixture.Items[1].Id}/continue", null);
+        Assert.Equal(HttpStatusCode.OK, secondContinue.StatusCode);
         using var next = await app.Client.PostAsync("/api/v1/sessions", null);
         Assert.Equal(0, (await BodyAsync(next))["total_items"]!.GetValue<int>());
     }

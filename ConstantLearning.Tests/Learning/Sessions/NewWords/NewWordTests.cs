@@ -63,7 +63,10 @@ public sealed class NewWordTests(PostgresFixture postgres) : PostgresIntegration
             Assert.False(next.AsObject().ContainsKey("pronunciation_uk"));
             var entryId = (await Db.SessionItems.AsNoTracking().SingleAsync(item => item.Id == next["id"]!.GetValue<Guid>())).EntryId;
             var answer = fixture.Versions.Single(version => version.EntryId == entryId).LemmaPl;
-            var result = await AnswerAsync(app, sessionId, next["id"]!.GetValue<Guid>(), answer);
+            var answeredId = next["id"]!.GetValue<Guid>();
+            var result = await AnswerAsync(app, sessionId, answeredId, answer);
+            using var continued = await app.Client.PostAsync($"/api/v1/sessions/{sessionId}/items/{answeredId}/continue", null);
+            Assert.Equal(HttpStatusCode.OK, continued.StatusCode);
             Assert.Equal(index == 2, result["session_completed"]!.GetValue<bool>());
             next = result["next_item"]!;
         }

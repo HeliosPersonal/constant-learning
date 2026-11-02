@@ -112,8 +112,9 @@ export interface paths {
         };
         /**
          * Поточна session для продовження (US-05)
-         * @description Повертає наступну неопрацьовану картку активної session тієї самої доби (AC-24). Після
-         *     кінця доби session закривається як незавершена й більше не повертається (AC-25).
+         * @description Повертає відкритий результат або наступну картку session тієї самої доби (AC-24).
+         *     Завершена session із відкритим результатом також повертається до кінця доби. Після
+         *     межі доби активна session закривається як незавершена (AC-25).
          */
         get: operations["getCurrentSession"];
         put?: never;
@@ -179,6 +180,26 @@ export interface paths {
          *     рахується до daily new words limit поточної доби (AC-21). Повтор безпечний.
          */
         post: operations["markAlreadyKnown"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/sessions/{session_id}/items/{item_id}/continue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Перейти з результату відповіді до наступної картки
+         * @description Повторний виклик не закриває результат новішої картки; повертає поточний стан заняття.
+         */
+        post: operations["continueSession"];
         delete?: never;
         options?: never;
         head?: never;
@@ -507,6 +528,14 @@ export interface components {
             completed_items: number;
             notices: components["schemas"]["SessionNotice"][];
             current_item: components["schemas"]["SessionItem"] | null;
+            /** @description Відкритий результат; перед показом наступної картки викличте continueSession. */
+            last_result: components["schemas"]["LastResult"] | null;
+        };
+        LastResult: {
+            /** Format: uuid */
+            item_id: string;
+            answer: components["schemas"]["AnswerResult"];
+            dispute: components["schemas"]["DisputeResult"] | null;
         };
         SessionProgress: {
             next_item: components["schemas"]["SessionItem"] | null;
@@ -527,6 +556,7 @@ export interface components {
          * @enum {string}
          */
         AnswerOutcome: "correct" | "mistake_typo" | "mistake_diacritic" | "dont_know" | "synonym";
+        /** @description next_item є попереднім переглядом; перехід відбувається лише через continueSession. */
         AnswerResult: {
             /** Format: uuid */
             answer_event_id: string;
@@ -1070,6 +1100,7 @@ export interface operations {
                      *       "notices": [
                      *         "new_words_limit_reached"
                      *       ],
+                     *       "last_result": null,
                      *       "current_item": {
                      *         "id": "0192f0a0-0000-7000-8000-0000000000b1",
                      *         "position": 1,
@@ -1111,6 +1142,7 @@ export interface operations {
                      *       "total_items": 10,
                      *       "completed_items": 6,
                      *       "notices": [],
+                     *       "last_result": null,
                      *       "current_item": {
                      *         "id": "0192f0a0-0000-7000-8000-0000000000b7",
                      *         "position": 7,
@@ -1314,6 +1346,32 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["AlreadyKnownResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["SessionItemNotFound"];
+            409: components["responses"]["SessionExpired"];
+        };
+    };
+    continueSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Поточний стан заняття */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Session"];
                 };
             };
             401: components["responses"]["Unauthorized"];

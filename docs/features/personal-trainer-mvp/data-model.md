@@ -219,6 +219,8 @@ erDiagram
 
 **Aggregate root:** `learning_sessions`. **Constraints:** UNIQUE (`session_id`, `position`).
 
+Nullable `learning_sessions.result_item_id` додає EF-міграція `PersistSessionResultView`: вказівник на відкритий результат оціненої картки зберігається до явного переходу або кінця доби. Індекс для FK створюється конкурентно; FK додається з окремою валідацією. [T24](tasks/T24-answer-dispute.md) використовує той самий learner lock для оскарження й переходу; `response_payload` залишається незмінним, а нейтралізація зберігається окремо.
+
 Nullable-колонку `response_payload` додає EF-міграція `PersistSessionItemResponse` без backfill, defaults чи зміни початкових SQL. [T17](tasks/T17-answer-item.md) зберігає повний `AnswerResult`, включно з наступною карткою, у транзакції з умовним переходом `pending → answered`, подією відповіді та проєкцією слова. Повтор із тим самим хешем повертає цей знімок незалежно від змін контенту й подальшого прогресу. Перевірка власника та межі session передує повтору. Хеш включає тип дії, дослівний текст (null для відсутнього тексту) і `dont_know`; порядок JSON-полів неважливий. Непрозорий payload придатний і для інших результатів команд [T18](tasks/T18-new-word-card.md); він не підміняє `answer_events.state_before`.
 
 ### Агрегат Learning — `answer_events` (append-only)

@@ -47,6 +47,8 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
             if (replay.Response is not null) await transaction.CommitAsync(cancellationToken);
             return replay;
         }
+        if (session.ResultItemId is not null)
+            return Error("answer.result_not_continued", "Спершу перейдіть із результату до наступної картки.");
         if (item.State != "pending") return Unavailable();
         if (session.Status != "active") return Error("new_word.session_inactive", "Заняття вже закрито.");
         if (item.Kind != "new_word_card") return Error("new_word.invalid_item_kind", "Ця картка очікує відповіді на вправу.");

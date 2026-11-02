@@ -1320,6 +1320,10 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("learner_id");
 
+                    b.Property<Guid?>("ResultItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("result_item_id");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -1339,6 +1343,9 @@ namespace ConstantLearning.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_learning_sessions_one_active")
                         .HasFilter("status = 'active'");
+
+                    b.HasIndex("ResultItemId")
+                        .HasDatabaseName("ix_learning_sessions_result_item_id");
 
                     b.HasIndex("LearnerId", "CompletedAt")
                         .HasDatabaseName("ix_learning_sessions_learner_completed");
@@ -1760,6 +1767,12 @@ namespace ConstantLearning.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("learning_sessions_learner_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Learning.Data.SessionItem", null)
+                        .WithMany()
+                        .HasForeignKey("ResultItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_learning_sessions_result_item_id");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Learning.Data.SessionItem", b =>

@@ -238,6 +238,7 @@ paths:
                 total_items: 7
                 completed_items: 0
                 notices: [new_words_limit_reached]
+                last_result: null
                 current_item:
                   id: 0192f0a0-0000-7000-8000-0000000000b1
                   position: 1
@@ -254,8 +255,9 @@ paths:
       summary: Поточна session для продовження (US-05)
       operationId: getCurrentSession
       description: |
-        Повертає наступну неопрацьовану картку активної session тієї самої доби (AC-24). Після
-        кінця доби session закривається як незавершена й більше не повертається (AC-25).
+        Повертає відкритий результат або наступну картку session тієї самої доби (AC-24).
+        Завершена session із відкритим результатом також повертається до кінця доби. Після
+        межі доби активна session закривається як незавершена (AC-25).
       responses:
         "200":
           description: Активна session
@@ -270,6 +272,7 @@ paths:
                 total_items: 10
                 completed_items: 6
                 notices: []
+                last_result: null
                 current_item:
                   id: 0192f0a0-0000-7000-8000-0000000000b7
                   position: 7
@@ -428,6 +431,25 @@ paths:
                     example_uk: Я маю час.
                     gender: null
                 session_completed: false
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/SessionItemNotFound" }
+        "409": { $ref: "#/components/responses/SessionExpired" }
+
+  /api/v1/sessions/{session_id}/items/{item_id}/continue:
+    post:
+      tags: [learning]
+      summary: Перейти з результату відповіді до наступної картки
+      operationId: continueSession
+      description: Повторний виклик не закриває результат новішої картки; повертає поточний стан заняття.
+      parameters:
+        - { in: path, name: session_id, required: true, schema: { type: string, format: uuid } }
+        - { in: path, name: item_id, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Поточний стан заняття
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "404": { $ref: "#/components/responses/SessionItemNotFound" }
         "409": { $ref: "#/components/responses/SessionExpired" }
@@ -926,6 +948,7 @@ components:
         total_items: 7
         completed_items: 2
         notices: []
+        last_result: null
         current_item:
           id: 0192f0a0-0000-7000-8000-0000000000b3
           position: 3
@@ -1126,7 +1149,7 @@ components:
 
     Session:
       type: object
-      required: [id, learner_day, ends_at, status, total_items, completed_items, notices, current_item]
+      required: [id, learner_day, ends_at, status, total_items, completed_items, notices, current_item, last_result]
       additionalProperties: false
       properties:
         id: { type: string, format: uuid }
@@ -1141,6 +1164,24 @@ components:
         current_item:
           oneOf:
             - $ref: "#/components/schemas/SessionItem"
+            - type: "null"
+
+        last_result:
+          oneOf:
+            - $ref: "#/components/schemas/LastResult"
+            - type: "null"
+          description: Відкритий результат; перед показом наступної картки викличте continueSession.
+
+    LastResult:
+      type: object
+      required: [item_id, answer, dispute]
+      additionalProperties: false
+      properties:
+        item_id: { type: string, format: uuid }
+        answer: { $ref: "#/components/schemas/AnswerResult" }
+        dispute:
+          oneOf:
+            - $ref: "#/components/schemas/DisputeResult"
             - type: "null"
 
     SessionProgress:
@@ -1177,6 +1218,7 @@ components:
       description: answer_events.outcome для вправи пригадування; synonym — нейтральна відповідь (AC-56)
 
     AnswerResult:
+      description: next_item є попереднім переглядом; перехід відбувається лише через continueSession.
       type: object
       required: [answer_event_id, outcome, correct_form, diff, pronunciation_uk, example_pl, example_uk, gender, dispute_allowed, word_status, next_review_on, next_item, session_completed]
       additionalProperties: false
