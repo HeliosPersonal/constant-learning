@@ -108,9 +108,6 @@ def prepare(directory, image, host, sha, run_number):
     secrets = [
         secret(APP + "-infisical", {name: required(name) for name in
                ["INFISICAL_CLIENT_ID", "INFISICAL_CLIENT_SECRET", "INFISICAL_PROJECT_ID"]}),
-        secret(APP + "-ghcr", {".dockerconfigjson": json.dumps({"auths": {"ghcr.io": {
-            "auth": base64.b64encode((required("GHCR_PULL_USERNAME") + ":" + required("GHCR_PULL_TOKEN")).encode()).decode()
-        }}})}, "kubernetes.io/dockerconfigjson"),
     ]
     secret_file = directory / "secrets.json"
     secret_file.write_text(json.dumps({"apiVersion": "v1", "kind": "List", "items": secrets}), encoding="utf-8")

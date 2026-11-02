@@ -22,7 +22,6 @@ ENV = {
     "KUBECONFIG_BASE64": base64.b64encode(b"apiVersion: v1\nkind: Config\n").decode(),
     "INFISICAL_CLIENT_ID": "test-only", "INFISICAL_CLIENT_SECRET": "test-secret",
     "INFISICAL_PROJECT_ID": "test-project",
-    "GHCR_PULL_USERNAME": "test-only", "GHCR_PULL_TOKEN": "test-secret",
 }
 
 
@@ -145,13 +144,16 @@ class DeploymentTests(unittest.TestCase):
             self.assertIn(image, rendered)
             self.assertIn("namespace: apps-production", rendered)
             self.assertIn("host: test.example.org", rendered)
-            self.assertIn("constant-learning-ghcr", rendered)
+            self.assertNotIn("imagePullSecrets", rendered)
+            self.assertNotIn("constant-learning-ghcr", rendered)
             self.assertIn("secretName: cloudflare-origin", rendered)
             self.assertNotIn("ssl-redirect", rendered)
             self.assertNotIn("kind: Secret", rendered)
             self.assertNotIn("test-secret", rendered)
             self.assertNotIn("REPLACED_BY", rendered)
             objects = json.loads(secrets.read_text(encoding="utf-8"))["items"]
+            self.assertEqual(len(objects), 1)
+            self.assertNotIn("kubernetes.io/dockerconfigjson", secrets.read_text(encoding="utf-8"))
             bootstrap = next(obj for obj in objects if obj["metadata"]["name"].endswith("-infisical"))
             self.assertEqual(set(bootstrap["data"]), {"INFISICAL_CLIENT_ID", "INFISICAL_CLIENT_SECRET", "INFISICAL_PROJECT_ID"})
             self.assertNotIn("Telegram__BotToken", secrets.read_text(encoding="utf-8"))

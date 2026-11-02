@@ -19,8 +19,6 @@ spec:
       labels:
         app: constant-learning
     spec:
-      imagePullSecrets:
-        - name: constant-learning-ghcr
       containers:
         - name: constant-learning
           image: ghcr.io/GITHUB_USERNAME/constant-learning:SHA_REPLACED_BY_CICD

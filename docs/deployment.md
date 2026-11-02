@@ -25,11 +25,9 @@ flowchart LR
 | `INFISICAL_CLIENT_ID` | Client ID machine identity з Universal Auth для проєкту constant-learning. |
 | `INFISICAL_CLIENT_SECRET` | Client secret цієї identity. |
 | `INFISICAL_PROJECT_ID` | Project ID constant-learning у Infisical. |
-| `GHCR_PULL_USERNAME` | GitHub login облікового запису з доступом до package `ghcr.io/heliospersonal/constant-learning`. |
-| `GHCR_PULL_TOKEN` | Довготривалий credential із `read:packages`; потрібна ротація. Короткотривалий `GITHUB_TOKEN`, який використовує WiseWizard для pull Secret, після завершення job не гарантує pull на новому вузлі або після очищення кешу. |
 | `KUBECONFIG` | Необов’язковий base64 kubeconfig Helios. Якщо відсутній, використовується наявний `~/.kube/config` runner, як у WiseWizard. |
 
-`GITHUB_TOKEN` для публікації образу GitHub надає автоматично. `ARM_*`, `PG_PASSWORD`, `DOCKERHUB_*`, прикладні `CONNECTIONSTRINGS__*`, `TELEGRAM__*` у Repository secrets цей workflow не читає. При старті застосунок виконує MigrateAsync: користувач із правом CREATEDB (як наявний postgres у Helios) може автоматично створити відсутню прикладну БД. Окремі Terraform-ресурси для цього не потрібні. `INFISICAL_*` залишаються в Repository secrets; перенесення до Environment secrets не потрібне.
+`GITHUB_TOKEN` для публікації образу GitHub надає автоматично. Package `ghcr.io/heliospersonal/constant-learning` має бути **Public**: Kubernetes завантажує точний digest анонімно, без pull Secret або додаткових токенів. У GitHub відкрити сторінку конкретного package → Package settings → Change visibility → Public. Загальний дозвіл організації на Public packages не змінює видимість конкретного package. Якщо package ще немає, він з’явиться після першої публікації; змінити його видимість і повторити невдалий деплой актуального SHA. `ARM_*`, `PG_PASSWORD`, `DOCKERHUB_*`, прикладні `CONNECTIONSTRINGS__*`, `TELEGRAM__*` у Repository secrets цей workflow не читає. При старті застосунок виконує MigrateAsync: користувач із правом CREATEDB (як наявний postgres у Helios) може автоматично створити відсутню прикладну БД. Окремі Terraform-ресурси для цього не потрібні. `INFISICAL_*` залишаються в Repository secrets; перенесення до Environment secrets не потрібне.
 
 ## Infisical: прикладна конфігурація
 
@@ -55,7 +53,7 @@ flowchart LR
 
 У **Repository variables** налаштувати `PUBLIC_HOST` — погоджений вільний hostname без схеми, порту та шляху. Погоджене значення — `constant-learning.devoverflow.org`, яке покриває наявний wildcard-сертифікат. Для цього hostname налаштувати Cloudflare DNS/Tunnel та BotFather. Чинний remotely managed Tunnel використовує `https://ingress-nginx-controller.ingress.svc.cluster.local:443`, Origin Server Name `devoverflow.org`, перевірку сертифіката ввімкнено. Локальний HTTP ConfigMap не описує ефективного маршруту.
 
-[Production Ingress](../k8s/overlays/production/ingress.yaml) використовує nginx і спільний TLS Secret `cloudflare-origin`, який Terraform Overflow копіює в `apps-production`. Pipeline лише перевіряє наявність цього Secret. Namespace повинен існувати. Kubeconfig потребує get namespace, Pod і TLS Secret; get/apply Deployment, Service, Ingress і прикладних bootstrap/pull Secret. Pipeline створює тільки `constant-learning-infisical` і `constant-learning-ghcr`; старі `constant-learning-db` / `constant-learning-telegram` не використовуються й автоматично не видаляються. Спільний `infisical-creds` WiseWizard не змінюється. [Staging overlay](../k8s/overlays/staging/kustomization.yaml) — окремий шаблон без автоматичного деплою, з Infisical slug `staging`.
+[Production Ingress](../k8s/overlays/production/ingress.yaml) використовує nginx і спільний TLS Secret `cloudflare-origin`, який Terraform Overflow копіює в `apps-production`. Pipeline лише перевіряє наявність цього Secret. Namespace повинен існувати. Kubeconfig потребує get namespace, Pod і TLS Secret; get/apply Deployment, Service, Ingress і прикладного bootstrap Secret. Pipeline створює тільки `constant-learning-infisical`; старі `constant-learning-db` / `constant-learning-telegram` не використовуються й автоматично не видаляються. Спільний `infisical-creds` WiseWizard не змінюється. [Staging overlay](../k8s/overlays/staging/kustomization.yaml) — окремий шаблон без автоматичного деплою, з Infisical slug `staging`.
 
 ## Увімкнення та перевірка
 
