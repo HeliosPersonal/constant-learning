@@ -3,6 +3,8 @@ using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Learning.Data;
 using ConstantLearning.Features.Learning.Domain.Composition;
 using ConstantLearning.Features.Learning.Domain.Scheduling;
+using ConstantLearning.Features.Learning.Sessions.Current;
+using ConstantLearning.Features.Learning.Sessions.DayBoundary;
 using ConstantLearning.Features.Learning.Sessions.Start.Limits;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +15,7 @@ namespace ConstantLearning.Features.Learning.Sessions.Start;
 public sealed record StartSessionResult(bool Created, SessionResponse Session);
 
 public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService learnerDays,
-    IPublishedCourseReader courseReader, SessionLimitsService limitsService, IClock clock)
+    IPublishedCourseReader courseReader, SessionLimitsService limitsService, SessionDayBoundaryService boundary, IClock clock)
 {
     public async Task<StartSessionResult?> StartAsync(Guid learnerId, CancellationToken cancellationToken = default)
     {
@@ -22,10 +24,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
         if (current is null) return null;
 
         var now = clock.GetCurrentInstant();
-        // Звільняємо частковий унікальний індекс до INSERT нової session у цій самій транзакції.
-        await db.LearningSessions.Where(session => session.LearnerId == learnerId
-                && session.Status == "active" && session.EndsAt <= now)
-            .ExecuteUpdateAsync(update => update.SetProperty(session => session.Status, "incomplete"), cancellationToken);
+        var session = await boundary.GetActiveAsync(learnerId, now, cancellationToken);
 
         var course = await courseReader.ReadAsync(cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
@@ -33,8 +32,6 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
             .ToArrayAsync(cancellationToken);
         var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
 
-        var session = await db.LearningSessions.SingleOrDefaultAsync(value => value.LearnerId == learnerId
-            && value.Status == "active", cancellationToken);
         var created = session is null;
         List<SessionItem> items;
         if (session is null)
@@ -83,22 +80,9 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
                 .OrderBy(item => item.Position).ToListAsync(cancellationToken);
         }
 
-        // Вилучений зі схваленого курсу вміст не потрапляє на картку навіть у вже створеній session.
-        foreach (var item in items.Where(item => item.State == "pending" && !published.ContainsKey(item.EntryId)))
-        {
-            item.State = "skipped";
-        }
-
-        var next = items.FirstOrDefault(item => item.State == "pending");
-        if (next is null && session.Status == "active")
-        {
-            session.Status = "completed";
-            session.CompletedAt = now;
-        }
-
+        var next = SessionViewBuilder.PrepareNextItem(session, items, published, now);
         var notices = limitsService.ApplyNotices(current, limits, now);
-        var response = SessionResponse.From(session, items, notices,
-            next is null ? null : SessionItemResponse.From(next, published[next.EntryId]));
+        var response = SessionResponse.From(session, items, notices, next);
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new StartSessionResult(created, response);
