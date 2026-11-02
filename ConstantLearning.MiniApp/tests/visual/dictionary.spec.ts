@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { components } from '../../src/api/schema';
+import { todaySummary } from '../fixtures/today';
 
 const firstId = '0192f0a0-0000-7000-8000-0000000000e1';
 const secondId = '0192f0a0-0000-7000-8000-0000000000e2';
@@ -18,6 +19,8 @@ for (const theme of ['light', 'dark'] as const) {
     page.on('request', request => { if (request.url().includes('/features/dictionary/search/Dictionary')) chunks.push(request.url()); });
     await page.route('https://telegram.org/**', route => route.fulfill({ contentType: 'text/javascript', body: `window.Telegram={WebApp:{initData:"fixture=dictionary",colorScheme:"${theme}",version:"6.0"}};` }));
     await page.route('**/api/v1/learners/me', route => route.fulfill({ json: learner }));
+    await page.route('**/api/v1/today', route => route.fulfill({ json: todaySummary }));
+    await page.route('**/api/v1/telemetry/client-timings', route => route.fulfill({ status: 204 }));
     let release!: () => void;
     const gate = new Promise<void>(resolve => { release = resolve; });
     await page.route('**/api/v1/dictionary/search?*', async route => {
@@ -38,6 +41,8 @@ for (const theme of ['light', 'dark'] as const) {
     await page.screenshot({ path: `artifacts/dictionary-${theme}-results.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-dictionary-results.png`, { fullPage: true });
     await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); await expect(page.getByRole('button', { name: /^urząd / })).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'urząd', exact: true })).toBeVisible(); await expect(page.getByRole('heading', { name: 'urząd', exact: true })).toBeFocused();
+    // Наведення стабілізує нативну кнопку очищення search незалежно від висоти попереднього екрана.
+    await search.hover();
     await page.screenshot({ path: `artifacts/dictionary-${theme}-card.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-dictionary-card.png`, { fullPage: true });
     await page.getByRole('button', { name: '← До результатів' }).click(); await expect(page.getByRole('heading', { name: 'Результати' })).toBeFocused(); await expect(search).toHaveValue('ur');
     await search.fill('pending'); await expect(page.getByText('Шукаємо слово…')).toBeVisible();

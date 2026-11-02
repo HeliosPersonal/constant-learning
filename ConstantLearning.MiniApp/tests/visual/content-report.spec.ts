@@ -50,6 +50,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: 'Повідомити про неточність' }).click(); await expect(dialog.getByLabel(/Запропоноване значення/)).toHaveValue('державна установа');
     await dialog.getByRole('button', { name: 'Надіслати на перевірку' }).click(); await expect(dialog.getByRole('button', { name: 'Надсилаємо повідомлення…' })).toBeDisabled(); await expect(dialog.getByRole('button', { name: 'Назад до словника' })).toBeDisabled(); await page.keyboard.press('Escape'); await expect(dialog).toBeVisible();
     await expect(page).toHaveScreenshot(`${theme}-report-pending.png`); release(); await expect(dialog.getByRole('status')).toHaveText('✓Дякуємо, передали на перевірку'); expect(bodies).toHaveLength(2); expect(bodies[1]).toEqual(bodies[0]);
+    await expect(dialog.getByLabel('Результат повідомлення')).toBeFocused();
     await expectMessageUnobscured(dialog);
     await page.screenshot({ path: `artifacts/content-report-${theme}-accepted.png` }); await expect(page).toHaveScreenshot(`${theme}-report-accepted.png`);
     await dialog.getByRole('button', { name: 'Повернутися до словника' }).click(); await expect(page.getByText('державна установа', { exact: true })).toBeVisible(); await expect(page.getByRole('button', { name: 'Повідомити про неточність' })).toBeFocused();

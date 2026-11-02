@@ -8,6 +8,7 @@ import { OnboardingGate } from '../src/features/onboarding/OnboardingGate';
 import { parsePrivacyContact, resolvePrivacyContact } from '../src/features/onboarding/privacy';
 import type { ApiErrorBody, Learner, OnboardingRequest } from '../src/features/onboarding/api';
 import { themeStore } from '../src/theme/store';
+import { todaySummary } from './fixtures/today';
 
 // Синтетичний контакт використовується лише в локальних тестах.
 const contact = parsePrivacyContact('mailto:privacy@example.test')!;
@@ -15,7 +16,7 @@ const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_nam
 const notOnboarded: ApiErrorBody = { code: 'learner.not_onboarded', message: 'Спершу налаштуйте тренер.' };
 const clients: ReturnType<typeof createQueryClient>[] = [];
 
-function json(body: Learner | ApiErrorBody, status: number) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
+function json(body: Learner | ApiErrorBody | typeof todaySummary, status: number) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
 function mockFetch(handler: (request: Request) => Promise<Response> | Response) {
   const fetcher = vi.fn<typeof fetch>().mockImplementation(request => Promise.resolve(handler(request as Request)));
   vi.stubGlobal('fetch', fetcher);
@@ -162,11 +163,14 @@ describe('Завантаження профілю та перехід', () => {
     await screen.findByText('Відкрийте тренер знову в Telegram, щоб продовжити.'); expect(screen.queryByRole('button', { name: 'Спробувати ще раз' })).not.toBeInTheDocument(); expect(screen.queryByRole('form')).not.toBeInTheDocument(); expect(fetcher).toHaveBeenCalledOnce();
   });
   it('GET 200 відразу веде на today callback без POST і зміни профілю', async () => {
-    const fetcher = mockFetch(() => json(learner, 200)); const navigate = vi.fn(); mount(<OnboardingGate privacyContact={contact} onNavigateToToday={navigate} />);
-    await screen.findByRole('heading', { name: 'Сьогодні' }); await waitFor(() => expect(navigate).toHaveBeenCalledExactlyOnceWith(learner)); expect(window.location.pathname).toBe('/today'); expect(fetcher).toHaveBeenCalledOnce(); expect((fetcher.mock.calls[0][0] as Request).method).toBe('GET');
+    const fetcher = mockFetch(request => request.url.endsWith('/today') ? json(todaySummary, 200) : request.url.endsWith('/client-timings') ? new Response(null, { status: 204 }) : json(learner, 200)); const navigate = vi.fn(); mount(<OnboardingGate privacyContact={contact} onNavigateToToday={navigate} />);
+    await screen.findByRole('heading', { name: 'Сьогодні' }); await waitFor(() => expect(navigate).toHaveBeenCalledExactlyOnceWith(learner)); expect(window.location.pathname).toBe('/today');
+    const profileRequests = fetcher.mock.calls.map(call => call[0] as Request).filter(request => request.url.endsWith('/learners/me'));
+    expect(profileRequests).toHaveLength(1); expect(profileRequests[0].method).toBe('GET');
+    expect(fetcher.mock.calls.map(call => call[0] as Request).filter(request => request.method === 'POST' && !request.url.endsWith('/client-timings'))).toHaveLength(0);
   });
   it('GET 404, потім POST 201 викликає today callback один раз', async () => {
-    mockFetch(request => request.method === 'GET' ? json(notOnboarded, 404) : json(learner, 201)); const navigate = vi.fn(); mount(<OnboardingGate privacyContact={contact} onNavigateToToday={navigate} />);
+    mockFetch(request => request.url.endsWith('/today') ? json(todaySummary, 200) : request.url.endsWith('/client-timings') ? new Response(null, { status: 204 }) : request.method === 'GET' ? json(notOnboarded, 404) : json(learner, 201)); const navigate = vi.fn(); mount(<OnboardingGate privacyContact={contact} onNavigateToToday={navigate} />);
     await screen.findByRole('form'); submit(); await screen.findByRole('heading', { name: 'Сьогодні' }); expect(navigate).toHaveBeenCalledExactlyOnceWith(learner);
   });
 });

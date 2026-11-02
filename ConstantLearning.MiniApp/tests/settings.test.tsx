@@ -5,6 +5,7 @@ import { createQueryClient } from '../src/api/query';
 import { ThemeProvider } from '../src/theme/ThemeProvider';
 import { THEME_KEY } from '../src/theme/store';
 import { App } from '../src/App';
+import { todaySummary } from './fixtures/today';
 import Settings from '../src/features/settings/Settings';
 import { draftFromLearner, settingsChanges, validateSettings, type Learner, type SettingsUpdate } from '../src/features/settings/model';
 import type { ApiErrorBody } from '../src/features/onboarding/api';
@@ -13,7 +14,7 @@ import { parsePrivacyContact } from '../src/features/onboarding/privacy';
 const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: { local_time: '19:00', days_of_week: ['mon', 'fri'] }, onboarded_at: '2026-11-01T09:00:00Z' };
 const notOnboarded: ApiErrorBody = { code: 'learner.not_onboarded', message: 'Спершу налаштуйте тренер.' };
 const clients: ReturnType<typeof createQueryClient>[] = [];
-function json(body: Learner | ApiErrorBody, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
+function json(body: Learner | ApiErrorBody | typeof todaySummary, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
 function mockFetch(handler: (request: Request) => Response | Promise<Response>) {
   const fetcher = vi.fn<typeof fetch>().mockImplementation(request => Promise.resolve(handler(request as Request)));
   vi.stubGlobal('fetch', fetcher); return fetcher;
@@ -176,10 +177,10 @@ describe('Маршрут і завантаження профілю', () => {
     await screen.findByRole('heading', { name: 'Налаштування' }); expect(window.location.pathname).toBe('/settings');
   });
   it('навігація «Сьогодні» ↔ налаштування використовує той самий профіль', async () => {
-    window.history.replaceState(null, '', '/today'); const fetcher = mockFetch(() => json(learner)); mount(<App />);
+    window.history.replaceState(null, '', '/today'); const fetcher = mockFetch(request => request.url.endsWith('/today') ? json(todaySummary) : request.url.endsWith('/client-timings') ? new Response(null, { status: 204 }) : json(learner)); mount(<App />);
     await screen.findByRole('heading', { name: 'Сьогодні' }); fireEvent.click(screen.getByRole('button', { name: 'Налаштування' }));
     await screen.findByRole('heading', { name: 'Налаштування' }); fireEvent.click(screen.getByRole('button', { name: '← До «Сьогодні»' }));
-    await screen.findByRole('heading', { name: 'Сьогодні' }); expect(fetcher).toHaveBeenCalledOnce();
+    await screen.findByRole('heading', { name: 'Сьогодні' }); expect(fetcher.mock.calls.map(call => call[0] as Request).filter(request => request.url.endsWith('/learners/me'))).toHaveLength(1);
   });
   it('GET 401 не відкриває форму налаштувань або онбордингу', async () => {
     window.history.replaceState(null, '', '/settings'); const fetcher = mockFetch(() => json({ code: 'auth.invalid_init_data', message: 'Недоступно' }, 401)); mount(<App />);

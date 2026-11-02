@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { components } from '../../src/api/schema';
+import { todaySummary } from '../fixtures/today';
 
 const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: { local_time: '19:00', days_of_week: ['mon'] }, onboarded_at: '2026-11-01T09:00:00Z' };
 const notOnboarded: components['schemas']['Error'] = { code: 'learner.not_onboarded', message: 'Спершу налаштуйте тренер.' };
@@ -14,6 +15,8 @@ for (const theme of ['light', 'dark'] as const) {
     });
     await page.route('https://telegram.org/**', route => route.fulfill({ contentType: 'text/javascript', body: '' }));
     await page.route('**/api/v1/learners/me', route => route.fulfill({ status: 404, json: notOnboarded }));
+    await page.route('**/api/v1/today', route => route.fulfill({ json: todaySummary }));
+    await page.route('**/api/v1/telemetry/client-timings', route => route.fulfill({ status: 204 }));
     let release!: () => void;
     const pending = new Promise<void>(resolve => { release = resolve; });
     let postCount = 0;

@@ -1,0 +1,15 @@
+.today-date { margin-bottom: 8px; }
+.today-statistics { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+.today-statistics > div { padding-top: 16px; border-top: 1px solid var(--cl-border); }
+.today-statistics > div:first-child { grid-column: 1 / -1; }
+.today-statistics dt { color: var(--cl-muted); font-size: 14px; line-height: 20px; }
+.today-statistics dd { margin: 8px 0 0; font-size: 32px; line-height: 40px; font-weight: 650; letter-spacing: -1px; }
+.today-statistics > div:first-child dd { color: var(--cl-accent); font-size: 48px; line-height: 56px; }
+.today-course { border-top: 1px solid var(--cl-border); padding-top: 16px; }
+.today-course h2, .today-zone h2, .today-notice h2 { font-size: 20px; line-height: 28px; }
+.today-zone-name { overflow-wrap: anywhere; font-weight: 600; }
+.today-actions { display: grid; gap: 8px; }
+.today-status { margin-top: 16px; }
+.today-notice { border-color: var(--cl-accent); }
+.today-notice p:last-child { margin-bottom: 0; }
+@media (max-width: 350px) { .today-statistics { gap: 12px; } }

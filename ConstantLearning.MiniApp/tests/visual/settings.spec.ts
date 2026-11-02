@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { components } from '../../src/api/schema';
+import { todaySummary } from '../fixtures/today';
 
 type Learner = components['schemas']['Learner'];
 type SettingsUpdate = components['schemas']['LearnerSettingsUpdate'];
@@ -14,6 +15,8 @@ for (const theme of ['light', 'dark'] as const) {
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     await page.route('https://telegram.org/**', route => route.fulfill({ contentType: 'text/javascript', body: `const callbacks=new Set();window.Telegram={WebApp:{initData:"fixture=settings",colorScheme:"${theme}",version:"6.0",onEvent:(_,callback)=>callbacks.add(callback),offEvent:(_,callback)=>callbacks.delete(callback)}};window.emitFixtureTheme=(value)=>{window.Telegram.WebApp.colorScheme=value;callbacks.forEach(callback=>callback())};` }));
     await page.route('**/api/v1/learners/me', route => route.fulfill({ json: profile }));
+    await page.route('**/api/v1/today', route => route.fulfill({ json: todaySummary }));
+    await page.route('**/api/v1/telemetry/client-timings', route => route.fulfill({ status: 204 }));
     let release!: () => void;
     const gate = new Promise<void>(resolve => { release = resolve; });
     await page.route('**/api/v1/learners/me/settings', async route => {
