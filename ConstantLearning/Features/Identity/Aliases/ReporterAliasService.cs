@@ -12,6 +12,12 @@ internal sealed class RandomReporterAliasGenerator : IReporterAliasGenerator
 
 internal sealed class ReporterAliasService(AppDbContext db, IReporterAliasGenerator generator) : IReporterAliasService
 {
+    public async Task<IReadOnlyDictionary<Guid, string>> ReadAsync(IReadOnlyCollection<Guid> learnerIds,
+        CancellationToken cancellationToken = default) =>
+        await db.Learners.AsNoTracking().Where(learner => learnerIds.Contains(learner.Id) && learner.ReporterAlias != null)
+            .Select(learner => new { learner.Id, learner.ReporterAlias })
+            .ToDictionaryAsync(learner => learner.Id, learner => learner.ReporterAlias!, cancellationToken);
+
     public async Task<string> GetOrCreateAsync(Guid learnerId, CancellationToken cancellationToken = default)
     {
         var transaction = db.Database.CurrentTransaction
@@ -49,7 +55,7 @@ internal sealed class ReporterAliasService(AppDbContext db, IReporterAliasGenera
                 return alias;
             }
             catch (PostgresException exception) when (exception is
-                   { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "ux_learners_reporter_alias" })
+            { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "ux_learners_reporter_alias" })
             {
                 // PostgreSQL після unique violation приймає нові команди лише після rollback до savepoint.
                 await transaction.RollbackToSavepointAsync("reporter_alias_candidate", cancellationToken);
