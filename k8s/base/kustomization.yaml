@@ -3,10 +3,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - service.yaml
-  - secret-telegram.yaml
-  - secret-db.yaml
 images:
   - name: ghcr.io/GITHUB_USERNAME/constant-learning
     newName: ghcr.io/GITHUB_USERNAME/constant-learning
     newTag: SHA_REPLACED_BY_CICD
-namespace: apps-staging

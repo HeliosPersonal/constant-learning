@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: constant-learning
+  annotations:
+    # HTTPS завершує Cloudflare Tunnel; до nginx трафік надходить через HTTP.
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: PUBLIC_HOST_REPLACED_BY_CICD
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: constant-learning
+                port:
+                  number: 8888
