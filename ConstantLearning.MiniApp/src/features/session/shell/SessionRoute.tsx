@@ -40,11 +40,11 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
       } else setMessage('Не вдалося зберегти дію або оновити заняття. Оновіть стан перед повтором.');
     } finally { locked.current = false; setPending(false); onBusy?.(false); }
   }
-  if (terminal === 'complete') return <Card><p className="eyebrow">ГОТОВО</p><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p><Button size="l" stretched onClick={leave}>На сьогодні</Button></Card>;
+  if (terminal === 'complete') return <Card><p className="eyebrow">ГОТОВО</p><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p><Button size="l" stretched onClick={leave}>← На головну</Button></Card>;
   if (terminal || session.isError) {
     const error = session.error;
     const text = terminal === 'expired' ? 'Час цього заняття минув. Поверніться на «Сьогодні», щоб продовжити навчання.' : terminal === 'auth' || (error instanceof SessionApiError && error.status === 401) ? 'Відкрийте тренер знову в Telegram, щоб продовжити.' : terminal === 'missing' || (error instanceof SessionApiError && error.status === 404) ? 'Заняття або картку не знайдено. Можливо, заняття вже закрито або належить іншому користувачу.' : 'Не вдалося завантажити заняття. Спробуйте ще раз.';
-    return <Card><h1>Заняття недоступне</h1><Result tone="error">{text}</Result>{!terminal && !(error instanceof SessionApiError && [401, 404].includes(error.status)) && <Button size="l" stretched onClick={() => { void session.refetch(); }}>Спробувати ще раз</Button>}<Button size="l" mode="outline" stretched onClick={leave}>На сьогодні</Button></Card>;
+    return <Card><h1>Заняття недоступне</h1><Result tone="error">{text}</Result>{!terminal && !(error instanceof SessionApiError && [401, 404].includes(error.status)) && <Button size="l" stretched onClick={() => { void session.refetch(); }}>Спробувати ще раз</Button>}<Button size="l" mode="outline" stretched onClick={leave}>← На головну</Button></Card>;
   }
   if (!session.data || (session.isFetching && !pending)) return <Card><div className="loading-state" role="status"><Spinner size="s" /> Завантажуємо заняття…</div></Card>;
   const data = session.data;
@@ -56,6 +56,6 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
       : data.status === 'completed' ? <><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p></> : <><h1>Картка недоступна</h1><p>Не вдалося отримати поточну картку заняття. Поверніться на «Сьогодні».</p></>}
     {pending && <p role="status">Зберігаємо та оновлюємо заняття…</p>}
     {message && <><Result tone="error">{message}</Result><Button size="l" stretched disabled={pending} onClick={() => { setPending(true); void refresh().then(() => setMessage(undefined)).catch(() => setMessage('Не вдалося оновити заняття. Спробуйте ще раз.')).finally(() => setPending(false)); }}>Оновити стан</Button></>}
-    <Button className="session-leave" size="l" mode="plain" stretched disabled={pending || recallBusy} onClick={leave}>На сьогодні</Button>
+    <Button className="session-leave" size="l" mode="plain" stretched disabled={pending || recallBusy} onClick={leave}>← На головну</Button>
   </Card>;
 }

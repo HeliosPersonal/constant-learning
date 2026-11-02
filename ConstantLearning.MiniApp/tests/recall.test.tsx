@@ -27,7 +27,7 @@ describe('Пригадування', () => {
   it('блокує подвійну відповідь і перехід під час запиту; фінальний результат чекає continue', async () => {
     let resolve!: (r: Response) => void; let gets = 0; const fetcher = vi.fn().mockImplementation((r: Request) => r.method === 'GET' ? Promise.resolve(json(gets++ ? result() : session)) : r.url.endsWith('/answer') ? new Promise<Response>(done => { resolve = done; }) : Promise.resolve(json({ ...session, status: 'completed', completed_items: 1, current_item: null })));
     vi.stubGlobal('fetch', fetcher); const { busy } = mount(); const input = await screen.findByLabelText('Ваша відповідь'); fireEvent.change(input, { target: { value: 'xaba' } }); const button = screen.getByRole('button', { name: 'Перевірити' }); fireEvent.click(button); fireEvent.click(button);
-    await waitFor(() => expect(resolve).toBeDefined()); expect(screen.getByRole('button', { name: 'На сьогодні' })).toBeDisabled(); expect(busy).toHaveBeenCalledWith(true); expect(fetcher.mock.calls.filter(([r]) => r.url.endsWith('/answer'))).toHaveLength(1);
+    await waitFor(() => expect(resolve).toBeDefined()); expect(screen.getByRole('button', { name: '← На головну' })).toBeDisabled(); expect(busy).toHaveBeenCalledWith(true); expect(fetcher.mock.calls.filter(([r]) => r.url.endsWith('/answer'))).toHaveLength(1);
     resolve(json(answer)); await screen.findByRole('heading', { name: 'Цього разу є помилка.' }); expect(screen.queryByText('таємне')).not.toBeInTheDocument(); fireEvent.click(screen.getByRole('button', { name: 'Продовжити' })); await screen.findByRole('heading', { name: 'Заняття завершено' });
   });
   it('невизначена відповідь: відновлення та повтор передають той самий payload', async () => {
