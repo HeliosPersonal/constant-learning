@@ -65,6 +65,12 @@ describe('Прогрес і стани дня', () => {
     expect(await screen.findByRole('button', { name: 'Почати заняття' })).toBeEnabled();
     expect(screen.getByText('На зараз повторень немає. У занятті можуть бути нові слова за вашим темпом.')).toBeVisible();
   });
+  it('вичерпаний денний ліміт без повторень блокує початок і пояснює, що далі', async () => {
+    const fetcher = network(() => json({ ...todaySummary, due_review_count: 0, new_words_available_today: false })); mount();
+    const button = await screen.findByRole('button', { name: 'На сьогодні все' }); expect(button).toBeDisabled();
+    expect(screen.getByText('Нові слова на сьогодні вже пройдено. Повторення з’являться за розкладом.')).toBeVisible();
+    fireEvent.click(button); expect(requests(fetcher, '/api/v1/sessions')).toHaveLength(0);
+  });
   it('завершений курс без належних повторень дозволяє продовжити наявне заняття', async () => {
     const fetcher = network(request => new URL(request.url).pathname === '/api/v1/today' ? json({ ...todaySummary, due_review_count: 0, course_state: 'completed', has_active_session: true }) : json(active)); const open = vi.fn(); mount({ onOpenSession: open });
     const button = await screen.findByRole('button', { name: 'Продовжити заняття' }); expect(button).toBeEnabled(); expect(screen.queryByRole('button', { name: 'На сьогодні все' })).not.toBeInTheDocument();

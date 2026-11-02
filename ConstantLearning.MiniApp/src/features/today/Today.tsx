@@ -101,7 +101,8 @@ export function Today({ learner, onOpenSession, onStart, getDeviceTimeZone = det
     </Card>;
   }
   const summary = today.data;
-  const noAvailableLesson = summary.course_state === 'completed' && summary.due_review_count === 0 && !summary.has_active_session;
+  const noNewWords = !summary.new_words_available_today;
+  const noAvailableLesson = summary.due_review_count === 0 && !summary.has_active_session && (summary.course_state === 'completed' || noNewWords);
   const date = new Intl.DateTimeFormat('uk-UA', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(new Date(`${summary.learner_day}T12:00:00Z`));
   const proposeZone = deviceZone && deviceZone !== learner.time_zone && deviceZone !== dismissedZone;
 
@@ -121,7 +122,7 @@ export function Today({ learner, onOpenSession, onStart, getDeviceTimeZone = det
       </dl>
       {summary.course_state === 'completed' ? <div className="today-course"><h2>Базовий курс завершено</h2><p className="caption">Ви вже отримали всі слова курсу. Повторення триватимуть за вашим розкладом.</p></div>
         : <p className="caption">Ваш темп — {learner.daily_new_words_limit} {learner.daily_new_words_limit === 3 ? 'нові слова' : 'нових слів'} на день. Нові слова додаються в межах денного ліміту.</p>}
-      {summary.due_review_count === 0 && !summary.has_active_session && <p className="caption" id="today-no-reviews">{summary.course_state === 'completed' ? 'На зараз повторень немає. Завітайте пізніше.' : 'На зараз повторень немає. У занятті можуть бути нові слова за вашим темпом.'}</p>}
+      {summary.due_review_count === 0 && !summary.has_active_session && <p className="caption" id="today-no-reviews">{summary.course_state === 'completed' ? 'На зараз повторень немає. Завітайте пізніше.' : noNewWords ? 'Нові слова на сьогодні вже пройдено. Повторення з’являться за розкладом.' : 'На зараз повторень немає. У занятті можуть бути нові слова за вашим темпом.'}</p>}
       {summary.has_active_session && <p className="caption">На вас чекає розпочате заняття. Продовжимо з того місця, де зупинилися.</p>}
       <Button ref={buttonRef} size="l" stretched loading={session.isPending} disabled={session.isPending || zone.isPending || !!blocked || noAvailableLesson} aria-describedby={noAvailableLesson ? 'today-no-reviews' : undefined} onClick={begin}>{session.isPending ? 'Відкриваємо заняття…' : summary.has_active_session ? 'Продовжити заняття' : noAvailableLesson ? 'На сьогодні все' : 'Почати заняття'}</Button>
       <div ref={messageRef} className="today-status" tabIndex={-1} aria-live="polite">{session.isPending && <p className="caption" role="status">Відкриваємо заняття…</p>}{message && <Result tone="error">{message}</Result>}{notices.map(notice => <p className="caption" role="status" key={notice}>{sessionNotices[notice]}</p>)}</div>

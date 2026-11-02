@@ -485,6 +485,8 @@ export interface components {
             course_state: "in_progress" | "completed";
             /** @description одноразове повідомлення про поповнення base course (AC-10) */
             course_replenished_notice: boolean;
+            /** @description false, якщо денний ліміт нових слів вичерпано або нових слів поки немає; повторення від цього не залежать */
+            new_words_available_today: boolean;
         };
         /** @enum {string} */
         SessionNotice: "new_words_limit_reached" | "course_completed" | "course_replenished";

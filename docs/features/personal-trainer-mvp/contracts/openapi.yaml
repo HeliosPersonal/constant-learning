@@ -1100,7 +1100,7 @@ components:
 
     TodaySummary:
       type: object
-      required: [learner_day, due_review_count, recalled_words_count, completed_sessions_last_7_days, has_active_session, course_state, course_replenished_notice]
+      required: [learner_day, due_review_count, recalled_words_count, completed_sessions_last_7_days, has_active_session, course_state, course_replenished_notice, new_words_available_today]
       additionalProperties: false
       properties:
         learner_day: { type: string, format: date }
@@ -1110,6 +1110,7 @@ components:
         has_active_session: { type: boolean }
         course_state: { type: string, enum: [in_progress, completed] }
         course_replenished_notice: { type: boolean, description: одноразове повідомлення про поповнення base course (AC-10) }
+        new_words_available_today: { type: boolean, description: "false, якщо денний ліміт нових слів вичерпано або нових слів поки немає; повторення від цього не залежать" }
 
     SessionNotice:
       type: string

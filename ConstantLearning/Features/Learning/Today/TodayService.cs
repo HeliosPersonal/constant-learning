@@ -58,7 +58,7 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
             cancellationToken);
         var response = new TodayResponse(LocalDatePattern.Iso.Format(day), due, recalled, completed,
             session is not null && (session.Status == "active" || session.ResultItemId is not null), limits.CourseCompleted ? "completed" : "in_progress",
-            notices.Contains("course_replenished"));
+            notices.Contains("course_replenished"), !notices.Contains("new_words_limit_reached"));
         await transaction.CommitAsync(cancellationToken);
         return response;
     }

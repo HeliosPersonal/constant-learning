@@ -9,4 +9,5 @@ public sealed record TodayResponse(
     [property: JsonPropertyName("completed_sessions_last_7_days")] int CompletedSessionsLast7Days,
     [property: JsonPropertyName("has_active_session")] bool HasActiveSession,
     [property: JsonPropertyName("course_state")] string CourseState,
-    [property: JsonPropertyName("course_replenished_notice")] bool CourseReplenishedNotice);
+    [property: JsonPropertyName("course_replenished_notice")] bool CourseReplenishedNotice,
+    [property: JsonPropertyName("new_words_available_today")] bool NewWordsAvailableToday);
