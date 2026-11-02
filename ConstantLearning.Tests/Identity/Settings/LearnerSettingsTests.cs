@@ -101,7 +101,7 @@ public sealed class LearnerSettingsTests(PostgresFixture postgres) : PostgresInt
             ("{}", "settings.invalid_request"), ("null", "settings.invalid_request"), ("{", "settings.invalid_request"),
             ("""{"unknown":5}""", "settings.invalid_request"),
             ("""{"daily_new_words_limit":5,"daily_new_words_limit":3}""", "settings.invalid_request"),
-            ("""{"daily_new_words_limit":4}""", "settings.invalid_limit"),
+            ("""{"daily_new_words_limit":0}""", "settings.invalid_limit"),
             ("""{"daily_new_words_limit":null}""", "settings.invalid_limit"),
             ("""{"daily_new_words_limit":"5"}""", "settings.invalid_limit"),
             ("""{"daily_new_words_limit":3.5}""", "settings.invalid_limit"),

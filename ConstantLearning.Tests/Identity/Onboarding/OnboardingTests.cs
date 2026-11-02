@@ -94,7 +94,7 @@ public sealed class OnboardingTests(PostgresFixture postgres) : PostgresIntegrat
             ("""{"daily_new_words_limit":5,"time_zone":"Europe/Warsaw","reminder":{"local_time":"19:00","days_of_week":[]}}""", "settings.reminder_days_required"),
             ("""{"daily_new_words_limit":5,"reminder":{"local_time":"19:00","days_of_week":["mon"]}}""", "settings.time_zone_required"),
             ("""{"daily_new_words_limit":5,"time_zone":"Unknown/Zone","reminder":{"local_time":"19:00","days_of_week":["mon"]}}""", "settings.time_zone_required"),
-            ("""{"daily_new_words_limit":4}""", "settings.invalid_limit"),
+            ("""{"daily_new_words_limit":0}""", "settings.invalid_limit"),
             ("""{"daily_new_words_limit":3.5}""", "settings.invalid_limit"),
             ("""{"daily_new_words_limit":"5"}""", "settings.invalid_limit"),
             ("{}", "settings.invalid_limit"),
@@ -130,7 +130,7 @@ public sealed class OnboardingTests(PostgresFixture postgres) : PostgresIntegrat
         string[] bodies =
         [
             """{"daily_new_words_limit":10,"time_zone":"Europe/Kyiv","reminder":null}""",
-            """{"daily_new_words_limit":4,"reminder":{"local_time":"19:00","days_of_week":[]}}""",
+            """{"daily_new_words_limit":0,"reminder":{"local_time":"19:00","days_of_week":[]}}""",
             "{}", "null", "{", ""
         ];
         foreach (var body in bodies)
@@ -217,7 +217,7 @@ public sealed class OnboardingTests(PostgresFixture postgres) : PostgresIntegrat
         Db.Learners.Add(learner);
         await Db.SaveChangesAsync();
         await using var app = await StartAsync();
-        using var invalid = await PostAsync(app.Client, """{"daily_new_words_limit":4}""");
+        using var invalid = await PostAsync(app.Client, """{"daily_new_words_limit":0}""");
         await AssertResponseAsync(invalid, HttpStatusCode.BadRequest, "completeOnboarding", "settings.invalid_limit");
         Assert.Null((await Db.Learners.AsNoTracking().SingleAsync()).OnboardedAt);
 

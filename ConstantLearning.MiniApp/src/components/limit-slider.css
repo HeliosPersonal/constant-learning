@@ -1,0 +1,5 @@
+.limit-slider { display: grid; gap: 8px; margin: 16px 0 0; }
+.limit-slider-value { font-size: 18px; line-height: 26px; }
+.limit-slider-value strong { font-size: 32px; line-height: 40px; }
+.limit-slider input[type='range'] { width: 100%; min-height: 44px; margin: 0; accent-color: var(--cl-accent); cursor: pointer; }
+.limit-slider-scale { display: flex; justify-content: space-between; color: var(--cl-muted); font-size: 14px; line-height: 20px; }

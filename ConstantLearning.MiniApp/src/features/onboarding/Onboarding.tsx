@@ -1,3 +1,4 @@
+import { LimitSlider } from '../../components/LimitSlider';
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Switch } from '@telegram-apps/telegram-ui';
@@ -21,7 +22,7 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ onComplete, privacyContact = configuredPrivacyContact, getDeviceTimeZone = detectTimeZone }: OnboardingProps) {
-  const [limit, setLimit] = useState<3 | 5 | 10>(5);
+  const [limit, setLimit] = useState(5);
   const [reminder, setReminder] = useState(false);
   const [selectedDays, setSelectedDays] = useState<Day[]>([]);
   const [time, setTime] = useState('19:00');
@@ -46,7 +47,7 @@ export function Onboarding({ onComplete, privacyContact = configuredPrivacyConta
           'settings.reminder_days_required': { days: 'Виберіть хоча б один день або вимкніть нагадування.' },
           'settings.time_zone_required': { zone: 'Виберіть і підтвердьте часовий пояс для нагадування.' },
           'settings.invalid_reminder': { time: 'Перевірте час і дні нагадування.' },
-          'settings.invalid_limit': { limit: 'Виберіть 3, 5 або 10 нових слів на день.' },
+          'settings.invalid_limit': { limit: 'Виберіть від 1 до 10 нових слів на день.' },
         };
         const next = messages[error.body?.code ?? ''] ?? { general: 'Не вдалося зберегти налаштування. Перевірте введені значення.' };
         if (next.days || next.time) setReminder(true);
@@ -86,9 +87,7 @@ export function Onboarding({ onComplete, privacyContact = configuredPrivacyConta
       <fieldset className="onboarding-fields" disabled={mutation.isPending || authBlocked}>
         <Card aria-labelledby="pace-title"><span className="card-index">01 / ТЕМП</span><h2 id="pace-title">Скільки нових слів на день?</h2>
           <p className="caption">Повторення знайомих слів додаватимуться окремо.</p>
-          <fieldset className="pace-options"><legend className="sr-only">Денний ліміт нових слів</legend>
-            {([3, 5, 10] as const).map(value => <label key={value} className="pace-option"><input type="radio" name="daily-limit" aria-label={`${value} ${value === 3 ? 'нові слова' : 'нових слів'}`} checked={limit === value} onChange={() => setLimit(value)} /><span>{value}</span><small>{value === 3 ? 'слова' : 'слів'}</small>{limit === value && <span className="pace-selected">Обрано ✓</span>}</label>)}
-          </fieldset>
+          <fieldset className="pace-options"><legend className="sr-only">Денний ліміт нових слів</legend><LimitSlider value={limit} onChange={setLimit} /></fieldset>
           {errors.limit && <Result tone="error">{errors.limit}</Result>}
           <p className="caption onboarding-hint">Темп можна змінити пізніше в налаштуваннях.</p>
         </Card>

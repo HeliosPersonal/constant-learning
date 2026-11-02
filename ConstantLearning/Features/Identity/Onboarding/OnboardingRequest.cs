@@ -18,9 +18,9 @@ internal sealed record OnboardingRequest(short DailyNewWordsLimit, string? TimeZ
 
         if (!root.TryGetProperty("daily_new_words_limit", out var limit)
             || limit.ValueKind != JsonValueKind.Number || !limit.TryGetDecimal(out var number)
-            || number is not (3 or 5 or 10))
+            || number is < 1 or > 10 || decimal.Truncate(number) != number)
         {
-            return new IdentityError("settings.invalid_limit", "Доступні лише 3, 5 або 10 нових слів на день.");
+            return new IdentityError("settings.invalid_limit", "Доступно від 1 до 10 нових слів на день.");
         }
 
         string? timeZone = null;

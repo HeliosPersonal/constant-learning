@@ -67,7 +67,7 @@ describe('Новий learner і форма', () => {
     let body: OnboardingRequest | undefined;
     mockFetch(async request => { body = await request.json() as OnboardingRequest; return json({ ...learner, daily_new_words_limit: limit }, 201); });
     const complete = form();
-    fireEvent.click(screen.getByRole('radio', { name: `${limit} ${limit === 3 ? 'нові слова' : 'нових слів'}` }));
+    fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: String(limit) } });
     submit();
     await waitFor(() => expect(complete).toHaveBeenCalledOnce());
     expect(body).toEqual({ daily_new_words_limit: limit, time_zone: 'Europe/Warsaw', reminder: null });
@@ -108,21 +108,21 @@ describe('Новий learner і форма', () => {
     act(() => { submit(); submit(); });
     await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
     expect(screen.getByRole('button', { name: 'Зберігаємо налаштування…' })).toBeDisabled();
-    expect(screen.getByRole('radio', { name: '3 нові слова' })).toBeDisabled();
+    expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toBeDisabled();
     await act(async () => { resolve(json(learner, 201)); });
     await waitFor(() => expect(complete).toHaveBeenCalledOnce());
   });
   it('тимчасова помилка зберігає введення та дозволяє свідомий повтор', async () => {
     let attempts = 0;
     const fetcher = mockFetch(() => ++attempts === 1 ? json({ code: 'server.unavailable', message: 'Недоступно' }, 503) : json(learner, 201));
-    const complete = form(); fireEvent.click(screen.getByRole('radio', { name: '10 нових слів' })); enableReminder(); fireEvent.click(screen.getByLabelText('Середа')); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '20:15' } }); submit();
+    const complete = form(); fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: '10' } }); enableReminder(); fireEvent.click(screen.getByLabelText('Середа')); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '20:15' } }); submit();
     await screen.findByText(/Ваш вибір збережено на екрані/);
-    expect(screen.getByRole('radio', { name: '10 нових слів' })).toBeChecked(); expect(screen.getByLabelText('Середа')).toBeChecked(); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:15');
+    expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('10'); expect(screen.getByLabelText('Середа')).toBeChecked(); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:15');
     expect(fetcher).toHaveBeenCalledOnce(); submit(); await waitFor(() => expect(complete).toHaveBeenCalledOnce()); expect(fetcher).toHaveBeenCalledTimes(2);
   });
   it('помилка мережі не скидає ліміт і не повторює мутацію автоматично', async () => {
-    const fetcher = mockFetch(() => { throw new TypeError('Недоступна мережа'); }); form(); fireEvent.click(screen.getByRole('radio', { name: '3 нові слова' })); submit();
-    await screen.findByText(/Ваш вибір збережено на екрані/); expect(screen.getByRole('radio', { name: '3 нові слова' })).toBeChecked(); expect(fetcher).toHaveBeenCalledOnce();
+    const fetcher = mockFetch(() => { throw new TypeError('Недоступна мережа'); }); form(); fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: '3' } }); submit();
+    await screen.findByText(/Ваш вибір збережено на екрані/); expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3'); expect(fetcher).toHaveBeenCalledOnce();
   });
   it('зміна теми зберігає форму та не викликає API', () => {
     const fetcher = mockFetch(() => json(learner, 201)); form(); enableReminder(); fireEvent.click(screen.getByLabelText('Понеділок')); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '18:15' } });
@@ -133,7 +133,7 @@ describe('Новий learner і форма', () => {
     ['settings.reminder_days_required', 'Виберіть хоча б один день або вимкніть нагадування.'],
     ['settings.time_zone_required', 'Виберіть і підтвердьте часовий пояс для нагадування.'],
     ['settings.invalid_reminder', 'Перевірте час і дні нагадування.'],
-    ['settings.invalid_limit', 'Виберіть 3, 5 або 10 нових слів на день.'],
+    ['settings.invalid_limit', 'Виберіть від 1 до 10 нових слів на день.'],
   ])('400: точний код %s має відповідне пояснення', async (code, message) => {
     mockFetch(() => json({ code, message: 'Серверне пояснення' }, 400)); form(); submit(); await screen.findByText(message);
   });
@@ -144,7 +144,7 @@ describe('Новий learner і форма', () => {
   });
   it('AC-53: 200 повертає наявний профіль замість вибраних нових налаштувань', async () => {
     const existing: Learner = { ...learner, daily_new_words_limit: 3, reminder: { local_time: '18:00', days_of_week: ['wed'] } };
-    mockFetch(() => json(existing, 200)); const complete = form(); fireEvent.click(screen.getByRole('radio', { name: '10 нових слів' })); submit();
+    mockFetch(() => json(existing, 200)); const complete = form(); fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: '10' } }); submit();
     await waitFor(() => expect(complete).toHaveBeenCalledWith(existing));
   });
 });

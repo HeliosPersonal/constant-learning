@@ -30,7 +30,7 @@ function form(profile = learner) {
   return { back, start, client };
 }
 function submit() { fireEvent.submit(screen.getByRole('form', { name: 'Налаштування профілю' })); }
-function chooseLimit(value: 3 | 5 | 10) { fireEvent.click(screen.getByRole('radio', { name: `${value} ${value === 3 ? 'нові слова' : 'нових слів'}` })); }
+function chooseLimit(value: number) { fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: String(value) } }); }
 afterEach(() => { clients.forEach(client => client.clear()); clients.length = 0; vi.unstubAllGlobals(); vi.restoreAllMocks(); delete window.Telegram; window.history.replaceState(null, '', '/'); });
 
 describe('AC-44: чинний і відкладений темп', () => {
@@ -38,7 +38,7 @@ describe('AC-44: чинний і відкладений темп', () => {
     const fetcher = mockFetch(() => json(learner)); form({ ...learner, pending_daily_new_words_limit: 10 });
     expect(screen.getByText('Сьогодні:', { exact: false })).toHaveTextContent('5 нових слів');
     expect(screen.getByText('З наступної доби:', { exact: false })).toHaveTextContent('10 нових слів');
-    expect(screen.getByRole('radio', { name: '10 нових слів' })).toBeChecked();
+    expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('10');
     expect(screen.getByRole('button', { name: 'Зберегти зміни' })).toBeDisabled(); expect(fetcher).not.toHaveBeenCalled();
   });
   it('зберігає новий ліміт і підтверджений пояс, залишаючи чинний ліміт у відповіді сервера', async () => {
@@ -62,7 +62,7 @@ describe('AC-44: чинний і відкладений темп', () => {
     mockFetch(async request => { body = await request.json() as SettingsUpdate; return json({ ...profile, reminder: null }); }); form(profile);
     fireEvent.click(screen.getByLabelText('Нагадувати про заняття')); submit();
     await screen.findByText('Налаштування збережено.'); expect(body).toEqual({ reminder: null });
-    expect(screen.getByRole('radio', { name: '10 нових слів' })).toBeChecked();
+    expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('10');
   });
   it('вибір чинного ліміту скасовує відкладену зміну', async () => {
     let body: SettingsUpdate | undefined;
@@ -72,13 +72,13 @@ describe('AC-44: чинний і відкладений темп', () => {
 });
 
 describe('AC-27 і AC-45: валідація', () => {
-  it.each([0, 4, 7, 11])('не приймає денний ліміт %i', limit => {
+  it.each([0, 1.5, 11])('не приймає денний ліміт %i', limit => {
     const draft = { ...draftFromLearner(learner), limit };
-    expect(validateSettings(draft, learner).limit).toBe('Доступні лише 3, 5 або 10 нових слів на день.'); expect(settingsChanges(draft, learner).daily_new_words_limit).toBeUndefined();
+    expect(validateSettings(draft, learner).limit).toBe('Доступно від 1 до 10 нових слів на день.'); expect(settingsChanges(draft, learner).daily_new_words_limit).toBeUndefined();
   });
-  it('на екрані доступні лише три числові варіанти', () => {
-    form(); const group = screen.getByRole('group', { name: 'Денний ліміт нових слів' });
-    expect(within(group).getAllByRole('radio').map(radio => radio.getAttribute('aria-label'))).toEqual(['3 нові слова', '5 нових слів', '10 нових слів']);
+  it('на екрані повзунок приймає цілі значення від 1 до 10', () => {
+    form(); const slider = screen.getByRole('slider', { name: 'Денний ліміт нових слів' });
+    expect(slider).toHaveAttribute('min', '1'); expect(slider).toHaveAttribute('max', '10'); expect(slider).toHaveAttribute('step', '1');
   });
   it('нагадування без днів не надсилає PATCH', () => {
     const fetcher = mockFetch(() => json(learner)); form(); fireEvent.click(screen.getByLabelText('Понеділок')); fireEvent.click(screen.getByLabelText('П’ятниця')); submit();
@@ -103,14 +103,14 @@ describe('AC-27 і AC-45: валідація', () => {
     expect(screen.getByText('Виберіть коректний час нагадування.')).toBeVisible(); expect(fetcher).not.toHaveBeenCalled();
   });
   it.each([
-    ['settings.invalid_limit', 'Доступні лише 3, 5 або 10 нових слів на день.'],
+    ['settings.invalid_limit', 'Доступно від 1 до 10 нових слів на день.'],
     ['settings.time_zone_required', 'Виберіть і підтвердьте часовий пояс.'],
     ['settings.invalid_time_zone', 'Невідомий часовий пояс. Виберіть інший зі списку.'],
     ['settings.reminder_days_required', 'Виберіть хоча б один день або вимкніть нагадування.'],
     ['settings.invalid_reminder', 'Перевірте час і дні нагадування.'],
   ])('серверний 400 %s зберігає ввід і показує пояснення', async (code, message) => {
     mockFetch(() => json({ code, message: 'Серверне пояснення' }, 400)); form(); chooseLimit(3); submit();
-    await screen.findByText(message); expect(screen.getByRole('radio', { name: '3 нові слова' })).toBeChecked();
+    await screen.findByText(message); expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3');
   });
 });
 
@@ -120,7 +120,7 @@ describe('AC-58: локальна тема, форма та кеш занятт�
     const session = { currentItemId: 'card-1', draftAnswer: 'spokój' }; client.setQueryData(['session', 'active'], session);
     chooseLimit(3); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '18:30' } }); fireEvent.click(screen.getByRole('radio', { name: /Темна/ }));
     expect(document.documentElement.dataset.theme).toBe('dark'); expect(localStorage.getItem(THEME_KEY)).toBe('dark');
-    expect(screen.getByLabelText('Час нагадування')).toHaveValue('18:30'); expect(screen.getByRole('radio', { name: '3 нові слова' })).toBeChecked(); expect(client.getQueryData(['session', 'active'])).toBe(session); expect(fetcher).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Час нагадування')).toHaveValue('18:30'); expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3'); expect(client.getQueryData(['session', 'active'])).toBe(session); expect(fetcher).not.toHaveBeenCalled();
   });
   it('лише тема не робить серверну форму зміненою', () => {
     const fetcher = mockFetch(() => json(learner)); form(); fireEvent.click(screen.getByRole('radio', { name: /Темна/ })); submit();
@@ -131,7 +131,7 @@ describe('AC-58: локальна тема, форма та кеш занятт�
     const app = { colorScheme: 'light', onEvent: (_event: string, callback: () => void) => { listener = callback; }, offEvent: vi.fn() };
     window.Telegram = { WebApp: app }; form(); chooseLimit(3); fireEvent.click(screen.getByRole('radio', { name: /Темна/ }));
     act(() => { app.colorScheme = 'light'; listener(); });
-    expect(document.documentElement.dataset.theme).toBe('dark'); expect(screen.getByRole('radio', { name: '3 нові слова' })).toBeChecked();
+    expect(document.documentElement.dataset.theme).toBe('dark'); expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3');
   });
   it('portal використовує спільну тему, не скидаючи вводу й кешу', () => {
     const fetcher = mockFetch(() => json(learner)); const { client } = form(); const session = { currentItemId: 'card-2', draftAnswer: 'dom' }; client.setQueryData(['session', 'active'], session);
@@ -151,13 +151,13 @@ describe('Помилки й повторні дії', () => {
     let resolve!: (response: Response) => void;
     const fetcher = mockFetch(() => new Promise<Response>(complete => { resolve = complete; })); form(); chooseLimit(10);
     act(() => { submit(); submit(); }); await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
-    expect(screen.getByRole('button', { name: 'Зберігаємо зміни…' })).toBeDisabled(); expect(screen.getByRole('radio', { name: '3 нові слова' })).toBeDisabled(); expect(screen.getByRole('radio', { name: /Темна/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Зберігаємо зміни…' })).toBeDisabled(); expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toBeDisabled(); expect(screen.getByRole('radio', { name: /Темна/ })).toBeEnabled();
     await act(async () => { resolve(json({ ...learner, pending_daily_new_words_limit: 10 })); }); await screen.findByText('Налаштування збережено.');
   });
   it('мережева помилка зберігає змінені значення та дозволяє лише свідомий повтор', async () => {
     let attempts = 0;
     const fetcher = mockFetch(() => { if (++attempts === 1) throw new TypeError('Недоступна мережа'); return json({ ...learner, pending_daily_new_words_limit: 3 }); }); form(); chooseLimit(3); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '20:00' } }); submit();
-    await screen.findByText(/Ваші зміни залишилися на екрані/); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:00'); expect(screen.getByRole('radio', { name: '3 нові слова' })).toBeChecked(); expect(fetcher).toHaveBeenCalledOnce();
+    await screen.findByText(/Ваші зміни залишилися на екрані/); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:00'); expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3'); expect(fetcher).toHaveBeenCalledOnce();
     submit(); await screen.findByText('Налаштування збережено.'); expect(fetcher).toHaveBeenCalledTimes(2);
   });
   it('PATCH 401 просить повернутися до Telegram без автоматичного повтору', async () => {

@@ -14,9 +14,9 @@ public static class LearnerFixtures
     public static LearnerData NewLearner(string timeZone = "Europe/Warsaw", int dailyLimit = 5, IClock? clock = null)
     {
         _ = DateTimeZoneProviders.Tzdb[timeZone];
-        if (dailyLimit is not (3 or 5 or 10))
+        if (dailyLimit is < 1 or > 10)
         {
-            throw new ArgumentOutOfRangeException(nameof(dailyLimit), "Дозволені ліміти: 3, 5 або 10.");
+            throw new ArgumentOutOfRangeException(nameof(dailyLimit), "Дозволені ліміти: від 1 до 10.");
         }
 
         var now = clock?.GetCurrentInstant() ?? DefaultInstant;
