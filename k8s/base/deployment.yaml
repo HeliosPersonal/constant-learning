@@ -5,6 +5,8 @@ metadata:
   labels:
     app: constant-learning
 spec:
+  progressDeadlineSeconds: 540
+  revisionHistoryLimit: 5
   replicas: 1
   # У пілоті не допускаємо одночасного запуску двох планувальників.
   strategy:
@@ -17,6 +19,8 @@ spec:
       labels:
         app: constant-learning
     spec:
+      imagePullSecrets:
+        - name: constant-learning-ghcr
       containers:
         - name: constant-learning
           image: ghcr.io/GITHUB_USERNAME/constant-learning:SHA_REPLACED_BY_CICD
@@ -29,18 +33,27 @@ spec:
               value: "http://+:8888"
           envFrom:
             - secretRef:
-                name: telegram-credentials
+                name: constant-learning-telegram
             - secretRef:
-                name: db-credentials
+                name: constant-learning-db
+          startupProbe:
+            httpGet:
+              path: /api/telegram/health
+              port: 8888
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 90
           readinessProbe:
             httpGet:
               path: /api/telegram/health
               port: 8888
+            timeoutSeconds: 3
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
               path: /api/telegram/health
               port: 8888
+            timeoutSeconds: 3
             initialDelaySeconds: 10
             periodSeconds: 20
