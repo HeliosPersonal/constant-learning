@@ -28,7 +28,7 @@ for (const theme of ['light', 'dark'] as const) {
     await start.focus();
     await page.screenshot({ path: `artifacts/today-${theme}-progress.png`, fullPage: true });
     await expect(page).toHaveScreenshot(`${theme}-today-progress.png`, { fullPage: true });
-    await page.keyboard.press('Enter'); await expect(page.getByText('Заняття зараз недоступне. Спробуйте відкрити тренер пізніше.')).toBeVisible(); expect(sessions).toBe(0);
+    await page.keyboard.press('Enter'); await expect(page.getByText('Не вдалося відкрити заняття. Спробуйте ще раз.')).toBeVisible(); expect(sessions).toBe(1);
     await page.getByRole('button', { name: 'Залишити збережений пояс' }).click(); await expect(page.getByRole('heading', { name: 'У вас інший місцевий час?' })).toHaveCount(0);
     await page.getByRole('button', { name: 'Налаштування' }).click(); await expect(page.getByRole('heading', { name: 'Налаштування' })).toBeVisible();
     await page.getByRole('button', { name: '← До «Сьогодні»' }).click(); await expect(start).toBeEnabled(); await expect(page.getByRole('heading', { name: 'Курс поповнено' })).toHaveCount(0); expect(timings).toHaveLength(1);
