@@ -9,9 +9,10 @@ public static class PlatformModule
 {
     public static IServiceCollection AddPlatform(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
+        var connectionString = configuration.GetConnectionString("Constant_Learning")
+                               ?? configuration.GetConnectionString("DefaultConnection")
                                ?? throw new InvalidOperationException(
-                                   "Не знайдено рядок підключення 'DefaultConnection'.");
+                                   "Не знайдено рядок підключення 'Constant_Learning' або локальний 'DefaultConnection'.");
 
         services.TryAddSingleton<IClock>(SystemClock.Instance);
         services.TryAddSingleton<TrainerMetrics>();

@@ -72,7 +72,9 @@ jobs:
     name: Розгорнути production
     needs: build-and-push
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.AUTOMATIC_DEPLOYMENT_ENABLED == 'true'
-    runs-on: [self-hosted, Linux, X64, constant-learning-deploy]
+    runs-on:
+      group: HeliosRunners
+      labels: [self-hosted, Linux, X64]
     environment: production
     timeout-minutes: 15
     permissions:
@@ -93,9 +95,9 @@ jobs:
           DEPLOY_DIGEST: ${{ needs.build-and-push.outputs.digest }}
           PUBLIC_HOST: ${{ vars.PUBLIC_HOST }}
           KUBECONFIG_BASE64: ${{ secrets.KUBECONFIG }}
-          CONNECTIONSTRINGS__DEFAULTCONNECTION: ${{ secrets.CONNECTIONSTRINGS__DEFAULTCONNECTION }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_SECRET_TOKEN: ${{ secrets.TELEGRAM_SECRET_TOKEN }}
+          INFISICAL_CLIENT_ID: ${{ secrets.INFISICAL_CLIENT_ID }}
+          INFISICAL_CLIENT_SECRET: ${{ secrets.INFISICAL_CLIENT_SECRET }}
+          INFISICAL_PROJECT_ID: ${{ secrets.INFISICAL_PROJECT_ID }}
           GHCR_PULL_USERNAME: ${{ secrets.GHCR_PULL_USERNAME }}
           GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
         run: python3 -u tools/deployment/deploy.py

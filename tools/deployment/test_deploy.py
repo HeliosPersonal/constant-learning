@@ -16,12 +16,12 @@ import deploy
 ENV = {
     "GITHUB_EVENT_NAME": "push", "GITHUB_REF": "refs/heads/main",
     "GITHUB_SHA": "a" * 40, "GITHUB_RUN_NUMBER": "20",
-    "GITHUB_REPOSITORY": "ViacheslavMelnichenko/constant-learning", "GH_TOKEN": "test-only",
-    "DEPLOY_IMAGE": "ghcr.io/viacheslavmelnichenko/constant-learning",
+    "GITHUB_REPOSITORY": "HeliosPersonal/constant-learning", "GH_TOKEN": "test-only",
+    "DEPLOY_IMAGE": "ghcr.io/heliospersonal/constant-learning",
     "DEPLOY_DIGEST": "sha256:" + "b" * 64, "PUBLIC_HOST": "test.example.org",
     "KUBECONFIG_BASE64": base64.b64encode(b"apiVersion: v1\nkind: Config\n").decode(),
-    "CONNECTIONSTRINGS__DEFAULTCONNECTION": "Host=test-only;Password=test-secret",
-    "TELEGRAM_BOT_TOKEN": "test-secret", "TELEGRAM_SECRET_TOKEN": "test-only",
+    "INFISICAL_CLIENT_ID": "test-only", "INFISICAL_CLIENT_SECRET": "test-secret",
+    "INFISICAL_PROJECT_ID": "test-project",
     "GHCR_PULL_USERNAME": "test-only", "GHCR_PULL_TOKEN": "test-secret",
 }
 
@@ -40,7 +40,7 @@ class DeploymentTests(unittest.TestCase):
 
     def test_mutable_image_and_invalid_host_are_rejected(self):
         for key, value in [("DEPLOY_DIGEST", "latest"), ("PUBLIC_HOST", "https://example.org/path"),
-                           ("DEPLOY_IMAGE", "ghcr.io/another/app"), ("TELEGRAM_SECRET_TOKEN", "bad token")]:
+                           ("DEPLOY_IMAGE", "ghcr.io/another/app")]:
             with self.subTest(key=key), patch.dict(os.environ, {key: value}):
                 with self.assertRaises(deploy.DeploymentError):
                     deploy.settings()
@@ -152,8 +152,32 @@ class DeploymentTests(unittest.TestCase):
             self.assertNotIn("test-secret", rendered)
             self.assertNotIn("REPLACED_BY", rendered)
             objects = json.loads(secrets.read_text(encoding="utf-8"))["items"]
-            telegram = next(obj for obj in objects if obj["metadata"]["name"].endswith("-telegram"))
-            self.assertEqual(base64.b64decode(telegram["data"]["Telegram__MiniAppUrl"]).decode(), "https://test.example.org/")
+            bootstrap = next(obj for obj in objects if obj["metadata"]["name"].endswith("-infisical"))
+            self.assertEqual(set(bootstrap["data"]), {"INFISICAL_CLIENT_ID", "INFISICAL_CLIENT_SECRET", "INFISICAL_PROJECT_ID"})
+            self.assertNotIn("Telegram__BotToken", secrets.read_text(encoding="utf-8"))
+            self.assertNotIn("ConnectionStrings__DefaultConnection", secrets.read_text(encoding="utf-8"))
+
+    def test_runner_kubeconfig_is_used_without_overwriting_it(self):
+        sha, run, image, host = deploy.settings()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            home = root / "home"
+            config = home / ".kube/config"
+            config.parent.mkdir(parents=True)
+            config.write_text("runner-owned-config", encoding="utf-8")
+            with patch.dict(os.environ, {"KUBECONFIG_BASE64": ""}), patch.object(deploy.Path, "home", return_value=home):
+                work = root / "work"
+                work.mkdir()
+                deploy.prepare(work, image, host, sha, run)
+                self.assertEqual(os.environ["KUBECONFIG"], str(config))
+            self.assertEqual(config.read_text(encoding="utf-8"), "runner-owned-config")
+
+    def test_missing_infisical_identity_prevents_manifest_preparation(self):
+        sha, run, image, host = deploy.settings()
+        with tempfile.TemporaryDirectory() as temporary, patch.dict(os.environ, {"INFISICAL_CLIENT_SECRET": ""}):
+            with self.assertRaises(deploy.DeploymentError):
+                deploy.prepare(Path(temporary), image, host, sha, run)
+
 
 
 if __name__ == "__main__":
