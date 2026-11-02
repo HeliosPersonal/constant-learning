@@ -665,7 +665,11 @@ export interface components {
             /** Format: uuid */
             entry_id: string;
             lemma_pl: string;
-            field: components["schemas"]["ReportField"];
+            /**
+             * @description accepted_answer позначає доданий варіант відповіді; previous_value тоді null, new_value містить фактично схвалений варіант.
+             * @enum {string}
+             */
+            field: "lemma" | "translation" | "pronunciation" | "example" | "accepted_answer";
             previous_value: string | null;
             new_value: string;
             /** @enum {string} */
@@ -1623,6 +1627,21 @@ export interface operations {
                     "application/json": components["schemas"]["EditorQueuePage"];
                 };
             };
+            /** @description Некоректні параметри перегляду */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "editor.invalid_request",
+                     *       "message": "Перевірте параметри перегляду."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             401: components["responses"]["Unauthorized"];
             403: components["responses"]["EditorRoleRequired"];
         };
@@ -1757,6 +1776,21 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["AppliedChangePage"];
+                };
+            };
+            /** @description Некоректні параметри перегляду */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "editor.invalid_request",
+                     *       "message": "Перевірте параметри перегляду."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             401: components["responses"]["Unauthorized"];

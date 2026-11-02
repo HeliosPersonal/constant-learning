@@ -663,6 +663,12 @@ paths:
                 has_next: false
                 has_prev: false
                 next_cursor: null
+        "400":
+          description: Некоректні параметри перегляду
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example: { code: editor.invalid_request, message: Перевірте параметри перегляду. }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/EditorRoleRequired" }
 
@@ -768,6 +774,12 @@ paths:
                 has_next: false
                 has_prev: false
                 next_cursor: null
+        "400":
+          description: Некоректні параметри перегляду
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example: { code: editor.invalid_request, message: Перевірте параметри перегляду. }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/EditorRoleRequired" }
 
@@ -1358,7 +1370,10 @@ components:
         id: { type: string, format: uuid, description: ідентифікатор рядка журналу публікацій }
         entry_id: { type: string, format: uuid }
         lemma_pl: { type: string, maxLength: 200 }
-        field: { $ref: "#/components/schemas/ReportField" }
+        field:
+          type: string
+          enum: [lemma, translation, pronunciation, example, accepted_answer]
+          description: accepted_answer позначає доданий варіант відповіді; previous_value тоді null, new_value містить фактично схвалений варіант.
         previous_value: { type: [string, "null"], maxLength: 500 }
         new_value: { type: string, maxLength: 500 }
         confirmed_by: { type: string, enum: [auto_verification, editor] }

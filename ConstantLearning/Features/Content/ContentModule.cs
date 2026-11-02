@@ -1,5 +1,6 @@
 using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Content.Editor.Queue;
+using ConstantLearning.Features.Content.Editor.Rollback;
 using ConstantLearning.Features.Content.Import;
 using ConstantLearning.Features.Content.Notifications;
 using ConstantLearning.Features.Content.Publishing;
@@ -29,6 +30,7 @@ public static class ContentModule
         services.AddContentReports();
         services.AddContentVerification();
         services.AddScoped<EditorQueueService>();
+        services.AddScoped<AppliedChangesService>();
         return services;
     }
 }
