@@ -101,4 +101,23 @@ public sealed class InfisicalConfigurationTests
         Assert.DoesNotContain("confidential-response", error.ToString());
         Assert.Null(error.InnerException);
     }
+
+    [Theory]
+    [InlineData("Universal Auth", "Unauthorized", "401")]
+    [InlineData("List secrets", "Forbidden", "403")]
+    [InlineData("List secrets", "NotFound", "404")]
+    public void SdkHttpErrorsExposeOnlyStageAndStatus(string stage, string status, string code)
+    {
+        var failure = new Exception("credentials=test-secret",
+            new HttpRequestException($"Unexpected response: {status} detail - confidential-response"));
+        failure.Data["InfisicalStage"] = stage;
+        var error = Assert.Throws<InvalidOperationException>(() =>
+            InfisicalConfigurationExtensions.ConfigureSecrets(Configuration(), "Production",
+                (_, _, _, _, _, _) => throw failure));
+        Assert.Contains(stage, error.Message);
+        Assert.Contains("HTTP " + code, error.Message);
+        Assert.DoesNotContain("test-secret", error.ToString());
+        Assert.DoesNotContain("confidential-response", error.ToString());
+        Assert.Null(error.InnerException);
+    }
 }
