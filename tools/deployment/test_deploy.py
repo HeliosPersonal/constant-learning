@@ -146,6 +146,8 @@ class DeploymentTests(unittest.TestCase):
             self.assertIn("namespace: apps-production", rendered)
             self.assertIn("host: test.example.org", rendered)
             self.assertIn("constant-learning-ghcr", rendered)
+            self.assertIn("secretName: cloudflare-origin", rendered)
+            self.assertNotIn("ssl-redirect", rendered)
             self.assertNotIn("kind: Secret", rendered)
             self.assertNotIn("test-secret", rendered)
             self.assertNotIn("REPLACED_BY", rendered)
