@@ -13,6 +13,7 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using NodaTime;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -330,8 +331,9 @@ public sealed class NotificationDispatcherTests(PostgresFixture postgres) : Post
         }).Build();
         var services = new ServiceCollection().AddLogging().AddSingleton<IClock>(Clock)
             .AddPlatform(configuration).AddIdentity(configuration).AddContent()
-            .AddNotifications().AddSingleton<ITelegramClient>(telegram)
-            .AddSingleton<INotificationHandler>(handler ?? new Handler("reminder"))
+            .AddNotifications().AddSingleton<ITelegramClient>(telegram);
+        services.RemoveAll<INotificationHandler>();
+        services.AddSingleton<INotificationHandler>(handler ?? new Handler("reminder"))
             .AddSingleton<INotificationHandler>(new Handler("report_outcomes"));
         if (failingRelease)
         {

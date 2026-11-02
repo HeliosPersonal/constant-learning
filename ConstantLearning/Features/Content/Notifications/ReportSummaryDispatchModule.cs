@@ -22,6 +22,7 @@ public static class ReportSummaryDispatchModule
     public static IServiceCollection AddReportSummaryDispatch(this IServiceCollection services)
     {
         services.AddScoped<IReportSummaryDispatchService, ReportSummaryDispatchService>();
+        services.AddScoped<IReportNotificationReader, ReportNotificationReader>();
         return services;
     }
 }

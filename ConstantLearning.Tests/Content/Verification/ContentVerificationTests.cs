@@ -385,13 +385,13 @@ public sealed class ContentVerificationTests(PostgresFixture postgres) : Postgre
         await using var app = await ReportsTestApplication.StartAsync(_postgres.ConnectionString, Clock);
         await using var scope = app.Services.CreateAsyncScope();
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<ContentVerificationWorker>());
-        var scheduler = await app.Services.GetRequiredService<ISchedulerFactory>().GetScheduler();
+        await using var logging = new QuartzTestLoggingScope(app.Services);
+        var scheduler = await logging.GetSchedulerAsync();
         var detail = await scheduler.GetJobDetail(new JobKey("ContentVerification"));
         Assert.Equal(typeof(ContentVerificationJob), detail!.JobType);
         Assert.True(detail.ConcurrentExecutionDisallowed);
         var trigger = Assert.IsAssignableFrom<ISimpleTrigger>(await scheduler.GetTrigger(new TriggerKey("ContentVerification-trigger")));
         Assert.Equal(TimeSpan.FromSeconds(30), trigger.RepeatInterval);
-        await scheduler.Shutdown();
     }
 
     private ContentVerificationWorker Worker(AppDbContext db, IEnumerable<IReferenceSource> sources, IPublicationProjection? projection = null) =>
