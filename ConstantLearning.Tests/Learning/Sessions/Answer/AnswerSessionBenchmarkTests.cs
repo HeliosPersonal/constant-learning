@@ -47,6 +47,10 @@ public sealed class AnswerSessionBenchmarkTests(PostgresFixture postgres, ITestO
                 await response.Content.ReadAsStringAsync();
                 var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
                 if (sessionIndex > 0) samples.Add((0, elapsed));
+                // Перехід закриває збережений результат і не входить у час оцінювання.
+                using var continued = await app.Client.PostAsync($"/api/v1/sessions/{sessionId}/items/{item.Id}/continue", null);
+                Assert.Equal(HttpStatusCode.OK, continued.StatusCode);
+                await ContractAssert.ResponseAsync("continueSession", continued);
             }
         }
 
@@ -81,7 +85,7 @@ public sealed class AnswerSessionBenchmarkTests(PostgresFixture postgres, ITestO
         report.AppendLine($"- Логічні CPU: {Environment.ProcessorCount}; доступна .NET GC пам’ять: {GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024} MiB.");
         report.AppendLine($"- PostgreSQL у локальному Docker: {version}.");
         report.AppendLine("- Фікстура: 1 000 approved-записів, 1 000 learner words до повторення; ANALYZE після заповнення. Справжні Telegram HMAC, EF Core, транзакції та PostgreSQL 16 через ASP.NET Core TestServer.");
-        report.AppendLine("- 20 прогрівальних відповідей виключено; виміряно 200 послідовних відповідей у 10 сесіях по 20 карток. Запити старту session не входять у вибірку; паралельність 1.");
+        report.AppendLine("- 20 прогрівальних відповідей виключено; виміряно 200 послідовних відповідей у 10 сесіях по 20 карток. Запити старту session та переходу continue не входять у вибірку; паралельність 1.");
         report.AppendLine("- Серверний middleware вимірює весь HTTP pipeline: автентифікацію, БД, оцінку, збереження результату й серіалізацію; зовнішня мережа не моделюється. Перцентиль: nearest rank.");
         report.AppendLine();
         report.AppendLine("| Запити | p50 сервера, ms | p95 сервера, ms | Максимум сервера, ms | p95 клієнта, ms |");
