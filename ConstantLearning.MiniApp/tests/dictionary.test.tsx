@@ -111,10 +111,10 @@ describe('AC-31 та стани помилок', () => {
     await screen.findByRole('heading', { name: 'Не знайшли слово' }); fireEvent.click(screen.getByRole('button', { name: 'Повідомити про відсутній запис' }));
     expect(report).toHaveBeenCalledExactlyOnceWith({ origin: 'missing_word', search_query: '  Немає słowa  ' }); expect(fetcher).toHaveBeenCalledOnce();
   });
-  it('без підключеної форми чесно пояснює недоступність, не надсилаючи report', async () => {
+  it('порожній результат відкриває форму без надсилання та зберігає запит після повернення', async () => {
     const fetcher = mockFetch(() => json({ ...page, items: [] })); mount(); query('немає'); await screen.findByRole('heading', { name: 'Не знайшли слово' }); fireEvent.click(screen.getByRole('button', { name: 'Повідомити про відсутній запис' }));
-    expect(screen.getByText('Форма повідомлення ще недоступна. Пошуковий запит залишився на екрані.')).toHaveAttribute('role', 'status'); expect(fetcher).toHaveBeenCalledOnce(); expect(screen.getByRole('searchbox')).toHaveValue('немає');
-    query('інше'); expect(screen.queryByText(/Форма повідомлення ще недоступна/)).not.toBeInTheDocument();
+    await screen.findByRole('dialog', { name: 'Повідомити про відсутній запис' }); expect(fetcher).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Назад до словника' })); expect(screen.getByRole('searchbox')).toHaveValue('немає'); expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
   it.each(['network', '503'])('помилка %s зберігає запит і повторюється лише за дією', async mode => {
     let attempts = 0; const fetcher = mockFetch(() => { if (++attempts > 1) return json(page); if (mode === 'network') throw new TypeError('Немає мережі'); return json({ code: 'server.unavailable' }, 503); }); mount(); query('ur');

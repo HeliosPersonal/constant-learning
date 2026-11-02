@@ -45,7 +45,8 @@ for (const theme of ['light', 'dark'] as const) {
     await search.fill('error'); await expect(page.getByRole('alert')).toBeVisible();
     await expect(page).toHaveScreenshot(`${theme}-dictionary-error.png`, { fullPage: true });
     await search.fill('немає'); await expect(page.getByRole('heading', { name: 'Не знайшли слово' })).toBeVisible();
-    await page.getByRole('button', { name: 'Повідомити про відсутній запис' }).click(); await expect(page.getByText(/Форма повідомлення ще недоступна/)).toBeVisible();
+    await page.getByRole('button', { name: 'Повідомити про відсутній запис' }).click(); await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('button', { name: 'Назад до словника' }).click(); await expect(page.getByRole('dialog')).not.toBeVisible();
     await page.screenshot({ path: `artifacts/dictionary-${theme}-empty.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-dictionary-empty.png`, { fullPage: true });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth); expect(overflow).toBe(false);
     const clearLabel = page.getByRole('button', { name: 'Очистити' }).locator('span').last();
