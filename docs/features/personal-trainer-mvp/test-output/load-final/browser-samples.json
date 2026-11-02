@@ -1,0 +1,3502 @@
+[
+  {
+    "open": 1,
+    "timestamp": "2026-11-02T13:36:45.845Z",
+    "value_ms": 2044,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 91.20000000298023,
+      "response_start_ms": 27.900000005960464,
+      "response_end_ms": 29.400000005960464,
+      "dom_content_loaded_ms": 78.80000001192093
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 38.20000000298023,
+        "duration_ms": 32,
+        "response_start_ms": 69.5,
+        "response_end_ms": 70.20000000298023
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 38.30000001192093,
+        "duration_ms": 33.3999999910593,
+        "response_start_ms": 70.80000001192093,
+        "response_end_ms": 71.70000000298023
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 38.400000005960464,
+        "duration_ms": 34.400000005960464,
+        "response_start_ms": 71.40000000596046,
+        "response_end_ms": 72.80000001192093
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 78,
+        "duration_ms": 21.400000005960464,
+        "response_start_ms": 85.5,
+        "response_end_ms": 99.40000000596046
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 78.30000001192093,
+        "duration_ms": 8.699999988079071,
+        "response_start_ms": 85.70000000298023,
+        "response_end_ms": 87
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 148.80000001192093,
+        "duration_ms": 92.5,
+        "response_start_ms": 240.70000000298023,
+        "response_end_ms": 241.30000001192093
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 299.5,
+        "duration_ms": 159.40000000596046,
+        "response_start_ms": 458.20000000298023,
+        "response_end_ms": 458.90000000596046
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 2045,
+        "duration_ms": 60,
+        "response_start_ms": 2104.6000000089407,
+        "response_end_ms": 2105
+      }
+    ]
+  },
+  {
+    "open": 2,
+    "timestamp": "2026-11-02T13:37:00.859Z",
+    "value_ms": 110,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 32.1000000089407,
+      "response_start_ms": 4.600000008940697,
+      "response_end_ms": 4.9000000059604645,
+      "dom_content_loaded_ms": 25.900000005960464
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.5,
+        "duration_ms": 13.400000005960464,
+        "response_start_ms": 21.5,
+        "response_end_ms": 21.900000005960464
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.600000008940697,
+        "duration_ms": 14.299999997019768,
+        "response_start_ms": 22.400000005960464,
+        "response_end_ms": 22.900000005960464
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.600000008940697,
+        "duration_ms": 14.899999991059303,
+        "response_start_ms": 23.100000008940697,
+        "response_end_ms": 23.5
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25.600000008940697,
+        "duration_ms": 4.0999999940395355,
+        "response_start_ms": 28.700000002980232,
+        "response_end_ms": 29.700000002980232
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 25.799999997019768,
+        "duration_ms": 4.600000008940697,
+        "response_start_ms": 29.299999997019768,
+        "response_end_ms": 30.400000005960464
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 62.400000005960464,
+        "duration_ms": 9.099999994039536,
+        "response_start_ms": 71,
+        "response_end_ms": 71.5
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 85.79999999701977,
+        "duration_ms": 21.700000002980232,
+        "response_start_ms": 106.90000000596046,
+        "response_end_ms": 107.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 110.1000000089407,
+        "duration_ms": 11.199999988079071,
+        "response_start_ms": 120.90000000596046,
+        "response_end_ms": 121.29999999701977
+      }
+    ]
+  },
+  {
+    "open": 3,
+    "timestamp": "2026-11-02T13:37:15.873Z",
+    "value_ms": 100,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 36.400000005960464,
+      "response_start_ms": 5.5,
+      "response_end_ms": 5.9000000059604645,
+      "dom_content_loaded_ms": 29.600000008940697
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 10.200000002980232,
+        "duration_ms": 14.799999997019768,
+        "response_start_ms": 24.700000002980232,
+        "response_end_ms": 25
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 10.200000002980232,
+        "duration_ms": 15.799999997019768,
+        "response_start_ms": 25.5,
+        "response_end_ms": 26
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 10.200000002980232,
+        "duration_ms": 16.100000008940697,
+        "response_start_ms": 25.600000008940697,
+        "response_end_ms": 26.30000001192093
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 29.30000001192093,
+        "duration_ms": 5.699999988079071,
+        "response_start_ms": 33.30000001192093,
+        "response_end_ms": 35
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 29.400000005960464,
+        "duration_ms": 3.7999999970197678,
+        "response_start_ms": 32.6000000089407,
+        "response_end_ms": 33.20000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 53,
+        "duration_ms": 10.300000011920929,
+        "response_start_ms": 62.80000001192093,
+        "response_end_ms": 63.30000001192093
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 77.30000001192093,
+        "duration_ms": 20.599999994039536,
+        "response_start_ms": 97.1000000089407,
+        "response_end_ms": 97.90000000596046
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 100.6000000089407,
+        "duration_ms": 11.299999997019768,
+        "response_start_ms": 111.40000000596046,
+        "response_end_ms": 111.90000000596046
+      }
+    ]
+  },
+  {
+    "open": 4,
+    "timestamp": "2026-11-02T13:37:30.873Z",
+    "value_ms": 128,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 62.20000000298023,
+      "response_start_ms": 9.599999994039536,
+      "response_end_ms": 10.400000005960464,
+      "dom_content_loaded_ms": 53
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 17.400000005960464,
+        "duration_ms": 20.899999991059303,
+        "response_start_ms": 37.599999994039536,
+        "response_end_ms": 38.29999999701977
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 17.5,
+        "duration_ms": 25.700000002980232,
+        "response_start_ms": 42.599999994039536,
+        "response_end_ms": 43.20000000298023
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 17.599999994039536,
+        "duration_ms": 31.5,
+        "response_start_ms": 48.29999999701977,
+        "response_end_ms": 49.099999994039536
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 52.400000005960464,
+        "duration_ms": 7.0999999940395355,
+        "response_start_ms": 58,
+        "response_end_ms": 59.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 52.79999999701977,
+        "duration_ms": 7.799999997019768,
+        "response_start_ms": 59.400000005960464,
+        "response_end_ms": 60.599999994039536
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 78.5,
+        "duration_ms": 9.700000002980232,
+        "response_start_ms": 87.5,
+        "response_end_ms": 88.20000000298023
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 106.79999999701977,
+        "duration_ms": 19.299999997019768,
+        "response_start_ms": 125.70000000298023,
+        "response_end_ms": 126.09999999403954
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 128.5,
+        "duration_ms": 9.5,
+        "response_start_ms": 137.70000000298023,
+        "response_end_ms": 138
+      }
+    ]
+  },
+  {
+    "open": 5,
+    "timestamp": "2026-11-02T13:37:45.881Z",
+    "value_ms": 128,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 46.19999998807907,
+      "response_start_ms": 4.5999999940395355,
+      "response_end_ms": 4.899999991059303,
+      "dom_content_loaded_ms": 36.599999994039536
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 11.699999988079071,
+        "duration_ms": 17.700000002980232,
+        "response_start_ms": 28,
+        "response_end_ms": 29.399999991059303
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 11.799999997019768,
+        "duration_ms": 19.299999997019768,
+        "response_start_ms": 29.099999994039536,
+        "response_end_ms": 31.099999994039536
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 11.899999991059303,
+        "duration_ms": 19.100000008940697,
+        "response_start_ms": 28.899999991059303,
+        "response_end_ms": 31
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 36.29999999701977,
+        "duration_ms": 7.299999997019768,
+        "response_start_ms": 41.099999994039536,
+        "response_end_ms": 43.599999994039536
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 36.3999999910593,
+        "duration_ms": 6.600000008940697,
+        "response_start_ms": 41.79999999701977,
+        "response_end_ms": 43
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 84.5,
+        "duration_ms": 7.399999991059303,
+        "response_start_ms": 91.29999999701977,
+        "response_end_ms": 91.8999999910593
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 105.29999999701977,
+        "duration_ms": 18.299999997019768,
+        "response_start_ms": 122.79999999701977,
+        "response_end_ms": 123.59999999403954
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 128.29999999701977,
+        "duration_ms": 9.599999994039536,
+        "response_start_ms": 137.59999999403954,
+        "response_end_ms": 137.8999999910593
+      }
+    ]
+  },
+  {
+    "open": 6,
+    "timestamp": "2026-11-02T13:38:00.889Z",
+    "value_ms": 106,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 36.5,
+      "response_start_ms": 4.5999999940395355,
+      "response_end_ms": 5.0999999940395355,
+      "dom_content_loaded_ms": 28.5
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 9.200000002980232,
+        "duration_ms": 15.299999997019768,
+        "response_start_ms": 23.599999994039536,
+        "response_end_ms": 24.5
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9.299999997019768,
+        "duration_ms": 16.200000002980232,
+        "response_start_ms": 24.799999997019768,
+        "response_end_ms": 25.5
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 9.299999997019768,
+        "duration_ms": 15.900000005960464,
+        "response_start_ms": 24.400000005960464,
+        "response_end_ms": 25.200000002980232
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 28.099999994039536,
+        "duration_ms": 6.300000011920929,
+        "response_start_ms": 31.5,
+        "response_end_ms": 34.400000005960464
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 28.400000005960464,
+        "duration_ms": 5,
+        "response_start_ms": 32.099999994039536,
+        "response_end_ms": 33.400000005960464
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 53.29999999701977,
+        "duration_ms": 9.700000002980232,
+        "response_start_ms": 62.400000005960464,
+        "response_end_ms": 63
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 83.90000000596046,
+        "duration_ms": 19.69999998807907,
+        "response_start_ms": 102.90000000596046,
+        "response_end_ms": 103.59999999403954
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 106.09999999403954,
+        "duration_ms": 10.200000002980232,
+        "response_start_ms": 115.5,
+        "response_end_ms": 116.29999999701977
+      }
+    ]
+  },
+  {
+    "open": 7,
+    "timestamp": "2026-11-02T13:38:15.900Z",
+    "value_ms": 92,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 33.599999994039536,
+      "response_start_ms": 5.299999997019768,
+      "response_end_ms": 5.799999997019768,
+      "dom_content_loaded_ms": 26.899999991059303
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 9.700000002980232,
+        "duration_ms": 13.099999994039536,
+        "response_start_ms": 22.5,
+        "response_end_ms": 22.799999997019768
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 9.799999997019768,
+        "duration_ms": 13.599999994039536,
+        "response_start_ms": 23.099999994039536,
+        "response_end_ms": 23.399999991059303
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9.899999991059303,
+        "duration_ms": 13.700000002980232,
+        "response_start_ms": 23.200000002980232,
+        "response_end_ms": 23.599999994039536
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 26.599999994039536,
+        "duration_ms": 5,
+        "response_start_ms": 30,
+        "response_end_ms": 31.599999994039536
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 26.799999997019768,
+        "duration_ms": 4.299999997019768,
+        "response_start_ms": 30.599999994039536,
+        "response_end_ms": 31.099999994039536
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 49.099999994039536,
+        "duration_ms": 8.700000002980232,
+        "response_start_ms": 57.3999999910593,
+        "response_end_ms": 57.79999999701977
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 72.70000000298023,
+        "duration_ms": 15.5,
+        "response_start_ms": 87.79999999701977,
+        "response_end_ms": 88.20000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 92,
+        "duration_ms": 10.700000002980232,
+        "response_start_ms": 102.29999999701977,
+        "response_end_ms": 102.70000000298023
+      }
+    ]
+  },
+  {
+    "open": 8,
+    "timestamp": "2026-11-02T13:38:30.905Z",
+    "value_ms": 128,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 46.29999999701977,
+      "response_start_ms": 6.5,
+      "response_end_ms": 7.0999999940395355,
+      "dom_content_loaded_ms": 38.5
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 13.599999994039536,
+        "duration_ms": 19.80000001192093,
+        "response_start_ms": 32.5,
+        "response_end_ms": 33.400000005960464
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 13.700000002980232,
+        "duration_ms": 20.200000002980232,
+        "response_start_ms": 32.900000005960464,
+        "response_end_ms": 33.900000005960464
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 13.799999997019768,
+        "duration_ms": 21.400000005960464,
+        "response_start_ms": 34.5,
+        "response_end_ms": 35.20000000298023
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 38,
+        "duration_ms": 5.5,
+        "response_start_ms": 41.70000000298023,
+        "response_end_ms": 43.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 38.20000000298023,
+        "duration_ms": 6,
+        "response_start_ms": 42.20000000298023,
+        "response_end_ms": 44.20000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 77,
+        "duration_ms": 10.400000005960464,
+        "response_start_ms": 86.79999999701977,
+        "response_end_ms": 87.40000000596046
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 100.20000000298023,
+        "duration_ms": 18.700000002980232,
+        "response_start_ms": 118.29999999701977,
+        "response_end_ms": 118.90000000596046
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 127.90000000596046,
+        "duration_ms": 10.199999988079071,
+        "response_start_ms": 137.70000000298023,
+        "response_end_ms": 138.09999999403954
+      }
+    ]
+  },
+  {
+    "open": 9,
+    "timestamp": "2026-11-02T13:38:45.914Z",
+    "value_ms": 664,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 311.5,
+      "response_start_ms": 38.1000000089407,
+      "response_end_ms": 39.30000001192093,
+      "dom_content_loaded_ms": 218.20000000298023
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 55.5,
+        "duration_ms": 79.6000000089407,
+        "response_start_ms": 134.1000000089407,
+        "response_end_ms": 135.1000000089407
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 55.80000001192093,
+        "duration_ms": 136,
+        "response_start_ms": 190.20000000298023,
+        "response_end_ms": 191.80000001192093
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 56.1000000089407,
+        "duration_ms": 136.5,
+        "response_start_ms": 190.5,
+        "response_end_ms": 192.6000000089407
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 211.30000001192093,
+        "duration_ms": 105.3999999910593,
+        "response_start_ms": 269.6000000089407,
+        "response_end_ms": 316.70000000298023
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 212.30000001192093,
+        "duration_ms": 84.5,
+        "response_start_ms": 294.90000000596046,
+        "response_end_ms": 296.80000001192093
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 438.6000000089407,
+        "duration_ms": 39.099999994039536,
+        "response_start_ms": 476.70000000298023,
+        "response_end_ms": 477.70000000298023
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 526.3000000119209,
+        "duration_ms": 131,
+        "response_start_ms": 655.6000000089407,
+        "response_end_ms": 657.3000000119209
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 665.2000000029802,
+        "duration_ms": 48.900000005960464,
+        "response_start_ms": 713.2000000029802,
+        "response_end_ms": 714.1000000089407
+      }
+    ]
+  },
+  {
+    "open": 10,
+    "timestamp": "2026-11-02T13:39:00.915Z",
+    "value_ms": 102,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 34.900000005960464,
+      "response_start_ms": 4.299999997019768,
+      "response_end_ms": 4.600000008940697,
+      "dom_content_loaded_ms": 28.200000002980232
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.700000002980232,
+        "duration_ms": 14.799999997019768,
+        "response_start_ms": 22.400000005960464,
+        "response_end_ms": 23.5
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.799999997019768,
+        "duration_ms": 15.600000008940697,
+        "response_start_ms": 23.400000005960464,
+        "response_end_ms": 24.400000005960464
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9,
+        "duration_ms": 16.299999997019768,
+        "response_start_ms": 24.299999997019768,
+        "response_end_ms": 25.299999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 27.900000005960464,
+        "duration_ms": 5.700000002980232,
+        "response_start_ms": 32.20000000298023,
+        "response_end_ms": 33.6000000089407
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 28,
+        "duration_ms": 4.100000008940697,
+        "response_start_ms": 31.5,
+        "response_end_ms": 32.1000000089407
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 51.79999999701977,
+        "duration_ms": 8.700000002980232,
+        "response_start_ms": 60,
+        "response_end_ms": 60.5
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 84.5,
+        "duration_ms": 15.5,
+        "response_start_ms": 99.70000000298023,
+        "response_end_ms": 100
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 102.40000000596046,
+        "duration_ms": 9.399999991059303,
+        "response_start_ms": 111.5,
+        "response_end_ms": 111.79999999701977
+      }
+    ]
+  },
+  {
+    "open": 11,
+    "timestamp": "2026-11-02T13:39:15.919Z",
+    "value_ms": 97,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 31,
+      "response_start_ms": 3.7999999970197678,
+      "response_end_ms": 4.0999999940395355,
+      "dom_content_loaded_ms": 24.399999991059303
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 7.399999991059303,
+        "duration_ms": 12.900000005960464,
+        "response_start_ms": 19.799999997019768,
+        "response_end_ms": 20.299999997019768
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 7.399999991059303,
+        "duration_ms": 14,
+        "response_start_ms": 20.899999991059303,
+        "response_end_ms": 21.399999991059303
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 7.5,
+        "duration_ms": 14.199999988079071,
+        "response_start_ms": 21.299999997019768,
+        "response_end_ms": 21.69999998807907
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 24.19999998807907,
+        "duration_ms": 3.5,
+        "response_start_ms": 26.899999991059303,
+        "response_end_ms": 27.69999998807907
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 24.19999998807907,
+        "duration_ms": 6,
+        "response_start_ms": 27.399999991059303,
+        "response_end_ms": 30.19999998807907
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 48.79999999701977,
+        "duration_ms": 8.099999994039536,
+        "response_start_ms": 56.3999999910593,
+        "response_end_ms": 56.8999999910593
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 76.69999998807907,
+        "duration_ms": 17.900000005960464,
+        "response_start_ms": 93.8999999910593,
+        "response_end_ms": 94.59999999403954
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 97.5,
+        "duration_ms": 10.899999991059303,
+        "response_start_ms": 107.79999999701977,
+        "response_end_ms": 108.3999999910593
+      }
+    ]
+  },
+  {
+    "open": 12,
+    "timestamp": "2026-11-02T13:39:30.932Z",
+    "value_ms": 107,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 29.200000002980232,
+      "response_start_ms": 3.7999999970197678,
+      "response_end_ms": 4,
+      "dom_content_loaded_ms": 24.799999997019768
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 7.799999997019768,
+        "duration_ms": 13.5,
+        "response_start_ms": 20.900000005960464,
+        "response_end_ms": 21.299999997019768
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 7.799999997019768,
+        "duration_ms": 14.200000002980232,
+        "response_start_ms": 21.400000005960464,
+        "response_end_ms": 22
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 7.9000000059604645,
+        "duration_ms": 14,
+        "response_start_ms": 21.299999997019768,
+        "response_end_ms": 21.900000005960464
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 24.5,
+        "duration_ms": 4.600000008940697,
+        "response_start_ms": 27.700000002980232,
+        "response_end_ms": 29.100000008940697
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 24.700000002980232,
+        "duration_ms": 2.9000000059604645,
+        "response_start_ms": 27.299999997019768,
+        "response_end_ms": 27.600000008940697
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 57.29999999701977,
+        "duration_ms": 7.9000000059604645,
+        "response_start_ms": 64.70000000298023,
+        "response_end_ms": 65.20000000298023
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 78,
+        "duration_ms": 16.200000002980232,
+        "response_start_ms": 93.6000000089407,
+        "response_end_ms": 94.20000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 107.5,
+        "duration_ms": 11.100000008940697,
+        "response_start_ms": 118.20000000298023,
+        "response_end_ms": 118.6000000089407
+      }
+    ]
+  },
+  {
+    "open": 13,
+    "timestamp": "2026-11-02T13:39:45.933Z",
+    "value_ms": 93,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 33.3999999910593,
+      "response_start_ms": 4.899999991059303,
+      "response_end_ms": 5.299999997019768,
+      "dom_content_loaded_ms": 26.599999994039536
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 9,
+        "duration_ms": 13.599999994039536,
+        "response_start_ms": 21.19999998807907,
+        "response_end_ms": 22.599999994039536
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 9.099999994039536,
+        "duration_ms": 14.099999994039536,
+        "response_start_ms": 22.5,
+        "response_end_ms": 23.19999998807907
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9.099999994039536,
+        "duration_ms": 14.799999997019768,
+        "response_start_ms": 23.19999998807907,
+        "response_end_ms": 23.899999991059303
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 26.299999997019768,
+        "duration_ms": 5.299999997019768,
+        "response_start_ms": 30.69999998807907,
+        "response_end_ms": 31.599999994039536
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 26.5,
+        "duration_ms": 5.5,
+        "response_start_ms": 30.69999998807907,
+        "response_end_ms": 32
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 49.69999998807907,
+        "duration_ms": 7.600000008940697,
+        "response_start_ms": 56.69999998807907,
+        "response_end_ms": 57.29999999701977
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 74.3999999910593,
+        "duration_ms": 16,
+        "response_start_ms": 89.79999999701977,
+        "response_end_ms": 90.3999999910593
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 92.79999999701977,
+        "duration_ms": 10.200000002980232,
+        "response_start_ms": 102.59999999403954,
+        "response_end_ms": 103
+      }
+    ]
+  },
+  {
+    "open": 14,
+    "timestamp": "2026-11-02T13:40:00.939Z",
+    "value_ms": 98,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 31.400000005960464,
+      "response_start_ms": 4.4000000059604645,
+      "response_end_ms": 4.799999997019768,
+      "dom_content_loaded_ms": 25.700000002980232
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.299999997019768,
+        "duration_ms": 13.799999997019768,
+        "response_start_ms": 21.200000002980232,
+        "response_end_ms": 22.099999994039536
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.400000005960464,
+        "duration_ms": 14.399999991059303,
+        "response_start_ms": 22,
+        "response_end_ms": 22.799999997019768
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.5,
+        "duration_ms": 14.5,
+        "response_start_ms": 22.5,
+        "response_end_ms": 23
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25.5,
+        "duration_ms": 4.200000002980232,
+        "response_start_ms": 28.099999994039536,
+        "response_end_ms": 29.700000002980232
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 25.599999994039536,
+        "duration_ms": 4,
+        "response_start_ms": 28.400000005960464,
+        "response_end_ms": 29.599999994039536
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 48,
+        "duration_ms": 7.799999997019768,
+        "response_start_ms": 55.20000000298023,
+        "response_end_ms": 55.79999999701977
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 78.09999999403954,
+        "duration_ms": 17.400000005960464,
+        "response_start_ms": 95,
+        "response_end_ms": 95.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 97.90000000596046,
+        "duration_ms": 10.399999991059303,
+        "response_start_ms": 107.90000000596046,
+        "response_end_ms": 108.29999999701977
+      }
+    ]
+  },
+  {
+    "open": 15,
+    "timestamp": "2026-11-02T13:40:15.945Z",
+    "value_ms": 102,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 29.799999997019768,
+      "response_start_ms": 3.699999988079071,
+      "response_end_ms": 4,
+      "dom_content_loaded_ms": 24.099999994039536
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 7.5999999940395355,
+        "duration_ms": 12.599999994039536,
+        "response_start_ms": 19.5,
+        "response_end_ms": 20.19999998807907
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 7.5999999940395355,
+        "duration_ms": 13.900000005960464,
+        "response_start_ms": 20.5,
+        "response_end_ms": 21.5
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 7.699999988079071,
+        "duration_ms": 13.600000008940697,
+        "response_start_ms": 20.399999991059303,
+        "response_end_ms": 21.299999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 23.899999991059303,
+        "duration_ms": 3.7000000029802322,
+        "response_start_ms": 26.69999998807907,
+        "response_end_ms": 27.599999994039536
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 24,
+        "duration_ms": 4.199999988079071,
+        "response_start_ms": 27.5,
+        "response_end_ms": 28.19999998807907
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 46.099999994039536,
+        "duration_ms": 6.5999999940395355,
+        "response_start_ms": 52,
+        "response_end_ms": 52.69999998807907
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 79.5,
+        "duration_ms": 16.69999998807907,
+        "response_start_ms": 95.3999999910593,
+        "response_end_ms": 96.19999998807907
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 102.59999999403954,
+        "duration_ms": 10.099999994039536,
+        "response_start_ms": 112.09999999403954,
+        "response_end_ms": 112.69999998807907
+      }
+    ]
+  },
+  {
+    "open": 16,
+    "timestamp": "2026-11-02T13:40:30.952Z",
+    "value_ms": 101,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 37.29999999701977,
+      "response_start_ms": 6.200000002980232,
+      "response_end_ms": 6.700000002980232,
+      "dom_content_loaded_ms": 31.600000008940697
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 11.900000005960464,
+        "duration_ms": 14.799999997019768,
+        "response_start_ms": 24.600000008940697,
+        "response_end_ms": 26.700000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 11.900000005960464,
+        "duration_ms": 15.799999997019768,
+        "response_start_ms": 25.900000005960464,
+        "response_end_ms": 27.700000002980232
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 12,
+        "duration_ms": 16.700000002980232,
+        "response_start_ms": 27.5,
+        "response_end_ms": 28.700000002980232
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 31.299999997019768,
+        "duration_ms": 4.700000002980232,
+        "response_start_ms": 35,
+        "response_end_ms": 36
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 31.400000005960464,
+        "duration_ms": 3.5999999940395355,
+        "response_start_ms": 34.6000000089407,
+        "response_end_ms": 35
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 53.900000005960464,
+        "duration_ms": 7.700000002980232,
+        "response_start_ms": 61.20000000298023,
+        "response_end_ms": 61.6000000089407
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 83.1000000089407,
+        "duration_ms": 15.899999991059303,
+        "response_start_ms": 98.6000000089407,
+        "response_end_ms": 99
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 101.6000000089407,
+        "duration_ms": 10.299999997019768,
+        "response_start_ms": 111.5,
+        "response_end_ms": 111.90000000596046
+      }
+    ]
+  },
+  {
+    "open": 17,
+    "timestamp": "2026-11-02T13:40:45.965Z",
+    "value_ms": 318,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 90.3999999910593,
+      "response_start_ms": 9.899999991059303,
+      "response_end_ms": 10.799999997019768,
+      "dom_content_loaded_ms": 75.3999999910593
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 21.399999991059303,
+        "duration_ms": 43.6000000089407,
+        "response_start_ms": 63,
+        "response_end_ms": 65
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 21.599999994039536,
+        "duration_ms": 45,
+        "response_start_ms": 65.3999999910593,
+        "response_end_ms": 66.59999999403954
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 21.899999991059303,
+        "duration_ms": 46.400000005960464,
+        "response_start_ms": 66.79999999701977,
+        "response_end_ms": 68.29999999701977
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 74.5,
+        "duration_ms": 10.200000002980232,
+        "response_start_ms": 82.29999999701977,
+        "response_end_ms": 84.70000000298023
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 74.8999999910593,
+        "duration_ms": 11.900000005960464,
+        "response_start_ms": 85.20000000298023,
+        "response_end_ms": 86.79999999701977
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 193.3999999910593,
+        "duration_ms": 19,
+        "response_start_ms": 211.3999999910593,
+        "response_end_ms": 212.3999999910593
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 256.70000000298023,
+        "duration_ms": 51.69999998807907,
+        "response_start_ms": 307.29999999701977,
+        "response_end_ms": 308.3999999910593
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 319.29999999701977,
+        "duration_ms": 31.200000002980232,
+        "response_start_ms": 349.5,
+        "response_end_ms": 350.5
+      }
+    ]
+  },
+  {
+    "open": 18,
+    "timestamp": "2026-11-02T13:41:00.979Z",
+    "value_ms": 281,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 80.59999999403954,
+      "response_start_ms": 10,
+      "response_end_ms": 11.200000002980232,
+      "dom_content_loaded_ms": 67.20000000298023
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 20.900000005960464,
+        "duration_ms": 35.79999999701977,
+        "response_start_ms": 55.400000005960464,
+        "response_end_ms": 56.70000000298023
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 21,
+        "duration_ms": 37.5,
+        "response_start_ms": 57.70000000298023,
+        "response_end_ms": 58.5
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 21.099999994039536,
+        "duration_ms": 38.6000000089407,
+        "response_start_ms": 58.79999999701977,
+        "response_end_ms": 59.70000000298023
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 66.09999999403954,
+        "duration_ms": 13.200000002980232,
+        "response_start_ms": 75,
+        "response_end_ms": 79.29999999701977
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 66.70000000298023,
+        "duration_ms": 8,
+        "response_start_ms": 73.59999999403954,
+        "response_end_ms": 74.70000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 165.20000000298023,
+        "duration_ms": 16.200000002980232,
+        "response_start_ms": 180.29999999701977,
+        "response_end_ms": 181.40000000596046
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 222.70000000298023,
+        "duration_ms": 40.20000000298023,
+        "response_start_ms": 262.09999999403954,
+        "response_end_ms": 262.90000000596046
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 281.70000000298023,
+        "duration_ms": 26.599999994039536,
+        "response_start_ms": 307.70000000298023,
+        "response_end_ms": 308.29999999701977
+      }
+    ]
+  },
+  {
+    "open": 19,
+    "timestamp": "2026-11-02T13:41:15.982Z",
+    "value_ms": 117,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 34.70000000298023,
+      "response_start_ms": 4.5,
+      "response_end_ms": 4.799999997019768,
+      "dom_content_loaded_ms": 27.900000005960464
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 9.400000005960464,
+        "duration_ms": 14,
+        "response_start_ms": 22.299999997019768,
+        "response_end_ms": 23.400000005960464
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9.400000005960464,
+        "duration_ms": 14.899999991059303,
+        "response_start_ms": 23.600000008940697,
+        "response_end_ms": 24.299999997019768
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 9.400000005960464,
+        "duration_ms": 15,
+        "response_start_ms": 23.700000002980232,
+        "response_end_ms": 24.400000005960464
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 27.600000008940697,
+        "duration_ms": 5.899999991059303,
+        "response_start_ms": 32.20000000298023,
+        "response_end_ms": 33.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 27.700000002980232,
+        "duration_ms": 4.4000000059604645,
+        "response_start_ms": 31.700000002980232,
+        "response_end_ms": 32.1000000089407
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 65.29999999701977,
+        "duration_ms": 9.800000011920929,
+        "response_start_ms": 74.40000000596046,
+        "response_end_ms": 75.1000000089407
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 91.6000000089407,
+        "duration_ms": 22.399999991059303,
+        "response_start_ms": 113.5,
+        "response_end_ms": 114
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 117.29999999701977,
+        "duration_ms": 12.300000011920929,
+        "response_start_ms": 129.20000000298023,
+        "response_end_ms": 129.6000000089407
+      }
+    ]
+  },
+  {
+    "open": 20,
+    "timestamp": "2026-11-02T13:41:30.989Z",
+    "value_ms": 114,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 41.3999999910593,
+      "response_start_ms": 6.200000002980232,
+      "response_end_ms": 6.799999997019768,
+      "dom_content_loaded_ms": 33
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 12.200000002980232,
+        "duration_ms": 15.399999991059303,
+        "response_start_ms": 27.099999994039536,
+        "response_end_ms": 27.599999994039536
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 12.299999997019768,
+        "duration_ms": 16.5,
+        "response_start_ms": 28.200000002980232,
+        "response_end_ms": 28.799999997019768
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 12.5,
+        "duration_ms": 16.799999997019768,
+        "response_start_ms": 28.399999991059303,
+        "response_end_ms": 29.299999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 32.70000000298023,
+        "duration_ms": 5.799999997019768,
+        "response_start_ms": 36.8999999910593,
+        "response_end_ms": 38.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 32.8999999910593,
+        "duration_ms": 6.800000011920929,
+        "response_start_ms": 37.599999994039536,
+        "response_end_ms": 39.70000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 58.8999999910593,
+        "duration_ms": 9.100000008940697,
+        "response_start_ms": 67.3999999910593,
+        "response_end_ms": 68
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 88.20000000298023,
+        "duration_ms": 18.399999991059303,
+        "response_start_ms": 106,
+        "response_end_ms": 106.59999999403954
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 114.09999999403954,
+        "duration_ms": 9.700000002980232,
+        "response_start_ms": 123.29999999701977,
+        "response_end_ms": 123.79999999701977
+      }
+    ]
+  },
+  {
+    "open": 21,
+    "timestamp": "2026-11-02T13:41:45.995Z",
+    "value_ms": 97,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 33.5,
+      "response_start_ms": 4.0999999940395355,
+      "response_end_ms": 4.5,
+      "dom_content_loaded_ms": 27.399999991059303
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.299999997019768,
+        "duration_ms": 14.599999994039536,
+        "response_start_ms": 22.299999997019768,
+        "response_end_ms": 22.899999991059303
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.299999997019768,
+        "duration_ms": 15.299999997019768,
+        "response_start_ms": 23.099999994039536,
+        "response_end_ms": 23.599999994039536
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.399999991059303,
+        "duration_ms": 15.600000008940697,
+        "response_start_ms": 23.399999991059303,
+        "response_end_ms": 24
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 27,
+        "duration_ms": 4.799999997019768,
+        "response_start_ms": 29.899999991059303,
+        "response_end_ms": 31.799999997019768
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 27.19999998807907,
+        "duration_ms": 4.300000011920929,
+        "response_start_ms": 30.5,
+        "response_end_ms": 31.5
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 49,
+        "duration_ms": 9,
+        "response_start_ms": 57.19999998807907,
+        "response_end_ms": 58
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 77.19999998807907,
+        "duration_ms": 17.30000001192093,
+        "response_start_ms": 93.79999999701977,
+        "response_end_ms": 94.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 97.19999998807907,
+        "duration_ms": 10.200000002980232,
+        "response_start_ms": 107,
+        "response_end_ms": 107.3999999910593
+      }
+    ]
+  },
+  {
+    "open": 22,
+    "timestamp": "2026-11-02T13:42:01.003Z",
+    "value_ms": 117,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 33.70000000298023,
+      "response_start_ms": 4.5,
+      "response_end_ms": 5,
+      "dom_content_loaded_ms": 27.299999997019768
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.600000008940697,
+        "duration_ms": 14.099999994039536,
+        "response_start_ms": 21.900000005960464,
+        "response_end_ms": 22.700000002980232
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.700000002980232,
+        "duration_ms": 14.799999997019768,
+        "response_start_ms": 23.200000002980232,
+        "response_end_ms": 23.5
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.700000002980232,
+        "duration_ms": 15.099999994039536,
+        "response_start_ms": 23.299999997019768,
+        "response_end_ms": 23.799999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 27,
+        "duration_ms": 4.4000000059604645,
+        "response_start_ms": 29.900000005960464,
+        "response_end_ms": 31.400000005960464
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 27.200000002980232,
+        "duration_ms": 5.0999999940395355,
+        "response_start_ms": 30.900000005960464,
+        "response_end_ms": 32.29999999701977
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 68.70000000298023,
+        "duration_ms": 8.900000005960464,
+        "response_start_ms": 77.20000000298023,
+        "response_end_ms": 77.6000000089407
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 94.70000000298023,
+        "duration_ms": 19.400000005960464,
+        "response_start_ms": 113.40000000596046,
+        "response_end_ms": 114.1000000089407
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 117.1000000089407,
+        "duration_ms": 11.799999997019768,
+        "response_start_ms": 128.5,
+        "response_end_ms": 128.90000000596046
+      }
+    ]
+  },
+  {
+    "open": 23,
+    "timestamp": "2026-11-02T13:42:16.005Z",
+    "value_ms": 115,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 35.5,
+      "response_start_ms": 4.399999991059303,
+      "response_end_ms": 4.799999997019768,
+      "dom_content_loaded_ms": 26.899999991059303
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.5,
+        "duration_ms": 14.399999991059303,
+        "response_start_ms": 21.799999997019768,
+        "response_end_ms": 22.899999991059303
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.5,
+        "duration_ms": 14.5,
+        "response_start_ms": 22.5,
+        "response_end_ms": 23
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.599999994039536,
+        "duration_ms": 15.700000002980232,
+        "response_start_ms": 23.399999991059303,
+        "response_end_ms": 24.299999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 26.5,
+        "duration_ms": 5.899999991059303,
+        "response_start_ms": 30.299999997019768,
+        "response_end_ms": 32.3999999910593
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 26.599999994039536,
+        "duration_ms": 7.100000008940697,
+        "response_start_ms": 33,
+        "response_end_ms": 33.70000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 67.20000000298023,
+        "duration_ms": 10.399999991059303,
+        "response_start_ms": 76.8999999910593,
+        "response_end_ms": 77.59999999403954
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 91.3999999910593,
+        "duration_ms": 20.600000008940697,
+        "response_start_ms": 111.20000000298023,
+        "response_end_ms": 112
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 115.20000000298023,
+        "duration_ms": 12.599999994039536,
+        "response_start_ms": 127.29999999701977,
+        "response_end_ms": 127.79999999701977
+      }
+    ]
+  },
+  {
+    "open": 24,
+    "timestamp": "2026-11-02T13:42:31.013Z",
+    "value_ms": 116,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 37.70000000298023,
+      "response_start_ms": 5.5,
+      "response_end_ms": 6,
+      "dom_content_loaded_ms": 30.600000008940697
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 10.700000002980232,
+        "duration_ms": 15.200000002980232,
+        "response_start_ms": 24.900000005960464,
+        "response_end_ms": 25.900000005960464
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 10.700000002980232,
+        "duration_ms": 16.700000002980232,
+        "response_start_ms": 26.5,
+        "response_end_ms": 27.400000005960464
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 10.800000011920929,
+        "duration_ms": 16.19999998807907,
+        "response_start_ms": 26.200000002980232,
+        "response_end_ms": 27
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 30.30000001192093,
+        "duration_ms": 6.0999999940395355,
+        "response_start_ms": 34.6000000089407,
+        "response_end_ms": 36.400000005960464
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 30.400000005960464,
+        "duration_ms": 4.0999999940395355,
+        "response_start_ms": 33.70000000298023,
+        "response_end_ms": 34.5
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 73.5,
+        "duration_ms": 8.100000008940697,
+        "response_start_ms": 80.90000000596046,
+        "response_end_ms": 81.6000000089407
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 97.1000000089407,
+        "duration_ms": 16.399999991059303,
+        "response_start_ms": 113.20000000298023,
+        "response_end_ms": 113.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 116.70000000298023,
+        "duration_ms": 9.200000002980232,
+        "response_start_ms": 125.6000000089407,
+        "response_end_ms": 125.90000000596046
+      }
+    ]
+  },
+  {
+    "open": 25,
+    "timestamp": "2026-11-02T13:42:46.018Z",
+    "value_ms": 499,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 115.70000000298023,
+      "response_start_ms": 21.899999991059303,
+      "response_end_ms": 22.899999991059303,
+      "dom_content_loaded_ms": 101.3999999910593
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 36.20000000298023,
+        "duration_ms": 55.5,
+        "response_start_ms": 88.8999999910593,
+        "response_end_ms": 91.70000000298023
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 36.5,
+        "duration_ms": 54.3999999910593,
+        "response_start_ms": 88.70000000298023,
+        "response_end_ms": 90.8999999910593
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 36.599999994039536,
+        "duration_ms": 53.29999999701977,
+        "response_start_ms": 88.59999999403954,
+        "response_end_ms": 89.8999999910593
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 100.5,
+        "duration_ms": 10.599999994039536,
+        "response_start_ms": 108.20000000298023,
+        "response_end_ms": 111.09999999403954
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 100.8999999910593,
+        "duration_ms": 8.100000008940697,
+        "response_start_ms": 108,
+        "response_end_ms": 109
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 258.79999999701977,
+        "duration_ms": 62.599999994039536,
+        "response_start_ms": 320.5,
+        "response_end_ms": 321.3999999910593
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 379.70000000298023,
+        "duration_ms": 109.69999998807907,
+        "response_start_ms": 483,
+        "response_end_ms": 489.3999999910593
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 501,
+        "duration_ms": 122.5,
+        "response_start_ms": 622.7000000029802,
+        "response_end_ms": 623.5
+      }
+    ]
+  },
+  {
+    "open": 26,
+    "timestamp": "2026-11-02T13:43:01.019Z",
+    "value_ms": 440,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 125.09999999403954,
+      "response_start_ms": 13.799999997019768,
+      "response_end_ms": 15.099999994039536,
+      "dom_content_loaded_ms": 105
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 35.19999998807907,
+        "duration_ms": 56.70000000298023,
+        "response_start_ms": 90.09999999403954,
+        "response_end_ms": 91.8999999910593
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 35.3999999910593,
+        "duration_ms": 58.400000005960464,
+        "response_start_ms": 91.69999998807907,
+        "response_end_ms": 93.79999999701977
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 35.69999998807907,
+        "duration_ms": 60.20000000298023,
+        "response_start_ms": 93.5,
+        "response_end_ms": 95.8999999910593
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 103.8999999910593,
+        "duration_ms": 16.5,
+        "response_start_ms": 116.5,
+        "response_end_ms": 120.3999999910593
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 104.5,
+        "duration_ms": 11.699999988079071,
+        "response_start_ms": 114.59999999403954,
+        "response_end_ms": 116.19999998807907
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 238,
+        "duration_ms": 80.29999999701977,
+        "response_start_ms": 317.19999998807907,
+        "response_end_ms": 318.29999999701977
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 370.29999999701977,
+        "duration_ms": 49.20000000298023,
+        "response_start_ms": 418.5,
+        "response_end_ms": 419.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 441.29999999701977,
+        "duration_ms": 33.599999994039536,
+        "response_start_ms": 473.19999998807907,
+        "response_end_ms": 474.8999999910593
+      }
+    ]
+  },
+  {
+    "open": 27,
+    "timestamp": "2026-11-02T13:43:16.033Z",
+    "value_ms": 103,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 32.20000000298023,
+      "response_start_ms": 5.5,
+      "response_end_ms": 5.9000000059604645,
+      "dom_content_loaded_ms": 26.100000008940697
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 10,
+        "duration_ms": 12.600000008940697,
+        "response_start_ms": 21.5,
+        "response_end_ms": 22.600000008940697
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 10.100000008940697,
+        "duration_ms": 13.299999997019768,
+        "response_start_ms": 22.600000008940697,
+        "response_end_ms": 23.400000005960464
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 10.100000008940697,
+        "duration_ms": 13.5,
+        "response_start_ms": 22.700000002980232,
+        "response_end_ms": 23.600000008940697
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25.900000005960464,
+        "duration_ms": 4.0999999940395355,
+        "response_start_ms": 28.80000001192093,
+        "response_end_ms": 30
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 26,
+        "duration_ms": 4.800000011920929,
+        "response_start_ms": 29.700000002980232,
+        "response_end_ms": 30.80000001192093
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 49.80000001192093,
+        "duration_ms": 7.899999991059303,
+        "response_start_ms": 57.1000000089407,
+        "response_end_ms": 57.70000000298023
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 80.70000000298023,
+        "duration_ms": 19.900000005960464,
+        "response_start_ms": 100.1000000089407,
+        "response_end_ms": 100.6000000089407
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 103.30000001192093,
+        "duration_ms": 10.599999994039536,
+        "response_start_ms": 113.5,
+        "response_end_ms": 113.90000000596046
+      }
+    ]
+  },
+  {
+    "open": 28,
+    "timestamp": "2026-11-02T13:43:31.034Z",
+    "value_ms": 99,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 39.20000000298023,
+      "response_start_ms": 5.0999999940395355,
+      "response_end_ms": 5.899999991059303,
+      "dom_content_loaded_ms": 31.599999994039536
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 10.5,
+        "duration_ms": 16.200000002980232,
+        "response_start_ms": 25.399999991059303,
+        "response_end_ms": 26.700000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 10.599999994039536,
+        "duration_ms": 17.400000005960464,
+        "response_start_ms": 27.099999994039536,
+        "response_end_ms": 28
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 10.700000002980232,
+        "duration_ms": 16.899999991059303,
+        "response_start_ms": 27,
+        "response_end_ms": 27.599999994039536
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 31.200000002980232,
+        "duration_ms": 5,
+        "response_start_ms": 34.8999999910593,
+        "response_end_ms": 36.20000000298023
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 31.5,
+        "duration_ms": 5.899999991059303,
+        "response_start_ms": 36,
+        "response_end_ms": 37.3999999910593
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 55.20000000298023,
+        "duration_ms": 7.799999997019768,
+        "response_start_ms": 62.599999994039536,
+        "response_end_ms": 63
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 80.29999999701977,
+        "duration_ms": 16.400000005960464,
+        "response_start_ms": 96.20000000298023,
+        "response_end_ms": 96.70000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 99.29999999701977,
+        "duration_ms": 11,
+        "response_start_ms": 109.79999999701977,
+        "response_end_ms": 110.29999999701977
+      }
+    ]
+  },
+  {
+    "open": 29,
+    "timestamp": "2026-11-02T13:43:46.035Z",
+    "value_ms": 114,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 40,
+      "response_start_ms": 5.5999999940395355,
+      "response_end_ms": 6,
+      "dom_content_loaded_ms": 32.5
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 11.399999991059303,
+        "duration_ms": 15.800000011920929,
+        "response_start_ms": 26.399999991059303,
+        "response_end_ms": 27.200000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 11.399999991059303,
+        "duration_ms": 17.200000002980232,
+        "response_start_ms": 27.399999991059303,
+        "response_end_ms": 28.599999994039536
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 11.5,
+        "duration_ms": 16.899999991059303,
+        "response_start_ms": 27.399999991059303,
+        "response_end_ms": 28.399999991059303
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 32.099999994039536,
+        "duration_ms": 6.200000002980232,
+        "response_start_ms": 36.5,
+        "response_end_ms": 38.29999999701977
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 32.29999999701977,
+        "duration_ms": 4.9000000059604645,
+        "response_start_ms": 36.29999999701977,
+        "response_end_ms": 37.20000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 56.5,
+        "duration_ms": 9.599999994039536,
+        "response_start_ms": 65.70000000298023,
+        "response_end_ms": 66.09999999403954
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 91,
+        "duration_ms": 19.599999994039536,
+        "response_start_ms": 110,
+        "response_end_ms": 110.59999999403954
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 114.5,
+        "duration_ms": 12.099999994039536,
+        "response_start_ms": 126.09999999403954,
+        "response_end_ms": 126.59999999403954
+      }
+    ]
+  },
+  {
+    "open": 30,
+    "timestamp": "2026-11-02T13:44:01.045Z",
+    "value_ms": 125,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 45.70000000298023,
+      "response_start_ms": 5.4000000059604645,
+      "response_end_ms": 6.100000008940697,
+      "dom_content_loaded_ms": 37.70000000298023
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 12.400000005960464,
+        "duration_ms": 19.400000005960464,
+        "response_start_ms": 30.900000005960464,
+        "response_end_ms": 31.80000001192093
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 12.5,
+        "duration_ms": 20.400000005960464,
+        "response_start_ms": 32,
+        "response_end_ms": 32.900000005960464
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 12.5,
+        "duration_ms": 21.30000001192093,
+        "response_start_ms": 33.20000000298023,
+        "response_end_ms": 33.80000001192093
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 37.30000001192093,
+        "duration_ms": 9.899999991059303,
+        "response_start_ms": 42.6000000089407,
+        "response_end_ms": 47.20000000298023
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 37.5,
+        "duration_ms": 4.9000000059604645,
+        "response_start_ms": 41.5,
+        "response_end_ms": 42.400000005960464
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 82.6000000089407,
+        "duration_ms": 8,
+        "response_start_ms": 90.1000000089407,
+        "response_end_ms": 90.6000000089407
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 104.6000000089407,
+        "duration_ms": 18,
+        "response_start_ms": 122.1000000089407,
+        "response_end_ms": 122.6000000089407
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 125.30000001192093,
+        "duration_ms": 11.199999988079071,
+        "response_start_ms": 135.80000001192093,
+        "response_end_ms": 136.5
+      }
+    ]
+  },
+  {
+    "open": 31,
+    "timestamp": "2026-11-02T13:44:16.060Z",
+    "value_ms": 148,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 29.899999991059303,
+      "response_start_ms": 3.7999999970197678,
+      "response_end_ms": 4.0999999940395355,
+      "dom_content_loaded_ms": 24.399999991059303
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 7.5,
+        "duration_ms": 13.199999988079071,
+        "response_start_ms": 19.799999997019768,
+        "response_end_ms": 20.69999998807907
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 7.5,
+        "duration_ms": 13.899999991059303,
+        "response_start_ms": 20.5,
+        "response_end_ms": 21.399999991059303
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 7.5999999940395355,
+        "duration_ms": 13.700000002980232,
+        "response_start_ms": 20.899999991059303,
+        "response_end_ms": 21.299999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 24.099999994039536,
+        "duration_ms": 4.799999997019768,
+        "response_start_ms": 27.899999991059303,
+        "response_end_ms": 28.899999991059303
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 24.299999997019768,
+        "duration_ms": 3.5,
+        "response_start_ms": 26.899999991059303,
+        "response_end_ms": 27.799999997019768
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 48.5,
+        "duration_ms": 8.5,
+        "response_start_ms": 56.5,
+        "response_end_ms": 57
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 84,
+        "duration_ms": 51.79999999701977,
+        "response_start_ms": 135.29999999701977,
+        "response_end_ms": 135.79999999701977
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 149,
+        "duration_ms": 16.299999997019768,
+        "response_start_ms": 164.79999999701977,
+        "response_end_ms": 165.29999999701977
+      }
+    ]
+  },
+  {
+    "open": 32,
+    "timestamp": "2026-11-02T13:44:31.075Z",
+    "value_ms": 102,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 36.5,
+      "response_start_ms": 3.5,
+      "response_end_ms": 3.9000000059604645,
+      "dom_content_loaded_ms": 28.100000008940697
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.200000002980232,
+        "duration_ms": 14.799999997019768,
+        "response_start_ms": 22.30000001192093,
+        "response_end_ms": 23
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.300000011920929,
+        "duration_ms": 15.599999994039536,
+        "response_start_ms": 23.30000001192093,
+        "response_end_ms": 23.900000005960464
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.300000011920929,
+        "duration_ms": 16.5,
+        "response_start_ms": 24.100000008940697,
+        "response_end_ms": 24.80000001192093
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 27.700000002980232,
+        "duration_ms": 6.100000008940697,
+        "response_start_ms": 32.1000000089407,
+        "response_end_ms": 33.80000001192093
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 27.80000001192093,
+        "duration_ms": 7.199999988079071,
+        "response_start_ms": 33.900000005960464,
+        "response_end_ms": 35
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 52.70000000298023,
+        "duration_ms": 8.299999997019768,
+        "response_start_ms": 60.5,
+        "response_end_ms": 61
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 81,
+        "duration_ms": 18.100000008940697,
+        "response_start_ms": 98.40000000596046,
+        "response_end_ms": 99.1000000089407
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 101.80000001192093,
+        "duration_ms": 10.399999991059303,
+        "response_start_ms": 111.70000000298023,
+        "response_end_ms": 112.20000000298023
+      }
+    ]
+  },
+  {
+    "open": 33,
+    "timestamp": "2026-11-02T13:44:46.084Z",
+    "value_ms": 350,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 97.6000000089407,
+      "response_start_ms": 10,
+      "response_end_ms": 10.900000005960464,
+      "dom_content_loaded_ms": 74.5
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 21.100000008940697,
+        "duration_ms": 39.79999999701977,
+        "response_start_ms": 57.400000005960464,
+        "response_end_ms": 60.900000005960464
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 21.299999997019768,
+        "duration_ms": 42.30000001192093,
+        "response_start_ms": 62.6000000089407,
+        "response_end_ms": 63.6000000089407
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 21.400000005960464,
+        "duration_ms": 43.79999999701977,
+        "response_start_ms": 63.400000005960464,
+        "response_end_ms": 65.20000000298023
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 73.5,
+        "duration_ms": 24.799999997019768,
+        "response_start_ms": 90.1000000089407,
+        "response_end_ms": 98.29999999701977
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 74,
+        "duration_ms": 18.400000005960464,
+        "response_start_ms": 90.6000000089407,
+        "response_end_ms": 92.40000000596046
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 182.90000000596046,
+        "duration_ms": 15.799999997019768,
+        "response_start_ms": 197.6000000089407,
+        "response_end_ms": 198.70000000298023
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 237.5,
+        "duration_ms": 106.5,
+        "response_start_ms": 342.90000000596046,
+        "response_end_ms": 344
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 351.1000000089407,
+        "duration_ms": 43.69999998807907,
+        "response_start_ms": 393.79999999701977,
+        "response_end_ms": 394.79999999701977
+      }
+    ]
+  },
+  {
+    "open": 34,
+    "timestamp": "2026-11-02T13:45:01.097Z",
+    "value_ms": 313,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 90.20000000298023,
+      "response_start_ms": 10.200000002980232,
+      "response_end_ms": 11.200000002980232,
+      "dom_content_loaded_ms": 73.90000000596046
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 23.30000001192093,
+        "duration_ms": 39,
+        "response_start_ms": 60.900000005960464,
+        "response_end_ms": 62.30000001192093
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 23.5,
+        "duration_ms": 40.70000000298023,
+        "response_start_ms": 63.30000001192093,
+        "response_end_ms": 64.20000000298023
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 23.80000001192093,
+        "duration_ms": 41.79999999701977,
+        "response_start_ms": 64,
+        "response_end_ms": 65.6000000089407
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 73,
+        "duration_ms": 11.5,
+        "response_start_ms": 79.90000000596046,
+        "response_end_ms": 84.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 73.30000001192093,
+        "duration_ms": 13.099999994039536,
+        "response_start_ms": 84,
+        "response_end_ms": 86.40000000596046
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 188.1000000089407,
+        "duration_ms": 20.899999991059303,
+        "response_start_ms": 207.80000001192093,
+        "response_end_ms": 209
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 252.30000001192093,
+        "duration_ms": 48.69999998807907,
+        "response_start_ms": 300,
+        "response_end_ms": 301
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 314.40000000596046,
+        "duration_ms": 30.900000005960464,
+        "response_start_ms": 344.40000000596046,
+        "response_end_ms": 345.30000001192093
+      }
+    ]
+  },
+  {
+    "open": 35,
+    "timestamp": "2026-11-02T13:45:16.101Z",
+    "value_ms": 93,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 32.3999999910593,
+      "response_start_ms": 4.399999991059303,
+      "response_end_ms": 4.799999997019768,
+      "dom_content_loaded_ms": 25.200000002980232
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.5,
+        "duration_ms": 12.599999994039536,
+        "response_start_ms": 20.299999997019768,
+        "response_end_ms": 21.099999994039536
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.700000002980232,
+        "duration_ms": 13.599999994039536,
+        "response_start_ms": 21.599999994039536,
+        "response_end_ms": 22.299999997019768
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.700000002980232,
+        "duration_ms": 13.199999988079071,
+        "response_start_ms": 21.399999991059303,
+        "response_end_ms": 21.899999991059303
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25,
+        "duration_ms": 4.5,
+        "response_start_ms": 27.700000002980232,
+        "response_end_ms": 29.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 25.099999994039536,
+        "duration_ms": 5.299999997019768,
+        "response_start_ms": 28.200000002980232,
+        "response_end_ms": 30.399999991059303
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 48.79999999701977,
+        "duration_ms": 8.599999994039536,
+        "response_start_ms": 56.599999994039536,
+        "response_end_ms": 57.3999999910593
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 73.5,
+        "duration_ms": 16.899999991059303,
+        "response_start_ms": 89.59999999403954,
+        "response_end_ms": 90.3999999910593
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 93,
+        "duration_ms": 10.599999994039536,
+        "response_start_ms": 103,
+        "response_end_ms": 103.59999999403954
+      }
+    ]
+  },
+  {
+    "open": 36,
+    "timestamp": "2026-11-02T13:45:31.101Z",
+    "value_ms": 95,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 31.5,
+      "response_start_ms": 5.200000002980232,
+      "response_end_ms": 5.5,
+      "dom_content_loaded_ms": 25.799999997019768
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 9,
+        "duration_ms": 13.200000002980232,
+        "response_start_ms": 21.400000005960464,
+        "response_end_ms": 22.200000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 9.099999994039536,
+        "duration_ms": 14.100000008940697,
+        "response_start_ms": 22.799999997019768,
+        "response_end_ms": 23.200000002980232
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9.200000002980232,
+        "duration_ms": 13.5,
+        "response_start_ms": 22.299999997019768,
+        "response_end_ms": 22.700000002980232
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25.599999994039536,
+        "duration_ms": 4.300000011920929,
+        "response_start_ms": 28.599999994039536,
+        "response_end_ms": 29.900000005960464
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 25.700000002980232,
+        "duration_ms": 4.0999999940395355,
+        "response_start_ms": 29,
+        "response_end_ms": 29.799999997019768
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 46.900000005960464,
+        "duration_ms": 7.699999988079071,
+        "response_start_ms": 54,
+        "response_end_ms": 54.599999994039536
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 76.29999999701977,
+        "duration_ms": 16.200000002980232,
+        "response_start_ms": 91.90000000596046,
+        "response_end_ms": 92.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 94.90000000596046,
+        "duration_ms": 10.699999988079071,
+        "response_start_ms": 105.20000000298023,
+        "response_end_ms": 105.59999999403954
+      }
+    ]
+  },
+  {
+    "open": 37,
+    "timestamp": "2026-11-02T13:45:46.108Z",
+    "value_ms": 92,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 32.29999999701977,
+      "response_start_ms": 4.700000002980232,
+      "response_end_ms": 5.200000002980232,
+      "dom_content_loaded_ms": 26.299999997019768
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 9.299999997019768,
+        "duration_ms": 12.5,
+        "response_start_ms": 21.200000002980232,
+        "response_end_ms": 21.799999997019768
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 9.299999997019768,
+        "duration_ms": 13.400000005960464,
+        "response_start_ms": 22.299999997019768,
+        "response_end_ms": 22.700000002980232
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9.400000005960464,
+        "duration_ms": 14.099999994039536,
+        "response_start_ms": 22.799999997019768,
+        "response_end_ms": 23.5
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 26,
+        "duration_ms": 4.100000008940697,
+        "response_start_ms": 29.200000002980232,
+        "response_end_ms": 30.100000008940697
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 26.100000008940697,
+        "duration_ms": 4.899999991059303,
+        "response_start_ms": 29.600000008940697,
+        "response_end_ms": 31
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 48.20000000298023,
+        "duration_ms": 9.099999994039536,
+        "response_start_ms": 56.70000000298023,
+        "response_end_ms": 57.29999999701977
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 75.20000000298023,
+        "duration_ms": 14.5,
+        "response_start_ms": 89.20000000298023,
+        "response_end_ms": 89.70000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 92.20000000298023,
+        "duration_ms": 9.299999997019768,
+        "response_start_ms": 101.29999999701977,
+        "response_end_ms": 101.5
+      }
+    ]
+  },
+  {
+    "open": 38,
+    "timestamp": "2026-11-02T13:46:01.119Z",
+    "value_ms": 115,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 38.80000001192093,
+      "response_start_ms": 4.600000008940697,
+      "response_end_ms": 4.800000011920929,
+      "dom_content_loaded_ms": 29.600000008940697
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.5,
+        "duration_ms": 14.700000002980232,
+        "response_start_ms": 22,
+        "response_end_ms": 23.200000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.600000008940697,
+        "duration_ms": 16.599999994039536,
+        "response_start_ms": 24.30000001192093,
+        "response_end_ms": 25.200000002980232
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.700000002980232,
+        "duration_ms": 16.799999997019768,
+        "response_start_ms": 24.5,
+        "response_end_ms": 25.5
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 29.30000001192093,
+        "duration_ms": 7.299999997019768,
+        "response_start_ms": 34.80000001192093,
+        "response_end_ms": 36.6000000089407
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 29.400000005960464,
+        "duration_ms": 6.799999997019768,
+        "response_start_ms": 35,
+        "response_end_ms": 36.20000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 67.70000000298023,
+        "duration_ms": 9.799999997019768,
+        "response_start_ms": 76.80000001192093,
+        "response_end_ms": 77.5
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 89.80000001192093,
+        "duration_ms": 22.5,
+        "response_start_ms": 111.40000000596046,
+        "response_end_ms": 112.30000001192093
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 114.80000001192093,
+        "duration_ms": 10.099999994039536,
+        "response_start_ms": 124.70000000298023,
+        "response_end_ms": 124.90000000596046
+      }
+    ]
+  },
+  {
+    "open": 39,
+    "timestamp": "2026-11-02T13:46:16.122Z",
+    "value_ms": 117,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 31.200000002980232,
+      "response_start_ms": 4,
+      "response_end_ms": 4.4000000059604645,
+      "dom_content_loaded_ms": 25.599999994039536
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8,
+        "duration_ms": 13.400000005960464,
+        "response_start_ms": 20.700000002980232,
+        "response_end_ms": 21.400000005960464
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8,
+        "duration_ms": 14.299999997019768,
+        "response_start_ms": 21.799999997019768,
+        "response_end_ms": 22.299999997019768
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.099999994039536,
+        "duration_ms": 14,
+        "response_start_ms": 21.700000002980232,
+        "response_end_ms": 22.099999994039536
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25.299999997019768,
+        "duration_ms": 4.4000000059604645,
+        "response_start_ms": 28.599999994039536,
+        "response_end_ms": 29.700000002980232
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 25.400000005960464,
+        "duration_ms": 3.0999999940395355,
+        "response_start_ms": 28.099999994039536,
+        "response_end_ms": 28.5
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 64.40000000596046,
+        "duration_ms": 9.399999991059303,
+        "response_start_ms": 73.20000000298023,
+        "response_end_ms": 73.79999999701977
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 91,
+        "duration_ms": 23.700000002980232,
+        "response_start_ms": 114.29999999701977,
+        "response_end_ms": 114.70000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 117.90000000596046,
+        "duration_ms": 13.599999994039536,
+        "response_start_ms": 131.09999999403954,
+        "response_end_ms": 131.5
+      }
+    ]
+  },
+  {
+    "open": 40,
+    "timestamp": "2026-11-02T13:46:31.134Z",
+    "value_ms": 97,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 35.29999999701977,
+      "response_start_ms": 4.200000002980232,
+      "response_end_ms": 4.799999997019768,
+      "dom_content_loaded_ms": 28.5
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 9,
+        "duration_ms": 14.799999997019768,
+        "response_start_ms": 22.899999991059303,
+        "response_end_ms": 23.799999997019768
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 9,
+        "duration_ms": 15.700000002980232,
+        "response_start_ms": 24,
+        "response_end_ms": 24.700000002980232
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 9.099999994039536,
+        "duration_ms": 16.600000008940697,
+        "response_start_ms": 24.599999994039536,
+        "response_end_ms": 25.700000002980232
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 28.200000002980232,
+        "duration_ms": 5.5999999940395355,
+        "response_start_ms": 32,
+        "response_end_ms": 33.79999999701977
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 28.299999997019768,
+        "duration_ms": 5.200000002980232,
+        "response_start_ms": 32.8999999910593,
+        "response_end_ms": 33.5
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 51.29999999701977,
+        "duration_ms": 9.5,
+        "response_start_ms": 60.20000000298023,
+        "response_end_ms": 60.79999999701977
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 77.5,
+        "duration_ms": 17.200000002980232,
+        "response_start_ms": 94.09999999403954,
+        "response_end_ms": 94.70000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 97.09999999403954,
+        "duration_ms": 9.900000005960464,
+        "response_start_ms": 106.59999999403954,
+        "response_end_ms": 107
+      }
+    ]
+  },
+  {
+    "open": 41,
+    "timestamp": "2026-11-02T13:46:46.141Z",
+    "value_ms": 195,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 50.30000001192093,
+      "response_start_ms": 4.800000011920929,
+      "response_end_ms": 5.200000002980232,
+      "dom_content_loaded_ms": 39.30000001192093
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 10.400000005960464,
+        "duration_ms": 21.900000005960464,
+        "response_start_ms": 31.400000005960464,
+        "response_end_ms": 32.30000001192093
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 10.5,
+        "duration_ms": 23,
+        "response_start_ms": 32.6000000089407,
+        "response_end_ms": 33.5
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 10.600000008940697,
+        "duration_ms": 22.799999997019768,
+        "response_start_ms": 32.400000005960464,
+        "response_end_ms": 33.400000005960464
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 38.80000001192093,
+        "duration_ms": 6.699999988079071,
+        "response_start_ms": 43.6000000089407,
+        "response_end_ms": 45.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 39,
+        "duration_ms": 8,
+        "response_start_ms": 44.30000001192093,
+        "response_end_ms": 47
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 124.90000000596046,
+        "duration_ms": 15.900000005960464,
+        "response_start_ms": 140,
+        "response_end_ms": 140.80000001192093
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 157.6000000089407,
+        "duration_ms": 34.20000000298023,
+        "response_start_ms": 191.1000000089407,
+        "response_end_ms": 191.80000001192093
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 195.40000000596046,
+        "duration_ms": 18.5,
+        "response_start_ms": 213.40000000596046,
+        "response_end_ms": 213.90000000596046
+      }
+    ]
+  },
+  {
+    "open": 42,
+    "timestamp": "2026-11-02T13:47:01.146Z",
+    "value_ms": 466,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 155.90000000596046,
+      "response_start_ms": 18.700000002980232,
+      "response_end_ms": 19.900000005960464,
+      "dom_content_loaded_ms": 136.90000000596046
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 35.79999999701977,
+        "duration_ms": 86,
+        "response_start_ms": 118.70000000298023,
+        "response_end_ms": 121.79999999701977
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 36.099999994039536,
+        "duration_ms": 82.90000000596046,
+        "response_start_ms": 117.59999999403954,
+        "response_end_ms": 119
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 36.400000005960464,
+        "duration_ms": 85.19999998807907,
+        "response_start_ms": 118.90000000596046,
+        "response_end_ms": 121.59999999403954
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 135.90000000596046,
+        "duration_ms": 13.299999997019768,
+        "response_start_ms": 145.5,
+        "response_end_ms": 149.20000000298023
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 136.29999999701977,
+        "duration_ms": 14.900000005960464,
+        "response_start_ms": 146.90000000596046,
+        "response_end_ms": 151.20000000298023
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 273.09999999403954,
+        "duration_ms": 54.80000001192093,
+        "response_start_ms": 326.79999999701977,
+        "response_end_ms": 327.90000000596046
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 384.90000000596046,
+        "duration_ms": 74.59999999403954,
+        "response_start_ms": 458.40000000596046,
+        "response_end_ms": 459.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 467.09999999403954,
+        "duration_ms": 40.70000000298023,
+        "response_start_ms": 506.90000000596046,
+        "response_end_ms": 507.79999999701977
+      }
+    ]
+  },
+  {
+    "open": 43,
+    "timestamp": "2026-11-02T13:47:16.148Z",
+    "value_ms": 119,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 38.400000005960464,
+      "response_start_ms": 5,
+      "response_end_ms": 5.600000008940697,
+      "dom_content_loaded_ms": 31
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 10.5,
+        "duration_ms": 15.600000008940697,
+        "response_start_ms": 24.700000002980232,
+        "response_end_ms": 26.100000008940697
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 10.600000008940697,
+        "duration_ms": 16.399999991059303,
+        "response_start_ms": 26.30000001192093,
+        "response_end_ms": 27
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 10.600000008940697,
+        "duration_ms": 17.399999991059303,
+        "response_start_ms": 27.200000002980232,
+        "response_end_ms": 28
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 30.700000002980232,
+        "duration_ms": 4.9000000059604645,
+        "response_start_ms": 34.1000000089407,
+        "response_end_ms": 35.6000000089407
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 30.900000005960464,
+        "duration_ms": 5.200000002980232,
+        "response_start_ms": 35,
+        "response_end_ms": 36.1000000089407
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 73,
+        "duration_ms": 9.400000005960464,
+        "response_start_ms": 81.70000000298023,
+        "response_end_ms": 82.40000000596046
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 95.5,
+        "duration_ms": 20.200000002980232,
+        "response_start_ms": 115.20000000298023,
+        "response_end_ms": 115.70000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 119.70000000298023,
+        "duration_ms": 11.5,
+        "response_start_ms": 130.90000000596046,
+        "response_end_ms": 131.20000000298023
+      }
+    ]
+  },
+  {
+    "open": 44,
+    "timestamp": "2026-11-02T13:47:31.153Z",
+    "value_ms": 105,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 32.099999994039536,
+      "response_start_ms": 4.399999991059303,
+      "response_end_ms": 4.799999997019768,
+      "dom_content_loaded_ms": 25.899999991059303
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.599999994039536,
+        "duration_ms": 13.5,
+        "response_start_ms": 21.299999997019768,
+        "response_end_ms": 22.099999994039536
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.699999988079071,
+        "duration_ms": 14.200000002980232,
+        "response_start_ms": 22.19999998807907,
+        "response_end_ms": 22.899999991059303
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.699999988079071,
+        "duration_ms": 14.400000005960464,
+        "response_start_ms": 22.399999991059303,
+        "response_end_ms": 23.099999994039536
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25.5,
+        "duration_ms": 4.799999997019768,
+        "response_start_ms": 28.799999997019768,
+        "response_end_ms": 30.299999997019768
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 25.599999994039536,
+        "duration_ms": 3.7999999970197678,
+        "response_start_ms": 28.599999994039536,
+        "response_end_ms": 29.399999991059303
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 51.29999999701977,
+        "duration_ms": 7.399999991059303,
+        "response_start_ms": 57.8999999910593,
+        "response_end_ms": 58.69999998807907
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 81.5,
+        "duration_ms": 15.399999991059303,
+        "response_start_ms": 96.29999999701977,
+        "response_end_ms": 96.8999999910593
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 105.29999999701977,
+        "duration_ms": 11,
+        "response_start_ms": 115.8999999910593,
+        "response_end_ms": 116.29999999701977
+      }
+    ]
+  },
+  {
+    "open": 45,
+    "timestamp": "2026-11-02T13:47:46.161Z",
+    "value_ms": 105,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 40.30000001192093,
+      "response_start_ms": 5.9000000059604645,
+      "response_end_ms": 6.4000000059604645,
+      "dom_content_loaded_ms": 33.1000000089407
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 12.300000011920929,
+        "duration_ms": 16.399999991059303,
+        "response_start_ms": 27.30000001192093,
+        "response_end_ms": 28.700000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 12.400000005960464,
+        "duration_ms": 16.900000005960464,
+        "response_start_ms": 28.30000001192093,
+        "response_end_ms": 29.30000001192093
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 12.400000005960464,
+        "duration_ms": 18,
+        "response_start_ms": 29.600000008940697,
+        "response_end_ms": 30.400000005960464
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 32.80000001192093,
+        "duration_ms": 5,
+        "response_start_ms": 36.20000000298023,
+        "response_end_ms": 37.80000001192093
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 32.900000005960464,
+        "duration_ms": 5.700000002980232,
+        "response_start_ms": 36.400000005960464,
+        "response_end_ms": 38.6000000089407
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 56.6000000089407,
+        "duration_ms": 9.299999997019768,
+        "response_start_ms": 65.30000001192093,
+        "response_end_ms": 65.90000000596046
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 83.5,
+        "duration_ms": 18.700000002980232,
+        "response_start_ms": 101.70000000298023,
+        "response_end_ms": 102.20000000298023
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 105.20000000298023,
+        "duration_ms": 10.400000005960464,
+        "response_start_ms": 115,
+        "response_end_ms": 115.6000000089407
+      }
+    ]
+  },
+  {
+    "open": 46,
+    "timestamp": "2026-11-02T13:48:01.168Z",
+    "value_ms": 102,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 31.799999997019768,
+      "response_start_ms": 4.600000008940697,
+      "response_end_ms": 4.9000000059604645,
+      "dom_content_loaded_ms": 25.400000005960464
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 8.299999997019768,
+        "duration_ms": 13.400000005960464,
+        "response_start_ms": 20.299999997019768,
+        "response_end_ms": 21.700000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 8.299999997019768,
+        "duration_ms": 14,
+        "response_start_ms": 21.799999997019768,
+        "response_end_ms": 22.299999997019768
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 8.400000005960464,
+        "duration_ms": 13.899999991059303,
+        "response_start_ms": 21.600000008940697,
+        "response_end_ms": 22.299999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 25.100000008940697,
+        "duration_ms": 4.5,
+        "response_start_ms": 27.900000005960464,
+        "response_end_ms": 29.600000008940697
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 25.200000002980232,
+        "duration_ms": 5.0999999940395355,
+        "response_start_ms": 29.5,
+        "response_end_ms": 30.299999997019768
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 47.900000005960464,
+        "duration_ms": 8.200000002980232,
+        "response_start_ms": 55.1000000089407,
+        "response_end_ms": 56.1000000089407
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 78.70000000298023,
+        "duration_ms": 21.099999994039536,
+        "response_start_ms": 99.40000000596046,
+        "response_end_ms": 99.79999999701977
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 102.5,
+        "duration_ms": 10.600000008940697,
+        "response_start_ms": 112.70000000298023,
+        "response_end_ms": 113.1000000089407
+      }
+    ]
+  },
+  {
+    "open": 47,
+    "timestamp": "2026-11-02T13:48:16.170Z",
+    "value_ms": 107,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 29.099999994039536,
+      "response_start_ms": 3.3999999910593033,
+      "response_end_ms": 3.7000000029802322,
+      "dom_content_loaded_ms": 23.799999997019768
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 7.200000002980232,
+        "duration_ms": 12.899999991059303,
+        "response_start_ms": 19.200000002980232,
+        "response_end_ms": 20.099999994039536
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 7.200000002980232,
+        "duration_ms": 13.099999994039536,
+        "response_start_ms": 19.599999994039536,
+        "response_end_ms": 20.299999997019768
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 7.299999997019768,
+        "duration_ms": 13.5,
+        "response_start_ms": 20.299999997019768,
+        "response_end_ms": 20.799999997019768
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 23.5,
+        "duration_ms": 4.5999999940395355,
+        "response_start_ms": 26.899999991059303,
+        "response_end_ms": 28.099999994039536
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 23.599999994039536,
+        "duration_ms": 3.2000000029802322,
+        "response_start_ms": 26.399999991059303,
+        "response_end_ms": 26.799999997019768
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 57.5,
+        "duration_ms": 7.5,
+        "response_start_ms": 64.3999999910593,
+        "response_end_ms": 65
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 78.5,
+        "duration_ms": 17.799999997019768,
+        "response_start_ms": 95.59999999403954,
+        "response_end_ms": 96.29999999701977
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 107.70000000298023,
+        "duration_ms": 9.699999988079071,
+        "response_start_ms": 117.09999999403954,
+        "response_end_ms": 117.3999999910593
+      }
+    ]
+  },
+  {
+    "open": 48,
+    "timestamp": "2026-11-02T13:48:31.171Z",
+    "value_ms": 115,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 38,
+      "response_start_ms": 5.5,
+      "response_end_ms": 6.0999999940395355,
+      "dom_content_loaded_ms": 30.5
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 11.400000005960464,
+        "duration_ms": 14.699999988079071,
+        "response_start_ms": 24.5,
+        "response_end_ms": 26.099999994039536
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 11.400000005960464,
+        "duration_ms": 15.599999994039536,
+        "response_start_ms": 26,
+        "response_end_ms": 27
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 11.5,
+        "duration_ms": 16.200000002980232,
+        "response_start_ms": 26.900000005960464,
+        "response_end_ms": 27.700000002980232
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 30.200000002980232,
+        "duration_ms": 5.299999997019768,
+        "response_start_ms": 33.900000005960464,
+        "response_end_ms": 35.5
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 30.299999997019768,
+        "duration_ms": 6.200000002980232,
+        "response_start_ms": 34.79999999701977,
+        "response_end_ms": 36.5
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 65,
+        "duration_ms": 9.099999994039536,
+        "response_start_ms": 73.20000000298023,
+        "response_end_ms": 74.09999999403954
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 86.90000000596046,
+        "duration_ms": 13.699999988079071,
+        "response_start_ms": 100.29999999701977,
+        "response_end_ms": 100.59999999403954
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 115.70000000298023,
+        "duration_ms": 8.899999991059303,
+        "response_start_ms": 124.29999999701977,
+        "response_end_ms": 124.59999999403954
+      }
+    ]
+  },
+  {
+    "open": 49,
+    "timestamp": "2026-11-02T13:48:46.184Z",
+    "value_ms": 106,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 29.700000002980232,
+      "response_start_ms": 3.5,
+      "response_end_ms": 3.7999999970197678,
+      "dom_content_loaded_ms": 24.099999994039536
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 7.0999999940395355,
+        "duration_ms": 12.600000008940697,
+        "response_start_ms": 18.900000005960464,
+        "response_end_ms": 19.700000002980232
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 7.0999999940395355,
+        "duration_ms": 13.600000008940697,
+        "response_start_ms": 20,
+        "response_end_ms": 20.700000002980232
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 7.200000002980232,
+        "duration_ms": 13.299999997019768,
+        "response_start_ms": 19.900000005960464,
+        "response_end_ms": 20.5
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 23.599999994039536,
+        "duration_ms": 4.600000008940697,
+        "response_start_ms": 26.799999997019768,
+        "response_end_ms": 28.200000002980232
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 23.799999997019768,
+        "duration_ms": 3.4000000059604645,
+        "response_start_ms": 26.799999997019768,
+        "response_end_ms": 27.200000002980232
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 48.29999999701977,
+        "duration_ms": 8.799999997019768,
+        "response_start_ms": 56.20000000298023,
+        "response_end_ms": 57.099999994039536
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 79.09999999403954,
+        "duration_ms": 23.80000001192093,
+        "response_start_ms": 102.09999999403954,
+        "response_end_ms": 102.90000000596046
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 106.09999999403954,
+        "duration_ms": 11.900000005960464,
+        "response_start_ms": 117.40000000596046,
+        "response_end_ms": 118
+      }
+    ]
+  },
+  {
+    "open": 50,
+    "timestamp": "2026-11-02T13:49:01.195Z",
+    "value_ms": 2266,
+    "status": 204,
+    "navigation": {
+      "duration_ms": 1955.0999999940395,
+      "response_start_ms": 1844.3999999910593,
+      "response_end_ms": 1845.5,
+      "dom_content_loaded_ms": 1935.0999999940395
+    },
+    "resources": [
+      {
+        "path": "/assets/index-62eoBCk4.js",
+        "start_ms": 1858.2999999970198,
+        "duration_ms": 57.70000000298023,
+        "response_start_ms": 1914.199999988079,
+        "response_end_ms": 1916
+      },
+      {
+        "path": "/assets/store-JP7wL8lq.js",
+        "start_ms": 1858.5,
+        "duration_ms": 64.8999999910593,
+        "response_start_ms": 1922.0999999940395,
+        "response_end_ms": 1923.3999999910593
+      },
+      {
+        "path": "/assets/store-CvyeJ1pM.css",
+        "start_ms": 1858.699999988079,
+        "duration_ms": 64,
+        "response_start_ms": 1921.7999999970198,
+        "response_end_ms": 1922.699999988079
+      },
+      {
+        "path": "/assets/main-BY88IBeV.js",
+        "start_ms": 1932.3999999910593,
+        "duration_ms": 31.900000005960464,
+        "response_start_ms": 1947.0999999940395,
+        "response_end_ms": 1964.2999999970198
+      },
+      {
+        "path": "/assets/main-B9dA1j2P.css",
+        "start_ms": 1933.699999988079,
+        "duration_ms": 17.30000001192093,
+        "response_start_ms": 1948.8999999910593,
+        "response_end_ms": 1951
+      },
+      {
+        "path": "/api/v1/learners/me",
+        "start_ms": 2058,
+        "duration_ms": 24.299999997019768,
+        "response_start_ms": 2081.199999988079,
+        "response_end_ms": 2082.2999999970198
+      },
+      {
+        "path": "/api/v1/today",
+        "start_ms": 2137.8999999910593,
+        "duration_ms": 121.6000000089407,
+        "response_start_ms": 2258.2999999970198,
+        "response_end_ms": 2259.5
+      },
+      {
+        "path": "/api/v1/telemetry/client-timings",
+        "start_ms": 2267.0999999940395,
+        "duration_ms": 24.900000005960464,
+        "response_start_ms": 2291.199999988079,
+        "response_end_ms": 2292
+      }
+    ]
+  }
+]
