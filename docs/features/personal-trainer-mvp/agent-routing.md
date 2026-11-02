@@ -1,6 +1,6 @@
 # Вибір Agency-агентів і моделей для реалізації
 
-Оновлено: 2026-11-01. Це план призначення виконавців для 49 задач, а не результат їх виконання. Джерело призначень — [tasks/tasks.json](./tasks/tasks.json): `execution_profiles` описує Agency-ролі, а `execution` кожної задачі задає профіль, модель, рівень міркування та обґрунтування. Статуси виконання залишаються в [tracker.md](./tasks/tracker.md).
+Оновлено: 2026-11-02. Це план призначення виконавців для 49 задач, а не результат їх виконання. Джерело призначень — [tasks/tasks.json](./tasks/tasks.json): `execution_profiles` описує Agency-ролі, а `execution` кожної задачі задає профіль, модель, рівень міркування та обґрунтування. Статуси виконання залишаються в [tracker.md](./tasks/tracker.md).
 
 ## Порівняння з Agency
 
@@ -27,9 +27,9 @@ Agency `UI Designer` / `agency-ui-designer` додано як необов'яз�
 
 ## Моделі
 
-За замовчуванням використовується `gpt-6.1-sol` із `high`. Для 16 задач із часовими межами, складною історією стану, конкурентними транзакціями, доставкою чи руйнівною міграцією призначено `gpt-6-astra` із `high`. Це інженерна оцінка ризику задач, не результат порівняльного запуску моделей на репозиторії.
+Рішення користувача від 2026-11-02 перевизначає попередні призначення для всіх незавершених задач: основний виконавець — `gpt-6.1-terra` з `medium`; гранично дозволена модель — `gpt-6.1-sol`. Astra більше не запускається. Підвищення до Sol допускається лише за конкретною невирішеною проблемою; сам обсяг задачі не є підставою. Agency-ролі, скіли, залежності й DoD зберігаються.
 
-Luna та Terra не призначені основними виконавцями: у цьому плані навіть UI-задачі інтегруються з авторизацією, станом session та контрактами. Детальне обґрунтування кожного призначення — `execution.rationale`.
+Призначення завершених задач нижче збережено як історію фактичного виконання, а не дозвіл повторно запускати дорогі моделі. Поточні параметри решти задач записано в [tasks.json](tasks/tasks.json); стан — у [трекері](tasks/tracker.md).
 
 ## Як координатор застосовує позначки
 
@@ -39,7 +39,7 @@ Luna та Terra не призначені основними виконавця�
 4. Розв'язати `execution.profile` через `execution_profiles`, знайти встановлений скіл за назвою та прочитати його. Використовувати доступний `agent_type`, `model` і `reasoning_effort` задачі. Для явного вибору моделі запускати субагента з `fork_turns: none`: успадкування всієї розмови не підтримує перевизначення моделі.
 5. Передати виконавцю AGENTS.md, Markdown задачі, потрібні розділи PRD/SAD/ADR, контракти та результати залежностей, `scope` профілю й точний перелік файлів у його відповідальності. Явно повідомити, що інші агенти працюють поруч і їхні зміни не можна скасовувати. Для розширення набору файлів спершу повторно перевірити перетини.
 6. Якщо роль недоступна, але скіл доступний, використати `worker` із явно прочитаним Agency-скілом. Якщо скіла немає, не називати запуск Agency-виконанням. Недоступну модель не підміняти мовчки: повідомити про обмеження й узгодити доступний варіант.
-7. `consult_profiles` — необов'язкова вузька консультація в межах тих самих лімітів, а не автоматичний запуск другого виконавця. За складної невирішеної проблеми Sol можна передати задачу Astra з конкретним описом невдалої спроби й результатами перевірок. Самої тривалості роботи недостатньо для ескалації.
+7. `consult_profiles` — необов'язкова вузька консультація в межах тих самих лімітів, а не автоматичний запуск другого виконавця. За конкретної невирішеної проблеми Terra можна передати задачу Sol із описом невдалої спроби й результатами перевірок; Astra заборонена рішенням користувача. Самої тривалості роботи недостатньо для ескалації.
 8. Виконати перевірки з DoD задачі, зберегти фактичні результати й передати diff координатору. Позначка моделі, успішне завершення агента або його впевненість не є підставою для `done`. Вимоги до комітів і статусів визначають чинні правила реалізації. Призначення агента на [T44](tasks/T44-migrate-drop-group-model.md)/[T45](tasks/T45-deployment-fixes.md) не означає дозволу виконувати реліз чи руйнівну операцію в робочій БД.
 
 Рішення користувача й погоджені PRD/ADR/DoD визначають обсяг. Загальні правила Agency не відновлюють скасований security review, не додають frontend CI і не змінюють один Telegram smoke на нову програму ручного тестування. Backend CI та навантажувальні перевірки [T49](tasks/T49-load-test.md) зберігають власні вимоги.
@@ -68,34 +68,34 @@ Luna та Terra не призначені основними виконавця�
 | [T47](./tasks/T47-session-limits-quotas.md) | Backend Architect | `gpt-6-astra` | `high` |
 | [T16](./tasks/T16-session-continuation.md) | Backend Architect | `gpt-6-astra` | `high` |
 | [T17](./tasks/T17-answer-item.md) | Backend Architect | `gpt-6-astra` | `high` |
-| [T48](./tasks/T48-word-status-transitions.md) | Backend Architect | `gpt-6-astra` | `high` |
-| [T18](./tasks/T18-new-word-card.md) | Backend Architect | `gpt-6-astra` | `high` |
-| [T19](./tasks/T19-today-api.md) | Backend Architect | `gpt-6.1-sol` | `high` |
+| [T48](./tasks/T48-word-status-transitions.md) | Backend Architect | `gpt-6.1-terra` | `medium` |
+| [T18](./tasks/T18-new-word-card.md) | Backend Architect | `gpt-6.1-terra` | `medium` |
+| [T19](./tasks/T19-today-api.md) | Backend Architect | `gpt-6.1-terra` | `medium` |
 | [T20](./tasks/T20-dictionary-import.md) | Backend Architect | `gpt-6-astra` | `high` |
 | [T21](./tasks/T21-search-forms.md) | Backend Architect | `gpt-6.1-sol` | `high` |
 | [T22](./tasks/T22-dictionary-search-api.md) | Backend Architect | `gpt-6.1-sol` | `high` |
 | [T23](./tasks/T23-content-report-api.md) | Backend Architect | `gpt-6.1-sol` | `high` |
-| [T24](./tasks/T24-answer-dispute.md) | Backend Architect | `gpt-6-astra` | `high` |
+| [T24](./tasks/T24-answer-dispute.md) | Backend Architect | `gpt-6.1-terra` | `medium` |
 | [T25](./tasks/T25-reference-snapshots.md) | Backend Architect | `gpt-6.1-sol` | `high` |
 | [T26](./tasks/T26-auto-verification.md) | Backend Architect | `gpt-6-astra` | `high` |
 | [T27](./tasks/T27-editor-queue.md) | Backend Architect | `gpt-6.1-sol` | `high` |
 | [T28](./tasks/T28-applied-changes-rollback.md) | Backend Architect | `gpt-6-astra` | `high` |
 | [T29](./tasks/T29-notification-dispatcher.md) | Backend Architect | `gpt-6-astra` | `high` |
-| [T30](./tasks/T30-reminders.md) | Backend Architect | `gpt-6-astra` | `high` |
+| [T30](./tasks/T30-reminders.md) | Backend Architect | `gpt-6.1-terra` | `medium` |
 | [T31](./tasks/T31-summaries-digest.md) | Backend Architect | `gpt-6.1-sol` | `high` |
 | [T32](./tasks/T32-bot-webhook.md) | Backend Architect | `gpt-6.1-sol` | `high` |
 | [T33](./tasks/T33-client-telemetry.md) | Backend Architect | `gpt-6.1-sol` | `high` |
 | [T34](./tasks/T34-miniapp-skeleton.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
 | [T35](./tasks/T35-ui-onboarding.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
 | [T36](./tasks/T36-ui-today.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
-| [T37](./tasks/T37-ui-session-shell.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
-| [T38](./tasks/T38-ui-recall.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
+| [T37](./tasks/T37-ui-session-shell.md) | Frontend Developer | `gpt-6.1-terra` | `medium` |
+| [T38](./tasks/T38-ui-recall.md) | Frontend Developer | `gpt-6.1-terra` | `medium` |
 | [T39](./tasks/T39-ui-dictionary.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
 | [T40](./tasks/T40-ui-content-report.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
 | [T41](./tasks/T41-ui-settings.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
-| [T42](./tasks/T42-ui-editor.md) | Frontend Developer | `gpt-6.1-sol` | `high` |
-| [T43](./tasks/T43-retire-group-code.md) | Minimal Change Engineer | `gpt-6.1-sol` | `high` |
-| [T44](./tasks/T44-migrate-drop-group-model.md) | Database Reliability Engineer | `gpt-6-astra` | `high` |
+| [T42](./tasks/T42-ui-editor.md) | Frontend Developer | `gpt-6.1-terra` | `medium` |
+| [T43](./tasks/T43-retire-group-code.md) | Minimal Change Engineer | `gpt-6.1-terra` | `medium` |
+| [T44](./tasks/T44-migrate-drop-group-model.md) | Database Reliability Engineer | `gpt-6.1-terra` | `medium` |
 | [T45](./tasks/T45-deployment-fixes.md) | DevOps Automator | `gpt-6.1-sol` | `high` |
-| [T46](./tasks/T46-e2e-critical-flows.md) | Test Automation Engineer | `gpt-6.1-sol` | `high` |
-| [T49](./tasks/T49-load-test.md) | Performance Benchmarker | `gpt-6.1-sol` | `high` |
+| [T46](./tasks/T46-e2e-critical-flows.md) | Test Automation Engineer | `gpt-6.1-terra` | `medium` |
+| [T49](./tasks/T49-load-test.md) | Performance Benchmarker | `gpt-6.1-terra` | `medium` |

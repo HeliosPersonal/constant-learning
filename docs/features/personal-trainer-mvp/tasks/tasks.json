@@ -7,9 +7,12 @@
     "model_override_fork_turns": "none",
     "max_concurrent_workers": 3,
     "fallback_agent_type": "worker",
-    "escalation_model": "gpt-6-astra",
+    "escalation_model": "gpt-6.1-sol",
     "scope_precedence": "AGENTS.md, рішення користувача, PRD/ADR і DoD задачі визначають обсяг; загальні вимоги Agency не розширюють його.",
-    "scheduling": "Лише після deps; спільні files_hint з урахуванням вкладених шляхів та міграції серіалізуються. Перед стартом уточнити фактичні файли; новий перетин зупиняє паралельний запис."
+    "scheduling": "Лише після deps; спільні files_hint з урахуванням вкладених шляхів та міграції серіалізуються. Перед стартом уточнити фактичні файли; новий перетин зупиняє паралельний запис.",
+    "default_model": "gpt-6.1-terra",
+    "model_ceiling": "gpt-6.1-sol",
+    "model_override_decision": "2026-11-02: користувач обмежив подальших виконавців максимум Sol; перевага Terra, без Astra."
   },
   "execution_profiles": {
     "backend": {
@@ -545,9 +548,9 @@
       ],
       "execution": {
         "profile": "backend",
-        "model": "gpt-6-astra",
-        "reasoning_effort": "high",
-        "rationale": "Статус і control repetition змінюються атомарно разом із відповіддю."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Статус і control repetition змінюються атомарно разом із відповіддю. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -571,9 +574,9 @@
       ],
       "execution": {
         "profile": "backend",
-        "model": "gpt-6-astra",
-        "reasoning_effort": "high",
-        "rationale": "Перший показ, заміни Вже знаю та денний облік перетинають кілька станів."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Перший показ, заміни Вже знаю та денний облік перетинають кілька станів. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -596,9 +599,9 @@
       ],
       "execution": {
         "profile": "backend",
-        "model": "gpt-6.1-sol",
-        "reasoning_effort": "high",
-        "rationale": "Агрегації прогресу й активної session мають визначені правила видимості."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Агрегації прогресу й активної session мають визначені правила видимості. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -733,9 +736,9 @@
       ],
       "execution": {
         "profile": "backend",
-        "model": "gpt-6-astra",
-        "reasoning_effort": "high",
-        "rationale": "Нейтралізація відповіді відновлює попередній стан без повторного зарахування."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Нейтралізація відповіді відновлює попередній стан без повторного зарахування. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -882,9 +885,9 @@
       ],
       "execution": {
         "profile": "backend",
-        "model": "gpt-6-astra",
-        "reasoning_effort": "high",
-        "rationale": "Відкладення нагадування перетинається зі зміною поясу, активністю та кінцем доби."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Відкладення нагадування перетинається зі зміною поясу, активністю та кінцем доби. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -1054,9 +1057,9 @@
       ],
       "execution": {
         "profile": "frontend",
-        "model": "gpt-6.1-sol",
-        "reasoning_effort": "high",
-        "rationale": "Клієнтські переходи карток, продовження та session.expired за серверним контрактом."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Клієнтські переходи карток, продовження та session.expired за серверним контрактом. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -1085,9 +1088,9 @@
       ],
       "execution": {
         "profile": "frontend",
-        "model": "gpt-6.1-sol",
-        "reasoning_effort": "high",
-        "rationale": "Ввід, diff, оскарження та повтор мутації за визначеним контрактом."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Ввід, diff, оскарження та повтор мутації за визначеним контрактом. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -1190,9 +1193,9 @@
       ],
       "execution": {
         "profile": "frontend",
-        "model": "gpt-6.1-sol",
-        "reasoning_effort": "high",
-        "rationale": "Редакторська черга, роль і відкат через готові серверні операції."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Редакторська черга, роль і відкат через готові серверні операції. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -1218,9 +1221,9 @@
       ],
       "execution": {
         "profile": "minimal_change",
-        "model": "gpt-6.1-sol",
-        "reasoning_effort": "high",
-        "rationale": "Вузьке видалення legacy-коду без побічного рефакторингу."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Вузьке видалення legacy-коду без побічного рефакторингу. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -1239,9 +1242,9 @@
       ],
       "execution": {
         "profile": "database_reliability",
-        "model": "gpt-6-astra",
-        "reasoning_effort": "high",
-        "rationale": "Руйнівна міграція та можливість відновлення вимагають DBRE і посиленого міркування."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Руйнівна міграція та можливість відновлення вимагають DBRE і посиленого міркування. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -1289,9 +1292,9 @@
       ],
       "execution": {
         "profile": "e2e",
-        "model": "gpt-6.1-sol",
-        "reasoning_effort": "high",
-        "rationale": "Playwright і mockTelegramEnv прямо відповідають Test Automation Engineer."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Playwright і mockTelegramEnv прямо відповідають Test Automation Engineer. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     },
     {
@@ -1315,9 +1318,9 @@
       ],
       "execution": {
         "profile": "performance",
-        "model": "gpt-6.1-sol",
-        "reasoning_effort": "high",
-        "rationale": "Профіль навантаження, p95 та доказовий звіт відповідають Performance Benchmarker."
+        "model": "gpt-6.1-terra",
+        "reasoning_effort": "medium",
+        "rationale": "Профіль навантаження, p95 та доказовий звіт відповідають Performance Benchmarker. Перевизначення користувача від 2026-11-02: Terra для решти робіт із контролем вартості; за доведеної потреби максимум Sol, без Astra."
       }
     }
   ]
