@@ -18,7 +18,7 @@ public class RepetitionJob(
 {
     private readonly LearningOptions _learningOptions = learningOptions.Value;
 
-    public async Task Execute(IJobExecutionContext context)
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken)
     {
         try
         {

@@ -12,7 +12,7 @@ public static class ContentVerificationModule
             var key = new JobKey("ContentVerification");
             options.AddJob<ContentVerificationJob>(job => job.WithIdentity(key));
             options.AddTrigger(trigger => trigger.ForJob(key).WithIdentity("ContentVerification-trigger")
-                .WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(30).RepeatForever()));
+                .WithSimpleSchedule(schedule => schedule.WithInterval(TimeSpan.FromSeconds(30)).RepeatForever()));
         });
         return services;
     }
@@ -21,5 +21,5 @@ public static class ContentVerificationModule
 [DisallowConcurrentExecution]
 public sealed class ContentVerificationJob(ContentVerificationWorker worker) : IJob
 {
-    public async Task Execute(IJobExecutionContext context) => await worker.TickAsync(context.CancellationToken);
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken) => await worker.TickAsync(cancellationToken);
 }

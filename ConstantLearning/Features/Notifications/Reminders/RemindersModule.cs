@@ -17,7 +17,7 @@ public static class RemindersModule
             var key = new JobKey("ReminderPlanner");
             options.AddJob<ReminderPlannerJob>(job => job.WithIdentity(key));
             options.AddTrigger(trigger => trigger.ForJob(key).WithIdentity("ReminderPlanner-trigger")
-                .WithSimpleSchedule(schedule => schedule.WithIntervalInSeconds(30).RepeatForever()));
+                .WithSimpleSchedule(schedule => schedule.WithInterval(TimeSpan.FromSeconds(30)).RepeatForever()));
         });
         return services;
     }
@@ -26,5 +26,5 @@ public static class RemindersModule
 [DisallowConcurrentExecution]
 public sealed class ReminderPlannerJob(ReminderPlanner planner) : IJob
 {
-    public async Task Execute(IJobExecutionContext context) => await planner.TickAsync(context.CancellationToken);
+    public async ValueTask Execute(IJobExecutionContext context, CancellationToken cancellationToken) => await planner.TickAsync(cancellationToken);
 }
