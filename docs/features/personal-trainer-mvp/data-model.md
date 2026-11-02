@@ -213,10 +213,13 @@ erDiagram
 | `kind` | VARCHAR(24) | NOT NULL | `review` / `new_word_card` / `new_word_check` / `control_repetition` |
 | `state` | VARCHAR(16) | NOT NULL | `pending` / `answered` / `skipped` |
 | `answer_payload_hash` | VARCHAR(64) | NULL | порівняння повтору «той самий / інший вміст» |
+| `response_payload` | JSONB | NULL | незмінний непрозорий знімок результату команди для повтору; [T17](tasks/T17-answer-item.md) |
 | `answered_at` | TIMESTAMPTZ | NULL | |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
 **Aggregate root:** `learning_sessions`. **Constraints:** UNIQUE (`session_id`, `position`).
+
+Nullable-колонку `response_payload` додає EF-міграція `PersistSessionItemResponse` без backfill, defaults чи зміни початкових SQL. [T17](tasks/T17-answer-item.md) зберігає повний `AnswerResult`, включно з наступною карткою, у транзакції з умовним переходом `pending → answered`, подією відповіді та проєкцією слова. Повтор із тим самим хешем повертає цей знімок незалежно від змін контенту й подальшого прогресу. Перевірка власника та межі session передує повтору. Хеш включає тип дії, дослівний текст (null для відсутнього тексту) і `dont_know`; порядок JSON-полів неважливий. Непрозорий payload придатний і для інших результатів команд [T18](tasks/T18-new-word-card.md); він не підміняє `answer_events.state_before`.
 
 ### Агрегат Learning — `answer_events` (append-only)
 

@@ -11,6 +11,7 @@ public sealed class SessionItem
     public required string Kind { get; set; }
     public required string State { get; set; }
     public string? AnswerPayloadHash { get; set; }
+    public string? ResponsePayload { get; set; }
     public Instant? AnsweredAt { get; set; }
     public Instant CreatedAt { get; set; }
     public uint Version { get; set; }

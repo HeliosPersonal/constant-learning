@@ -1384,6 +1384,10 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("position");
 
+                    b.Property<string>("ResponsePayload")
+                        .HasColumnType("jsonb")
+                        .HasColumnName("response_payload");
+
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uuid")
                         .HasColumnName("session_id");

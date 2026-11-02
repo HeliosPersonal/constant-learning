@@ -13,6 +13,7 @@ internal sealed class SessionItemConfiguration : IEntityTypeConfiguration<Sessio
         builder.Property(item => item.Kind).HasMaxLength(24).IsRequired();
         builder.Property(item => item.State).HasMaxLength(16).IsRequired();
         builder.Property(item => item.AnswerPayloadHash).HasMaxLength(64);
+        builder.Property(item => item.ResponsePayload).HasColumnType("jsonb");
         builder.Property(item => item.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(item => item.Version).IsRowVersion();
         builder.HasIndex(item => new { item.SessionId, item.Position }).IsUnique()

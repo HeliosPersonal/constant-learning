@@ -77,7 +77,7 @@ public sealed class CurrentSessionTests(PostgresFixture postgres) : PostgresInte
             SessionId = session.Id,
             EntryId = newCards[0].EntryId,
             Position = 8,
-            Kind = "initial_recall",
+            Kind = "new_word_check",
             State = "pending",
             CreatedAt = Clock.GetCurrentInstant()
         });

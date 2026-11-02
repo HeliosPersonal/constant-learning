@@ -1,4 +1,5 @@
 using ConstantLearning.Features.Content.Course;
+using ConstantLearning.Features.Content.Learning;
 using ConstantLearning.Features.Content.Editor.Queue;
 using ConstantLearning.Features.Content.Editor.Rollback;
 using ConstantLearning.Features.Content.Import;
@@ -27,6 +28,7 @@ public static class ContentModule
         services.AddReferenceSources();
         services.AddDictionarySearch();
         services.AddPublishedCourseReader();
+        services.AddAnswerContentReader();
         services.AddContentReports();
         services.AddContentVerification();
         services.AddScoped<EditorQueueService>();

@@ -24,6 +24,16 @@ US-03 у [PRD](../PRD.md); Critical flow 1 і «Оцінка відповіді 
 
 Файли: `ConstantLearning/Features/Learning/Sessions/Answer/`, `ConstantLearning.Tests/Learning/Sessions/`
 
+## Межі реалізації
+
+Поточний approved-контент, прийняті форми й канонічні підказки інших записів надходять через Content port `IAnswerContentReader`; Learning не читає таблиці Content напряму. `SessionItem.ResponsePayload` у [моделі даних](../data-model.md) зберігає точний результат команди в тій самій транзакції, що й подія та стан слова. Повтор не викликає оцінювання чи планувальник повторно. Після межі доби спільний guard із [T16](T16-session-continuation.md) зберігає закриття перед відповіддю 409.
+
+Адаптер `AnswerWordState` читає та записує проєкцію [планувальника](T10-review-scheduler.md), а `state_before` містить версіонований знімок полів слова й `model_state` для майбутнього [оскарження](T24-answer-dispute.md). Перевірка нового слова `new_word_check` не змінює запланований стан. Окремі регресії переходів статусу й control repetition належать [T48](T48-word-status-transitions.md).
+
+Якщо поточне слово втратило `approved`, сервер атомарно позначає картку `skipped` і повертає HTTP 409 з кодом `answer.content_unavailable`, без події відповіді чи зміни стану слова. Клієнт після цієї відмови перечитує `GET /api/v1/sessions/current`, щоб перейти до доступної картки або повернутися на «Сьогодні»; цей перехід має врахувати [клієнт заняття](T38-ui-recall.md).
+
+Фактичний Release-прогін 200 відповідей на фікстурі з 1 000 слів описано у [звіті вимірювання](../test-output/session-answer-benchmark.md), зі [сирими вимірюваннями](../test-output/session-answer-samples.csv).
+
 ## Definition of Done
 
 - [ ] інтеграційний тест подвійного надсилання дає рівно одну подію відповіді (QG-1)
