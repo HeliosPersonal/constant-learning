@@ -11,6 +11,7 @@ public static class LearningModule
     {
         services.TryAddSingleton<ILearnerDayService, LearnerDayService>();
         services.TryAddScoped<ILearnerWordStatusReader, LearnerWordStatusReader>();
+        services.AddAnswerDisputeSourceReader();
         services.TryAddScoped<StartSessionService>();
         return services;
     }

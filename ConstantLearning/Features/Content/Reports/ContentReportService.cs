@@ -1,6 +1,7 @@
 using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Features.Identity.Aliases;
 using ConstantLearning.Features.Identity.LearnerDays;
+using ConstantLearning.Features.Learning.Words;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -9,7 +10,7 @@ using Npgsql;
 namespace ConstantLearning.Features.Content.Reports;
 
 public sealed class ContentReportService(AppDbContext db, ILearnerDayStateService learnerDays,
-    IReporterAliasService aliases, IClock clock) : IContentReportService
+    IReporterAliasService aliases, IAnswerDisputeSourceReader answerSources, IClock clock) : IContentReportService
 {
     internal async Task<ContentReportResult> CreateAsync(Guid learnerId, ContentReportRequest request, CancellationToken cancellationToken)
     {
@@ -54,10 +55,17 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
         var now = clock.GetCurrentInstant();
         var report = new ContentReport
         {
-            LearnerId = learnerId, EntryId = request.EntryId, VersionId = versionId,
-            Origin = request.Origin, Field = request.Field, ProposedValue = request.ProposedValue,
-            Comment = request.Comment, SearchQuery = request.SearchQuery,
-            Status = verify ? "pending_verification" : "in_editor_queue", DedupKey = key, CreatedAt = now
+            LearnerId = learnerId,
+            EntryId = request.EntryId,
+            VersionId = versionId,
+            Origin = request.Origin,
+            Field = request.Field,
+            ProposedValue = request.ProposedValue,
+            Comment = request.Comment,
+            SearchQuery = request.SearchQuery,
+            Status = verify ? "pending_verification" : "in_editor_queue",
+            DedupKey = key,
+            CreatedAt = now
         };
         db.ContentReports.Add(report);
         VerificationJob? job = null;
@@ -65,7 +73,11 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
         {
             job = new VerificationJob
             {
-                ContentReportId = report.Id, Status = "pending", Attempts = 0, NextAttemptAt = now, CreatedAt = now
+                ContentReportId = report.Id,
+                Status = "pending",
+                Attempts = 0,
+                NextAttemptAt = now,
+                CreatedAt = now
             };
             db.VerificationJobs.Add(job);
         }
@@ -75,7 +87,7 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
             await db.SaveChangesAsync(cancellationToken);
         }
         catch (DbUpdateException exception) when (exception.InnerException is PostgresException
-               { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "ux_content_reports_open_dedup" })
+        { SqlState: PostgresErrorCodes.UniqueViolation, ConstraintName: "ux_content_reports_open_dedup" })
         {
             // SaveChanges відкотив власний savepoint; унікальний індекс страхує інші шляхи запису.
             if (job is not null) db.Entry(job).State = EntityState.Detached;
@@ -95,8 +107,7 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
             throw new InvalidOperationException("Report оскарження потребує транзакції викликувача.");
         }
 
-        var answer = await db.AnswerEvents.AsNoTracking().SingleOrDefaultAsync(value =>
-            value.Id == answerEventId && value.LearnerId == learnerId, cancellationToken);
+        var answer = await answerSources.ReadAsync(learnerId, answerEventId, cancellationToken);
         if (answer is null)
         {
             return null;
@@ -122,9 +133,14 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
         await aliases.GetOrCreateAsync(learnerId, cancellationToken);
         var report = new ContentReport
         {
-            LearnerId = learnerId, EntryId = answer.EntryId, VersionId = answer.VersionId, AnswerEventId = answer.Id,
-            Origin = "answer_dispute", ProposedValue = answer.RawAnswer,
-            Status = "in_editor_queue", CreatedAt = clock.GetCurrentInstant()
+            LearnerId = learnerId,
+            EntryId = answer.EntryId,
+            VersionId = answer.VersionId,
+            AnswerEventId = answer.AnswerId,
+            Origin = "answer_dispute",
+            ProposedValue = answer.RawAnswer,
+            Status = "in_editor_queue",
+            CreatedAt = clock.GetCurrentInstant()
         };
         db.ContentReports.Add(report);
         await db.SaveChangesAsync(cancellationToken);
