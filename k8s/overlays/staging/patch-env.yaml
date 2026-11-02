@@ -10,8 +10,3 @@ spec:
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: "Staging"
-            - name: ConnectionStrings__DefaultConnection
-              valueFrom:
-                secretKeyRef:
-                  name: constant-learning-db
-                  key: ConnectionStrings__DefaultConnection

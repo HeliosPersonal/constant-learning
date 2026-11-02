@@ -82,9 +82,6 @@ def settings():
         raise DeploymentError("Образ не належить цьому репозиторію.")
     if len(host) > 253 or not re.fullmatch(r"[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?", host) or "." not in host:
         raise DeploymentError("PUBLIC_HOST має бути DNS-іменем без схеми, порту або шляху.")
-    token = required("TELEGRAM_SECRET_TOKEN")
-    if not re.fullmatch(r"[A-Za-z0-9_-]{1,256}", token):
-        raise DeploymentError("Некоректний формат TELEGRAM_SECRET_TOKEN.")
     return sha, int(required("GITHUB_RUN_NUMBER")), image + "@" + digest, host
 
 
@@ -94,31 +91,31 @@ def secret(name, values, kind="Opaque"):
 
 
 def prepare(directory, image, host, sha, run_number):
-    config = directory / "kubeconfig"
-    try:
-        config.write_bytes(base64.b64decode(required("KUBECONFIG_BASE64"), validate=True))
-    except ValueError:
-        raise DeploymentError("KUBECONFIG має містити валідний base64.") from None
-    config.chmod(0o600)
+    encoded = os.environ.get("KUBECONFIG_BASE64", "").strip()
+    if encoded:
+        config = directory / "kubeconfig"
+        try:
+            config.write_bytes(base64.b64decode("".join(encoded.split()), validate=True))
+        except ValueError:
+            raise DeploymentError("KUBECONFIG має містити валідний base64.") from None
+        config.chmod(0o600)
+    else:
+        config = Path.home() / ".kube/config"
+        if not config.is_file():
+            raise DeploymentError("Немає KUBECONFIG secret або ~/.kube/config на runner Helios.")
     os.environ["KUBECONFIG"] = str(config)
 
     secrets = [
-        secret(APP + "-db", {"ConnectionStrings__DefaultConnection": required("CONNECTIONSTRINGS__DEFAULTCONNECTION")}),
-        secret(APP + "-telegram", {
-            "Telegram__BotToken": required("TELEGRAM_BOT_TOKEN"),
-            "Telegram__SecretToken": required("TELEGRAM_SECRET_TOKEN"),
-            "Telegram__WebhookUrl": f"https://{host}/api/telegram/webhook",
-            "Telegram__MiniAppUrl": f"https://{host}/",
-        }),
-        secret(APP + "-ghcr", {".dockerconfigjson": json.dumps({"auths": {"ghcr.io": {
-            "auth": base64.b64encode((required("GHCR_PULL_USERNAME") + ":" + required("GHCR_PULL_TOKEN")).encode()).decode()
-        }}})}, "kubernetes.io/dockerconfigjson"),
+        secret(APP + "-infisical", {name: required(name) for name in
+               ["INFISICAL_CLIENT_ID", "INFISICAL_CLIENT_SECRET", "INFISICAL_PROJECT_ID"]}),
     ]
     secret_file = directory / "secrets.json"
     secret_file.write_text(json.dumps({"apiVersion": "v1", "kind": "List", "items": secrets}), encoding="utf-8")
     secret_file.chmod(0o600)
 
     shutil.copytree(ROOT / "k8s", directory / "k8s")
+    deployment = directory / "k8s/base/deployment.yaml"
+    deployment.write_text(deployment.read_text(encoding="utf-8").replace("PUBLIC_HOST_REPLACED_BY_CICD", host), encoding="utf-8")
     overlay = directory / "k8s/overlays/production"
     ingress = overlay / "ingress.yaml"
     ingress.write_text(ingress.read_text(encoding="utf-8").replace("PUBLIC_HOST_REPLACED_BY_CICD", host), encoding="utf-8")

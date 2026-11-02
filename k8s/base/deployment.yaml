@@ -19,8 +19,6 @@ spec:
       labels:
         app: constant-learning
     spec:
-      imagePullSecrets:
-        - name: constant-learning-ghcr
       containers:
         - name: constant-learning
           image: ghcr.io/GITHUB_USERNAME/constant-learning:SHA_REPLACED_BY_CICD
@@ -31,11 +29,17 @@ spec:
               value: "Production"
             - name: ASPNETCORE_URLS
               value: "http://+:8888"
+            - name: INFISICAL_REQUIRED
+              value: "true"
+            - name: INFISICAL_SITE_URL
+              value: "https://eu.infisical.com"
+            - name: INFISICAL_SECRET_PATH
+              value: "/app"
+            - name: DEPLOY_PUBLIC_HOST
+              value: "PUBLIC_HOST_REPLACED_BY_CICD"
           envFrom:
             - secretRef:
-                name: constant-learning-telegram
-            - secretRef:
-                name: constant-learning-db
+                name: constant-learning-infisical
           startupProbe:
             httpGet:
               path: /api/telegram/health
