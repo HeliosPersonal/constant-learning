@@ -432,11 +432,8 @@ export interface components {
             /** @description необов'язковий структурований контекст (поля з помилками тощо) */
             details?: Record<string, never>;
         };
-        /**
-         * @description learners.daily_new_words_limit (SMALLINT); допустимі значення — правило застосунку (AC-45)
-         * @enum {integer}
-         */
-        DailyNewWordsLimit: 3 | 5 | 10;
+        /** @description learners.daily_new_words_limit (SMALLINT); від 1 до 10 нових слів на день (AC-45) */
+        DailyNewWordsLimit: number;
         /**
          * @description IANA id; learners.time_zone VARCHAR(64)
          * @example Europe/Warsaw

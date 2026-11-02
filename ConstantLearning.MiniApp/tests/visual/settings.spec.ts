@@ -32,7 +32,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page).toHaveURL(/\/settings$/);
     await page.screenshot({ path: `artifacts/settings-${theme}-default.png`, fullPage: true });
     await expect(page).toHaveScreenshot(`${theme}-settings.png`, { fullPage: true });
-    await page.getByRole('radio', { name: '3 нові слова', exact: true }).check();
+    await page.getByRole('slider', { name: 'Денний ліміт нових слів' }).fill('3');
     await page.getByLabel('Час нагадування').fill('18:30');
     await page.getByRole('button', { name: 'Про оформлення' }).click();
     const dialog = page.getByRole('dialog');
@@ -46,7 +46,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme === 'light' ? 'dark' : 'light');
     await dialog.getByRole('radio', { name: theme === 'light' ? /Світла/ : /Темна/ }).check();
     await page.keyboard.press('Escape');
-    await expect(page.getByRole('radio', { name: '3 нові слова', exact: true })).toBeChecked();
+    await expect(page.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3');
     await expect(page.getByLabel('Час нагадування')).toHaveValue('18:30');
     await page.evaluate(() => { (window as Window & { emitFixtureTheme?: (value: string) => void }).emitFixtureTheme?.(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'); });
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
@@ -69,7 +69,7 @@ for (const theme of ['light', 'dark'] as const) {
     await expect(page.getByText('З наступної доби:', { exact: false })).toContainText('3 нові слова');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-    await expect(page.getByRole('radio', { name: '3 нові слова', exact: true })).toBeChecked();
+    await expect(page.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3');
     await page.getByRole('button', { name: '← До «Сьогодні»' }).click();
     await expect(page.getByRole('heading', { name: 'Сьогодні', exact: true })).toBeVisible();
     await expect(page).toHaveURL(/\/today$/);

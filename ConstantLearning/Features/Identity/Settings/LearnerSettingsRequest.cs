@@ -20,9 +20,9 @@ internal sealed record LearnerSettingsRequest(short? DailyNewWordsLimit, string?
         short? dailyLimit = null;
         if (root.TryGetProperty("daily_new_words_limit", out var limit))
         {
-            if (limit.ValueKind != JsonValueKind.Number || !limit.TryGetDecimal(out var number) || number is not (3 or 5 or 10))
+            if (limit.ValueKind != JsonValueKind.Number || !limit.TryGetDecimal(out var number) || number is < 1 or > 10 || decimal.Truncate(number) != number)
             {
-                return new IdentityError("settings.invalid_limit", "Доступні лише 3, 5 або 10 нових слів на день.");
+                return new IdentityError("settings.invalid_limit", "Доступно від 1 до 10 нових слів на день.");
             }
 
             dailyLimit = (short)number;

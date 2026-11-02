@@ -1,3 +1,4 @@
+import { LimitSlider } from '../../components/LimitSlider';
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Switch } from '@telegram-apps/telegram-ui';
@@ -35,7 +36,7 @@ export default function Settings({ learner, onBack, onStart }: { learner: Learne
         setBlocked('onboarding'); setErrors({ general: 'Спершу налаштуйте тренер.' });
       } else if (error instanceof SettingsApiError && error.status === 400) {
         const messages: Record<string, SettingsErrors> = {
-          'settings.invalid_limit': { limit: 'Доступні лише 3, 5 або 10 нових слів на день.' },
+          'settings.invalid_limit': { limit: 'Доступно від 1 до 10 нових слів на день.' },
           'settings.time_zone_required': { zone: 'Виберіть і підтвердьте часовий пояс.' },
           'settings.invalid_time_zone': { zone: 'Невідомий часовий пояс. Виберіть інший зі списку.' },
           'settings.reminder_days_required': { days: 'Виберіть хоча б один день або вимкніть нагадування.' },
@@ -71,9 +72,7 @@ export default function Settings({ learner, onBack, onStart }: { learner: Learne
         <Card aria-labelledby="settings-limit-title"><span className="card-index">01 / ТЕМП</span><h2 id="settings-limit-title">Нові слова на день</h2>
           <p className="caption settings-current">Сьогодні: <strong>{limitLabel(saved.daily_new_words_limit)}</strong>.</p>
           {saved.pending_daily_new_words_limit != null && <p className="caption settings-pending">З наступної доби: <strong>{limitLabel(saved.pending_daily_new_words_limit)}</strong>.</p>}
-          <fieldset className="settings-limit-options" aria-describedby="settings-limit-hint"><legend className="sr-only">Денний ліміт нових слів</legend>
-            {([3, 5, 10] as const).map(value => <label className="settings-limit-option" key={value}><input type="radio" name="settings-limit" aria-label={limitLabel(value)} checked={draft.limit === value} onChange={() => { setDraft(current => ({ ...current, limit: value })); setSuccess(false); }} /><span>{value}</span><small>{value === 3 ? 'слова' : 'слів'}</small>{draft.limit === value && <span className="selected">Обрано ✓</span>}</label>)}
-          </fieldset>
+          <fieldset className="settings-limit-options" aria-describedby="settings-limit-hint"><legend className="sr-only">Денний ліміт нових слів</legend><LimitSlider value={draft.limit} describedBy="settings-limit-hint" onChange={value => { setDraft(current => ({ ...current, limit: value })); setSuccess(false); }} /></fieldset>
           <p className="caption settings-hint" id="settings-limit-hint">Новий ліміт діятиме з наступної навчальної доби у вибраному часовому поясі.</p>
           {saved.pending_daily_new_words_limit != null && draft.limit === saved.daily_new_words_limit && <p className="caption">Повернення до чинного темпу скасує відкладену зміну.</p>}
           {errors.limit && <Result tone="error">{errors.limit}</Result>}
