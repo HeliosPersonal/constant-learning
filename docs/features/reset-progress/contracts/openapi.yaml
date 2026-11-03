@@ -1,0 +1,79 @@
+# Контракт HTTP API reset-progress, згенерований /sdlc:api-forge (сценарій B: нових сутностей немає, data-model.md не потрібен).
+#   перелік ендпоінтів    ← PRD.md §4 user stories / §5 AC
+#   відповіді з помилками ← sad.md §6 (гілки alt/else)
+# Спільні схеми Error і відповіді Unauthorized / LearnerNotOnboarded беруться з контракту personal-trainer-mvp.
+openapi: 3.1.0
+
+info:
+  title: reset-progress API
+  version: 0.1.0
+  description: |
+    Скидання особистого прогресу learner з екрана налаштувань Mini App: стирає стан слів, session
+    і картки, відповіді та нейтралізації оскаржень, а профіль, налаштування й content reports лишає
+    (ADR-0001). Доповнює API personal-trainer-mvp тією самою автентифікацією initData.
+
+servers:
+  - url: https://trainer.example.test
+    description: Production (той самий origin, що й Mini App)
+  - url: http://localhost:8888
+    description: Local
+
+security:
+  - TelegramInitData: []
+
+tags:
+  - name: learner
+
+paths:
+  /api/v1/learners/me/progress/reset:
+    post:
+      tags: [learner]
+      summary: Скинути весь навчальний прогрес (US-01, US-02, US-04)
+      operationId: resetLearnerProgress
+      description: |
+        Атомарно стирає прогрес поточного learner за одну транзакцію (ADR-0001). Тіло порожнє:
+        підтвердження зі списком наслідків виконує клієнт (AC-02, AC-03), а ідентичність береться
+        лише з initData (AC-05). Повторний виклик на порожньому прогресі повертає успіх без змін
+        і без помилки (AC-09), тож окремий Idempotency-Key не потрібен — повтор безпечний за станом.
+      responses:
+        "200":
+          description: Прогрес скинуто (або вже порожній)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProgressResetResult" }
+              examples:
+                erased:
+                  value: { erased: true }
+                already_empty:
+                  value: { erased: false }
+        "401":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/LearnerNotOnboarded"
+        "500":
+          description: Скидання не завершено, транзакцію відкочено — прогрес лишився без змін (AC-04)
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Error"
+              example:
+                code: progress_reset.failed
+                message: Не вдалося скинути прогрес. Нічого не змінено — спробуйте ще раз.
+
+components:
+  securitySchemes:
+    TelegramInitData:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "Authorization: tma <initData>, перевіряється в кожному запиті (ADR-0005 personal-trainer-mvp)"
+
+  schemas:
+    ProgressResetResult:
+      type: object
+      required: [erased]
+      additionalProperties: false
+      properties:
+        erased:
+          type: boolean
+          description: true — були дані навчання й їх стерто; false — прогрес уже був порожнім, нічого не змінено

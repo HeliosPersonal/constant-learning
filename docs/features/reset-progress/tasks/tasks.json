@@ -1,0 +1,209 @@
+{
+  "slug": "reset-progress",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Реалізувати потік скидання й порт обробників в Identity",
+      "layer": "app",
+      "deps": [],
+      "acs": [
+        "AC-01",
+        "AC-04",
+        "AC-05",
+        "AC-06",
+        "AC-09"
+      ],
+      "dod": "інтеграційні тести AC-01, AC-04, AC-05, AC-06, AC-09 зелені на сервісі з тестовим обробником",
+      "files_hint": [
+        "ConstantLearning/Features/Identity/ProgressReset/",
+        "ConstantLearning.Tests/Identity/ProgressReset/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T02",
+      "title": "Додати обробник скидання в Learning",
+      "layer": "app",
+      "deps": [
+        "T01",
+        "T03"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-07",
+        "AC-08"
+      ],
+      "dod": "після скидання немає слів на повторення, session і відповідей learner (AC-07, AC-08); тести проходять",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Reset/",
+        "ConstantLearning.Tests/Learning/Reset/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T03",
+      "title": "Додати обробник скидання в Content: розірвати привʼязку reports до відповідей",
+      "layer": "app",
+      "deps": [
+        "T01"
+      ],
+      "acs": [
+        "AC-10"
+      ],
+      "dod": "content report після скидання лишається видимим content editor без привʼязки до відповіді (AC-10)",
+      "files_hint": [
+        "ConstantLearning/Features/Content/Reports/",
+        "ConstantLearning.Tests/Content/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T04",
+      "title": "Додати дію скидання прогресу в API й зареєструвати код помилки",
+      "layer": "ports",
+      "deps": [
+        "T01",
+        "T02",
+        "T03"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-04",
+        "AC-05",
+        "AC-09"
+      ],
+      "dod": "тести контракту та авторизації AC-05 зелені; код помилки з контракту визначено в реєстрі",
+      "files_hint": [
+        "ConstantLearning/Features/Identity/ProgressReset/",
+        "ConstantLearning.Tests/Infrastructure/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T05",
+      "title": "Додати кнопку, діалог підтвердження й обробку скинутого стану в Mini App",
+      "layer": "ui",
+      "deps": [
+        "T04"
+      ],
+      "acs": [
+        "AC-02",
+        "AC-03",
+        "AC-07",
+        "AC-08"
+      ],
+      "dod": "компонентні тести AC-02, AC-03, AC-08 зелені; e2e через UI AC-01 і AC-07 проходить",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/settings/",
+        "ConstantLearning.MiniApp/src/features/session/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T06",
+      "title": "Дописати інтеграційні тести збою, одночасності й супутніх сутностей",
+      "layer": "tests",
+      "deps": [
+        "T04"
+      ],
+      "acs": [
+        "AC-04",
+        "AC-06",
+        "AC-10",
+        "AC-11",
+        "AC-12"
+      ],
+      "dod": "набір зелений; тест збою доводить повний відкат",
+      "files_hint": [
+        "ConstantLearning.Tests/Identity/ProgressReset/",
+        "ConstantLearning.Tests/Notifications/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T07",
+      "title": "Додати тест повноти скидання",
+      "layer": "tests",
+      "deps": [
+        "T02",
+        "T03"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-10"
+      ],
+      "dod": "тест падає, якщо додати сутність learner без обробника чи запису в список збереженого",
+      "files_hint": [
+        "ConstantLearning.Tests/Architecture/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T08",
+      "title": "Додати агрегований лічильник скидань і метрику латентності",
+      "layer": "app",
+      "deps": [
+        "T04"
+      ],
+      "acs": [],
+      "dod": "тест перевіряє, що мітки не містять ідентифікаторів, а лічильник збільшується за результатом",
+      "files_hint": [
+        "ConstantLearning/Features/Identity/ProgressReset/",
+        "ConstantLearning.Tests/Identity/ProgressReset/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T09",
+      "title": "Перевірити скидання на повному курсі й навантажувальному наборі",
+      "layer": "tests",
+      "deps": [
+        "T04"
+      ],
+      "acs": [],
+      "dod": "p95 часу скидання ≤ 2 000 ms зафіксовано в звіті",
+      "files_hint": [
+        "tests/load/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T10",
+      "title": "Оновити README, архітектурну карту й документацію батьківської фічі",
+      "layer": "docs",
+      "deps": [
+        "T05",
+        "T06",
+        "T08"
+      ],
+      "acs": [],
+      "dod": "`python tools/docs/check_links.py` без проблем; опис відповідає реалізації",
+      "files_hint": [
+        "README.md",
+        "docs/architecture-map.md",
+        "docs/features/personal-trainer-mvp/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    }
+  ]
+}
