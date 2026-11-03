@@ -28,6 +28,17 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
         var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
             ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
 
+        // Початок заняття за планом закриває активну extra-session як незавершену (ADR-0001). Зміну
+        // скидаємо окремим SaveChanges, щоб звільнити частковий UNIQUE активної session до вставки плану.
+        if (session is not null && session.Kind != "plan")
+        {
+            session.Status = "incomplete";
+            session.CompletedAt = null;
+            session.ResultItemId = null;
+            await db.SaveChangesAsync(cancellationToken);
+            session = null;
+        }
+
         var course = await courseReader.ReadAsync(cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
         var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId)
@@ -56,6 +67,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
             {
                 LearnerId = learnerId,
                 LearnerDay = current.Day.Date,
+                Kind = "plan",
                 EndsAt = current.Day.EndsAt,
                 Status = composition.Words.Count == 0 ? "completed" : "active",
                 CompletedAt = composition.Words.Count == 0 ? now : null,

@@ -3,6 +3,8 @@ import type { components } from '../../api/schema';
 
 export type TodaySummary = components['schemas']['TodaySummary'];
 export type SessionResponse = components['schemas']['Session'];
+export type ExtraActions = components['schemas']['ExtraActions'];
+export type ExtraActionReason = components['schemas']['ExtraActionAvailability']['reason'];
 export const todayQueryKey = ['today'] as const;
 
 export class TodayApiError extends Error {
@@ -17,6 +19,18 @@ export async function getToday(signal?: AbortSignal): Promise<TodaySummary> {
 
 export async function openSession(resume: boolean): Promise<SessionResponse> {
   const result = resume ? await api.GET('/api/v1/sessions/current') : await api.POST('/api/v1/sessions');
+  if (![200, 201].includes(result.response.status) || !result.data) throw new TodayApiError(result.response.status, result.error);
+  return result.data;
+}
+
+export async function startExtraWord(): Promise<SessionResponse> {
+  const result = await api.POST('/api/v1/sessions/extra-word');
+  if (![200, 201].includes(result.response.status) || !result.data) throw new TodayApiError(result.response.status, result.error);
+  return result.data;
+}
+
+export async function startExtraPractice(): Promise<SessionResponse> {
+  const result = await api.POST('/api/v1/sessions/extra-practice');
   if (![200, 201].includes(result.response.status) || !result.data) throw new TodayApiError(result.response.status, result.error);
   return result.data;
 }

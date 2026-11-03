@@ -7,7 +7,7 @@ import SessionRoute from '../src/features/session/shell/SessionRoute';
 import type { SessionResponse } from '../src/features/today/api';
 
 const item = { id: 'item', position: 31, kind: 'new_word_card' as const, prompt_uk: 'дім', context_uk: null, card: { lemma_pl: 'dom', translations_uk: ['дім'], pronunciation_uk: 'дом', example_pl: 'To dom.', example_uk: 'Це дім.', gender: 'm' } };
-const session: SessionResponse = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', total_items: 40, completed_items: 2, notices: [], current_item: item, last_result: null };
+const session: SessionResponse = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'plan', total_items: 40, completed_items: 2, notices: [], current_item: item, last_result: null };
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 function mount(initialSession?: SessionResponse, client = createQueryClient()) { render(<QueryClientProvider client={client}><ThemeProvider><SessionRoute initialSession={initialSession} onToday={vi.fn()} /></ThemeProvider></QueryClientProvider>); return client; }
 afterEach(() => { vi.unstubAllGlobals(); });
@@ -51,9 +51,17 @@ describe('Каркас заняття', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ ...session, notices: ['new_words_limit_reached', 'course_completed'] }))); mount();
     expect(await screen.findByText(/Денний ліміт нових слів вичерпано/)).toBeVisible(); expect(screen.getByText(/Базовий курс завершено/)).toBeVisible();
   });
-  it.each([404, 409])('%i під час дії не видає за завершення', async status => {
-    vi.stubGlobal('fetch', vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'GET' ? json(session) : json({ code: status === 404 ? 'session.item_not_found' : 'session.expired' }, status)))); mount();
+  it('409 під час дії показує «Заняття недоступне», а не завершення', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'GET' ? json(session) : json({ code: 'session.expired' }, 409)))); mount();
     await screen.findByRole('heading', { name: 'dom' }); fireEvent.click(screen.getByRole('button', { name: 'Далі' })); await screen.findByRole('heading', { name: 'Заняття недоступне' });
+    expect(screen.queryByRole('heading', { name: 'Заняття завершено' })).not.toBeInTheDocument();
+  });
+  it('AC-08: 404 на стертій картці повертає на «Сьогодні» з повідомленням про скидання, а не показує завершення', async () => {
+    const onToday = vi.fn();
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'GET' ? json(session) : json({ code: 'session.item_not_found' }, 404))));
+    render(<QueryClientProvider client={createQueryClient()}><ThemeProvider><SessionRoute initialSession={session} onToday={onToday} /></ThemeProvider></QueryClientProvider>);
+    await screen.findByRole('heading', { name: 'dom' }); fireEvent.click(screen.getByRole('button', { name: 'Далі' }));
+    await waitFor(() => expect(onToday).toHaveBeenCalledWith('Заняття більше немає — можливо, прогрес скинуто.'));
     expect(screen.queryByRole('heading', { name: 'Заняття завершено' })).not.toBeInTheDocument();
   });
   it('404 при звичайному відкритті не видає за завершення', async () => {
@@ -70,5 +78,49 @@ describe('Каркас заняття', () => {
     vi.stubGlobal('fetch', fetcher); mount(); fireEvent.click(await screen.findByRole('button', { name: 'Почати заняття' }));
     await screen.findByText('Не вдалося відкрити заняття. Спробуйте ще раз.'); fireEvent.click(screen.getByRole('button', { name: 'Почати заняття' }));
     expect(await screen.findByRole('heading', { name: 'dom' })).toBeVisible();
+  });
+});
+
+const extraWordItem = { id: 'ex-d1', position: 1, kind: 'new_word_card' as const, prompt_uk: 'хата', context_uk: null, card: { lemma_pl: 'chata', translations_uk: ['хата'], pronunciation_uk: 'хата', example_pl: 'Mieszkam w małej chacie.', example_uk: 'Я живу в маленькій хаті.', gender: 'f' } };
+const extraWord: SessionResponse = { id: 'extra-word', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'extra_word', total_items: 2, completed_items: 0, notices: [], current_item: extraWordItem, last_result: null };
+const extraWordDone: SessionResponse = { ...extraWord, status: 'completed', completed_items: 2, current_item: null, last_result: null };
+const extraPractice: SessionResponse = { id: 'extra-practice', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'extra_practice', total_items: 12, completed_items: 0, notices: [], current_item: { id: 'ex-d2', position: 1, kind: 'extra_practice', prompt_uk: 'хата', context_uk: null, card: null }, last_result: null };
+
+describe('Extra-заняття (unlimited-learning)', () => {
+  it('extra_word показує картку нового слова з діями «Далі» і «Вже знаю»', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json(extraWord))); mount();
+    expect(await screen.findByRole('heading', { name: 'chata' })).toHaveAttribute('lang', 'pl');
+    expect(screen.getByText('НОВЕ СЛОВО')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Далі' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Вже знаю' })).toBeEnabled();
+  });
+  it('AC-08: extra_practice показує вправу пригадування й поводиться як планове заняття', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json(extraPractice))); mount();
+    expect(await screen.findByRole('heading', { name: 'хата' })).toBeVisible();
+    expect(screen.getByText('ПРИГАДАЙТЕ ПОЛЬСЬКОЮ')).toBeVisible();
+    expect(screen.getByLabelText('Ваша відповідь')).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Перевірити' })).toBeDisabled();
+  });
+  it('AC-01: завершене extra_word пропонує «Ще одне слово» і «На головну» та бере наступне слово одним POST', async () => {
+    const fetcher = vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'POST' ? json(extraWord, 201) : json(extraWordDone)));
+    vi.stubGlobal('fetch', fetcher); mount();
+    await screen.findByRole('heading', { name: 'Заняття завершено' });
+    const more = screen.getByRole('button', { name: 'Ще одне слово' }); expect(screen.getByRole('button', { name: '← На головну' })).toBeVisible();
+    fireEvent.click(more); fireEvent.click(more);
+    expect(await screen.findByRole('heading', { name: 'chata' })).toBeVisible();
+    expect(fetcher.mock.calls.filter(([r]) => r.method === 'POST').filter(([r]) => new URL(r.url).pathname === '/api/v1/sessions/extra-word')).toHaveLength(1);
+  });
+  it('завершене планове заняття не пропонує «Ще одне слово»', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ ...session, status: 'completed', current_item: null }))); mount();
+    await screen.findByRole('heading', { name: 'Заняття завершено' });
+    expect(screen.queryByRole('button', { name: 'Ще одне слово' })).not.toBeInTheDocument();
+  });
+  it('помилка взяття наступного extra-слова пояснює стан і не змінює екран завершення', async () => {
+    const fetcher = vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'POST' ? json({ code: 'extra.course_completed' }, 409) : json(extraWordDone)));
+    vi.stubGlobal('fetch', fetcher); mount();
+    await screen.findByRole('heading', { name: 'Заняття завершено' });
+    fireEvent.click(screen.getByRole('button', { name: 'Ще одне слово' }));
+    await screen.findByText('Нових слів у курсі більше немає.');
+    expect(screen.getByRole('heading', { name: 'Заняття завершено' })).toBeVisible();
   });
 });

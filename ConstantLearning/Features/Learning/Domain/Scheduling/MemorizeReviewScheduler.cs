@@ -46,6 +46,12 @@ public sealed class MemorizeReviewScheduler : IReviewScheduler
             return state;
         }
 
+        // Додаткова практика (ADR-0002): не вимагає, щоб слово було до повторення.
+        if (answer.ExerciseKind == ReviewExerciseKind.ExtraPractice)
+        {
+            return ApplyExtraPractice(state, answer);
+        }
+
         if (!state.IsDue(answer.LearnerDay))
         {
             throw new InvalidOperationException("Слово ще не потребує повторення або вже опрацьоване цієї доби.");
@@ -72,6 +78,46 @@ public sealed class MemorizeReviewScheduler : IReviewScheduler
             ConsecutiveScheduledCorrect = correct ? Math.Min(2, state.ConsecutiveScheduledCorrect + 1) : 0,
             ControlPending = false,
             Lapses = correct ? state.Lapses : checked(state.Lapses + 1),
+            ForgettingRate = forgettingRate
+        };
+    }
+
+    /// <summary>
+    /// Правило додаткової практики (ADR-0002): правильна відповідь не зсуває дату, інтервал і швидкість
+    /// забування (AC-14) і зараховується до статусу лише з іншої доби learner (AC-12); помилка діє як у
+    /// плановому повторенні (AC-13); нейтральна відповідь лише позначає спробу цієї доби.
+    /// </summary>
+    private ReviewState ApplyExtraPractice(ReviewState state, ReviewAnswer answer)
+    {
+        if (answer.Outcome == AnswerOutcome.Synonym)
+        {
+            return state with { LastScheduledAttemptDay = answer.LearnerDay };
+        }
+
+        if (answer.Outcome == AnswerOutcome.Correct)
+        {
+            var countsTowardStatus = state.LastScheduledAttemptDay is null
+                || state.LastScheduledAttemptDay < answer.LearnerDay;
+            return state with
+            {
+                LastScheduledAttemptDay = answer.LearnerDay,
+                ConsecutiveScheduledCorrect = countsTowardStatus
+                    ? Math.Min(2, state.ConsecutiveScheduledCorrect + 1)
+                    : state.ConsecutiveScheduledCorrect
+            };
+        }
+
+        var forgettingRate = Math.Clamp(state.ForgettingRate * MistakeMultiplier,
+            MinimumForgettingRate, MaximumForgettingRate);
+        return state with
+        {
+            LastReviewDay = answer.LearnerDay,
+            LastScheduledAttemptDay = answer.LearnerDay,
+            DueOn = answer.LearnerDay.PlusDays(1),
+            IntervalDays = 1,
+            ConsecutiveScheduledCorrect = 0,
+            ControlPending = false,
+            Lapses = checked(state.Lapses + 1),
             ForgettingRate = forgettingRate
         };
     }

@@ -9,6 +9,8 @@
 .today-course h2, .today-zone h2, .today-notice h2 { font-size: 20px; line-height: 28px; }
 .today-zone-name { overflow-wrap: anywhere; font-weight: 600; }
 .today-actions { display: grid; gap: 8px; }
+.today-extra { display: grid; gap: 8px; }
+.today-extra .today-actions { margin-top: 8px; }
 .today-status { margin-top: 16px; }
 .today-notice { border-color: var(--cl-accent); }
 .today-notice p:last-child { margin-bottom: 0; }

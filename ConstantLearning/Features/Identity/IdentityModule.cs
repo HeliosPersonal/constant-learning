@@ -4,6 +4,7 @@ using ConstantLearning.Features.Identity.Auth;
 using ConstantLearning.Features.Identity.Onboarding;
 using ConstantLearning.Features.Identity.Messaging;
 using ConstantLearning.Features.Identity.LearnerDays;
+using ConstantLearning.Features.Identity.ProgressReset;
 using ConstantLearning.Features.Identity.Settings;
 using ConstantLearning.Features.Identity.NotificationAudience;
 using ConstantLearning.Features.Identity.ReminderAudience;
@@ -23,6 +24,8 @@ public static class IdentityModule
         services.AddScoped<IReporterAliasService, ReporterAliasService>();
         services.AddScoped<ILearnerDayStateService, LearnerDayStateService>();
         services.AddScoped<LearnerSettingsService>();
+        services.AddScoped<ProgressResetService>();
+        services.AddSingleton<IProgressResetMetrics, TrainerProgressResetMetrics>();
         services.AddScoped<IMessagingPermissionService, MessagingPermissionService>();
         services.AddScoped<INotificationAudienceReader, NotificationAudienceReader>();
         services.AddReminderAudience();

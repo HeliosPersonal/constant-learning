@@ -19,7 +19,7 @@ export function LearningProgress({ value, total }: { value: number; total: numbe
     <Progress value={value / total * 100} aria-label="Прогрес заняття" /></div>;
 }
 
-export function Dialog({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
+export function Dialog({ open, onClose, title = 'Зручний для вас вигляд', actions, children }: { open: boolean; onClose: () => void; title?: string; actions?: ReactNode; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
@@ -27,8 +27,8 @@ export function Dialog({ open, onClose, children }: { open: boolean; onClose: ()
     else if (!open && dialog?.open) dialog.close();
   }, [open]);
   return createPortal(<dialog ref={ref} aria-labelledby="dialog-title" className="dialog" onCancel={onClose}>
-    <h2 id="dialog-title">Зручний для вас вигляд</h2>
+    <h2 id="dialog-title">{title}</h2>
     {children}
-    <Button size="l" stretched onClick={onClose}>Зрозуміло</Button>
+    {actions ?? <Button size="l" stretched onClick={onClose}>Зрозуміло</Button>}
   </dialog>, document.body);
 }

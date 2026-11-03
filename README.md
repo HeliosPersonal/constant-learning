@@ -15,7 +15,7 @@ flowchart LR
     APP -->|EF Core| DB[(PostgreSQL)]
 ~~~
 
-Mini App викликає API з підписом Telegram `initData` ([ADR-0005](docs/features/personal-trainer-mvp/adr/0005-authenticate-every-api-request-with-telegram-init-data.md)). Бот відповідає на повідомлення та надсилає нагадування з посиланням на Mini App. Заняття, відповіді й розклад повторень зберігаються на сервері ([ADR-0008](docs/features/personal-trainer-mvp/adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)).
+Mini App викликає API з підписом Telegram `initData` ([ADR-0005](docs/features/personal-trainer-mvp/adr/0005-authenticate-every-api-request-with-telegram-init-data.md)). Бот відповідає на повідомлення та надсилає нагадування з посиланням на Mini App. Заняття, відповіді й розклад повторень зберігаються на сервері ([ADR-0008](docs/features/personal-trainer-mvp/adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md)). У налаштуваннях learner може почати з чистого аркуша — скинути весь навчальний прогрес, зберігши параметри тренера ([reset-progress](docs/features/reset-progress/PRD.md)). Коли план дня виконано, екран «Сьогодні» замість глухого кута пропонує дві додаткові дії: «Ще одне слово» — вивчити ще одне нове слово понад денний ліміт, поки в курсі є непоказані слова, і «Потренувати вивчені» — закріпити до 20 вже вивчених слів у порядку найближчого повторення ([unlimited-learning](docs/features/unlimited-learning/PRD.md)). Додаткова активність не рахується до серії завершених занять і не відсуває розклад повторень. Окремий екран «Мої слова» показує статистику вивчених слів — вкладки за статусом, пошук, лічильники показ/правильно/неправильно й розбивку помилок — і дозволяє запустити тренування слабких слів наявною дією «Потренувати вивчені» ([learned-words-stats](docs/features/learned-words-stats/PRD.md)).
 
 ## Швидкий запуск
 
@@ -148,6 +148,8 @@ k8s/, tools/, tests/         Маніфести, інструменти, нав�
 | [Деплой](docs/deployment.md) | Автоматичний production через GitHub Actions, Helios і Infisical, rollback |
 | [PRD персонального тренера](docs/features/personal-trainer-mvp/PRD.md) | Вимоги, критерії приймання, KPI |
 | [Скидання прогресу (заплановано)](docs/features/reset-progress/PRD.md) | Кнопка в налаштуваннях стирає навчальний прогрес і лишає налаштування; [трекер задач](docs/features/reset-progress/tasks/tracker.md) |
+| [Додаткові дії після плану (заплановано)](docs/features/unlimited-learning/PRD.md) | «Ще одне слово» і «Потренувати вивчені» після виконання плану дня; [трекер задач](docs/features/unlimited-learning/tasks/tracker.md) |
+| [Мої слова (заплановано)](docs/features/learned-words-stats/PRD.md) | Екран статистики вивчених слів: вкладки, пошук, лічильники показ/правильно/неправильно й тренування слабких слів; [трекер задач](docs/features/learned-words-stats/tasks/tracker.md) |
 | [Ідеї та рішення](docs/IDEAS.md) | Журнал рішень інтерв'ю |
 | [Трекер задач](docs/features/personal-trainer-mvp/tasks/tracker.md) | Статус реалізації |
 | [Словник](docs/dictionary/README.md) | Випуск 2 000 схвалених лем і метод перевірки |

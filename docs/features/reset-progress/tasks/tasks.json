@@ -20,7 +20,7 @@
       ],
       "estimate": "M",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T02",
@@ -42,7 +42,7 @@
       ],
       "estimate": "M",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T03",
@@ -61,7 +61,7 @@
       ],
       "estimate": "S",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T04",
@@ -85,7 +85,7 @@
       ],
       "estimate": "S",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T05",
@@ -107,7 +107,7 @@
       ],
       "estimate": "M",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T06",
@@ -130,7 +130,7 @@
       ],
       "estimate": "M",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T07",
@@ -150,7 +150,7 @@
       ],
       "estimate": "S",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T08",
@@ -167,7 +167,7 @@
       ],
       "estimate": "S",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     },
     {
       "id": "T09",
@@ -183,7 +183,7 @@
       ],
       "estimate": "S",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "review"
     },
     {
       "id": "T10",
@@ -203,7 +203,7 @@
       ],
       "estimate": "S",
       "owner": "Viacheslav Melnichenko",
-      "status": "todo"
+      "status": "done"
     }
   ]
 }

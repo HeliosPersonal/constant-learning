@@ -37,7 +37,9 @@ public sealed class DisputeService(AppDbContext db, ILearnerDayStateService days
             ?? throw new InvalidOperationException("Не вдалося створити report відповіді.");
         var word = await db.LearnerWords.SingleAsync(w => w.LearnerId == learnerId && w.EntryId == answer.EntryId, ct);
         DisputeWordState.Restore(word, answer.StateBefore);
-        if (answer.ExerciseKind != "new_word_check")
+        // Перевірка нового слова (звичайна чи extra) відновлює знімок без позначки спроби; планове
+        // повторення й додаткова практика виключають слово до кінця доби (ADR-0002).
+        if (answer.ExerciseKind is not ("new_word_check" or "extra_new_word_check"))
         {
             var model = JsonNode.Parse(word.ModelState)!.AsObject();
             model["last_scheduled_attempt_day"] = LocalDatePattern.Iso.Format(day!.Day.Date);

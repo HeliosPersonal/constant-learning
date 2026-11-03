@@ -9,10 +9,12 @@ import { Today } from '../src/features/today/Today';
 import { createTodayTiming, todayTiming } from '../src/features/today/timing';
 import { todayQueryKey, type SessionResponse } from '../src/features/today/api';
 import { learnerQueryKey, type Learner } from '../src/features/onboarding/api';
-import { todaySummary } from './fixtures/today';
+import { planDoneSummary, todaySummary } from './fixtures/today';
 
 const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: 10, reminder: { local_time: '19:00', days_of_week: ['mon'] }, onboarded_at: '2026-11-01T09:00:00Z' };
-const active: SessionResponse = { id: '0192f0a0-0000-7000-8000-000000000002', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', total_items: 5, completed_items: 2, notices: [], last_result: null, current_item: { id: '0192f0a0-0000-7000-8000-000000000003', position: 3, kind: 'review', prompt_uk: 'дім', context_uk: null, card: null } };
+const active: SessionResponse = { id: '0192f0a0-0000-7000-8000-000000000002', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', kind: 'plan', total_items: 5, completed_items: 2, notices: [], last_result: null, current_item: { id: '0192f0a0-0000-7000-8000-000000000003', position: 3, kind: 'review', prompt_uk: 'дім', context_uk: null, card: null } };
+const extraWord: SessionResponse = { id: '0192f0a0-0000-7000-8000-0000000000c1', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', kind: 'extra_word', total_items: 2, completed_items: 0, notices: [], last_result: null, current_item: { id: '0192f0a0-0000-7000-8000-0000000000d1', position: 1, kind: 'new_word_card', prompt_uk: 'хата', context_uk: null, card: { lemma_pl: 'chata', translations_uk: ['хата'], pronunciation_uk: 'хата', example_pl: 'Mieszkam w małej chacie.', example_uk: 'Я живу в маленькій хаті.', gender: 'f' } } };
+const extraPractice: SessionResponse = { id: '0192f0a0-0000-7000-8000-0000000000c2', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', kind: 'extra_practice', total_items: 12, completed_items: 0, notices: [], last_result: null, current_item: { id: '0192f0a0-0000-7000-8000-0000000000d2', position: 1, kind: 'extra_practice', prompt_uk: 'хата', context_uk: null, card: null } };
 const clients: ReturnType<typeof createQueryClient>[] = [];
 function json(body: unknown, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
 function network(handler?: (request: Request) => Response | Promise<Response>) {
@@ -155,6 +157,89 @@ describe('Початок і продовження заняття', () => {
     const fetcher = network(request => new URL(request.url).pathname === '/api/v1/today' ? json(todaySummary) : Promise.reject(new TypeError('Мережа недоступна'))); mount({ onOpenSession: vi.fn() });
     fireEvent.click(await screen.findByRole('button', { name: 'Почати заняття' })); await screen.findByText('Не вдалося відкрити заняття. Спробуйте ще раз.'); expect(screen.getByLabelText('Ваш навчальний прогрес')).toBeVisible(); expect(requests(fetcher, '/api/v1/sessions')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'Почати заняття' })); await waitFor(() => expect(requests(fetcher, '/api/v1/sessions')).toHaveLength(2));
+  });
+});
+
+describe('Додаткові дії після виконання плану (unlimited-learning)', () => {
+  it('AC-16: при виконаному плані показує дії extra замість кнопки «На сьогодні все» і без «Почати заняття»', async () => {
+    network(() => json(planDoneSummary)); mount({ onOpenSession: vi.fn() });
+    expect(await screen.findByText('ПЛАН ДНЯ ВИКОНАНО')).toBeVisible();
+    const word = screen.getByRole('button', { name: 'Ще одне слово' }); const practice = screen.getByRole('button', { name: 'Потренувати вивчені' });
+    expect(word).toBeEnabled(); expect(practice).toBeEnabled();
+    expect(screen.queryByRole('button', { name: 'Почати заняття' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'На сьогодні все' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Продовжити заняття' })).not.toBeInTheDocument();
+  });
+  it.each([
+    ['повторення', { ...todaySummary, due_review_count: 8 }],
+    ['активне заняття', { ...todaySummary, due_review_count: 0, has_active_session: true }],
+    ['нові слова за планом', { ...todaySummary, due_review_count: 0, new_words_available_today: true }],
+  ])('AC-17: з %s дії extra не показуються, а лишається звичайна кнопка заняття', async (_label, summary) => {
+    network(() => json(summary)); mount({ onOpenSession: vi.fn() });
+    await screen.findByLabelText('Ваш навчальний прогрес');
+    expect(screen.queryByText('ПЛАН ДНЯ ВИКОНАНО')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ще одне слово' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Потренувати вивчені' })).not.toBeInTheDocument();
+  });
+  it('AC-17: завершений курс без повторень пропонує лише практику, без «Почати заняття»', async () => {
+    network(() => json({ ...planDoneSummary, course_state: 'completed', extra_actions: { plan_done: true, extra_new_word: { available: false, reason: 'course_completed' }, extra_practice: { available: true, reason: null } } }));
+    mount({ onOpenSession: vi.fn() });
+    expect(await screen.findByRole('button', { name: 'Потренувати вивчені' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Ще одне слово' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Почати заняття' })).not.toBeInTheDocument();
+  });
+  it('AC-04: завершений base course робить «Ще одне слово» недоступним із поясненням, практика й екран лишаються', async () => {
+    network(() => json({ ...planDoneSummary, course_state: 'completed', extra_actions: { plan_done: true, extra_new_word: { available: false, reason: 'course_completed' }, extra_practice: { available: true, reason: null } } }));
+    mount({ onOpenSession: vi.fn() });
+    const word = await screen.findByRole('button', { name: 'Ще одне слово' });
+    expect(word).toBeDisabled(); expect(word).toHaveAccessibleDescription('Нових слів у курсі більше немає.');
+    expect(screen.getByRole('button', { name: 'Потренувати вивчені' })).toBeEnabled();
+    expect(screen.getByLabelText('Ваш навчальний прогрес')).toBeVisible();
+  });
+  it('AC-10: без придатних слів «Потренувати вивчені» недоступна з поясненням, а «Ще одне слово» лишається', async () => {
+    network(() => json({ ...planDoneSummary, extra_actions: { plan_done: true, extra_new_word: { available: true, reason: null }, extra_practice: { available: false, reason: 'no_eligible_words' } } }));
+    mount({ onOpenSession: vi.fn() });
+    const practice = await screen.findByRole('button', { name: 'Потренувати вивчені' });
+    expect(practice).toBeDisabled(); expect(practice).toHaveAccessibleDescription(/Зараз немає слів для практики/);
+    expect(screen.getByRole('button', { name: 'Ще одне слово' })).toBeEnabled();
+  });
+  it('AC-01 (через UI): «Ще одне слово» створює extra-заняття одним POST і відкриває його', async () => {
+    let release!: (value: Response) => void;
+    const fetcher = network(request => new URL(request.url).pathname === '/api/v1/today' ? json(planDoneSummary) : new Promise<Response>(resolve => { release = resolve; }));
+    const open = vi.fn(); mount({ onOpenSession: open });
+    const button = await screen.findByRole('button', { name: 'Ще одне слово' });
+    act(() => { fireEvent.click(button); fireEvent.click(button); });
+    await waitFor(() => expect(requests(fetcher, '/api/v1/sessions/extra-word')).toHaveLength(1));
+    expect(requests(fetcher, '/api/v1/sessions/extra-word')[0].method).toBe('POST');
+    expect(screen.getByRole('button', { name: 'Беремо нове слово…' })).toBeDisabled();
+    await act(async () => { release(json(extraWord, 201)); });
+    await waitFor(() => expect(open).toHaveBeenCalledExactlyOnceWith(extraWord));
+  });
+  it('AC-08 (через UI): «Потренувати вивчені» створює практику одним POST і відкриває її', async () => {
+    let release!: (value: Response) => void;
+    const fetcher = network(request => new URL(request.url).pathname === '/api/v1/today' ? json(planDoneSummary) : new Promise<Response>(resolve => { release = resolve; }));
+    const open = vi.fn(); mount({ onOpenSession: open });
+    const button = await screen.findByRole('button', { name: 'Потренувати вивчені' });
+    act(() => { fireEvent.click(button); fireEvent.click(button); });
+    await waitFor(() => expect(requests(fetcher, '/api/v1/sessions/extra-practice')).toHaveLength(1));
+    expect(requests(fetcher, '/api/v1/sessions/extra-practice')[0].method).toBe('POST');
+    await act(async () => { release(json(extraPractice, 201)); });
+    await waitFor(() => expect(open).toHaveBeenCalledExactlyOnceWith(extraPractice));
+    expect(requests(fetcher, '/api/v1/sessions/extra-word')).toHaveLength(0);
+  });
+  it('технічний ліміт 429 пояснює затримку й не відкриває заняття', async () => {
+    const fetcher = network(request => new URL(request.url).pathname === '/api/v1/today' ? json(planDoneSummary) : json({ code: 'extra.rate_limited', message: 'Занадто швидко — зачекайте кілька секунд.' }, 429));
+    const open = vi.fn(); mount({ onOpenSession: open });
+    fireEvent.click(await screen.findByRole('button', { name: 'Ще одне слово' }));
+    await screen.findByText('Занадто швидко — зачекайте кілька секунд і спробуйте ще раз.');
+    expect(open).not.toHaveBeenCalled(); expect(requests(fetcher, '/api/v1/sessions/extra-word')).toHaveLength(1);
+  });
+  it('409 на недоступній дії перечитує день і не відкриває заняття', async () => {
+    let reads = 0; const fetcher = network(request => new URL(request.url).pathname === '/api/v1/today' ? json(++reads === 1 ? planDoneSummary : todaySummary) : json({ code: 'extra.plan_not_done', message: 'Спершу завершіть заняття за планом.' }, 409));
+    const open = vi.fn(); mount({ onOpenSession: open });
+    fireEvent.click(await screen.findByRole('button', { name: 'Ще одне слово' }));
+    await waitFor(() => expect(requests(fetcher, '/api/v1/today').length).toBeGreaterThanOrEqual(2));
+    expect(open).not.toHaveBeenCalled();
   });
 });
 

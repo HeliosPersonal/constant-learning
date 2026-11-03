@@ -37,6 +37,7 @@ public sealed record SessionResponse(
     [property: JsonPropertyName("learner_day")] string LearnerDay,
     [property: JsonPropertyName("ends_at")] string EndsAt,
     [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("kind")] string Kind,
     [property: JsonPropertyName("total_items")] int TotalItems,
     [property: JsonPropertyName("completed_items")] int CompletedItems,
     [property: JsonPropertyName("notices")] IReadOnlyList<string> Notices,
@@ -46,5 +47,5 @@ public sealed record SessionResponse(
     public static SessionResponse From(LearningSession session, IReadOnlyList<SessionItem> items,
         IReadOnlyList<string> notices, SessionItemResponse? current, LastResultResponse? result = null) => new(session.Id,
         LocalDatePattern.Iso.Format(session.LearnerDay), InstantPattern.ExtendedIso.Format(session.EndsAt),
-        session.Status, items.Count, items.Count(item => item.State is "answered" or "skipped"), notices, current, result);
+        session.Status, session.Kind, items.Count, items.Count(item => item.State is "answered" or "skipped"), notices, current, result);
 }
