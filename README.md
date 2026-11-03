@@ -147,6 +147,7 @@ k8s/, tools/, tests/         Маніфести, інструменти, нав�
 |---|---|
 | [Деплой](docs/deployment.md) | Автоматичний production через GitHub Actions, Helios і Infisical, rollback |
 | [PRD персонального тренера](docs/features/personal-trainer-mvp/PRD.md) | Вимоги, критерії приймання, KPI |
+| [Скидання прогресу (заплановано)](docs/features/reset-progress/PRD.md) | Кнопка в налаштуваннях стирає навчальний прогрес і лишає налаштування; [трекер задач](docs/features/reset-progress/tasks/tracker.md) |
 | [Ідеї та рішення](docs/IDEAS.md) | Журнал рішень інтерв'ю |
 | [Трекер задач](docs/features/personal-trainer-mvp/tasks/tracker.md) | Статус реалізації |
 | [Словник](docs/dictionary/README.md) | Випуск 2 000 схвалених лем і метод перевірки |
