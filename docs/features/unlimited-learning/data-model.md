@@ -39,7 +39,7 @@ erDiagram
 
 | Column | Type | Constraints | Notes |
 |---|---|---|---|
-| `kind` | VARCHAR(16) | NOT NULL (після кроку 3) | тип заняття: `plan` / `extra_word` / `extra_practice` ([ADR-0001](adr/0001-run-extras-as-typed-sessions-over-the-existing-session-pipeline.md)); значення задає застосунок, DB не має default і CHECK |
+| `kind` | VARCHAR(24) | NOT NULL (після кроку 3) | тип заняття: `plan` / `extra_word` / `extra_practice` ([ADR-0001](adr/0001-run-extras-as-typed-sessions-over-the-existing-session-pipeline.md)); значення задає застосунок, DB не має default і CHECK |
 
 Усі інші колонки без змін. **Aggregate root:** `learners`. Наявне часткове UNIQUE `ux_learning_sessions_one_active` (одна активна session на learner) лишається і діє для всіх видів: саме воно повертає ту саму extra-картку при повторному натисканні ([PRD AC-05](./PRD.md#ac-05---domain-invariant)).
 

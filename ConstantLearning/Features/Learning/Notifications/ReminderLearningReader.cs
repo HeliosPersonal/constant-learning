@@ -14,8 +14,9 @@ internal sealed class ReminderLearningReader(AppDbContext db, IPublishedCourseRe
         Instant? newWordsAvailableFrom, CancellationToken cancellationToken = default)
     {
         var now = clock.GetCurrentInstant();
+        // Лише планова session рахується як виконаний план дня; extra-дії не впливають на нагадування (AC-18).
         var completed = await db.LearningSessions.AsNoTracking().AnyAsync(session => session.LearnerId == learnerId
-            && session.LearnerDay == day && session.Status == "completed", cancellationToken);
+            && session.LearnerDay == day && session.Kind == "plan" && session.Status == "completed", cancellationToken);
         var answers = await db.AnswerEvents.AsNoTracking().Where(answer => answer.LearnerId == learnerId
                 && (answer.LearnerDay == day || answer.Outcome == "already_known"))
             .Select(answer => new { answer.EntryId, answer.LearnerDay, answer.ExerciseKind, answer.Outcome, answer.AnsweredAt })
@@ -32,7 +33,8 @@ internal sealed class ReminderLearningReader(AppDbContext db, IPublishedCourseRe
         var published = course.Select(word => word.EntryId).ToHashSet();
         // Незавершені вправи вже розпочатої session теж залишаються роботою, навіть коли квота нових слів вичерпана.
         var pending = await db.SessionItems.AsNoTracking().Where(item => item.Session.LearnerId == learnerId
-                && item.Session.LearnerDay == day && item.Session.Status == "active" && item.Session.EndsAt > now
+                && item.Session.LearnerDay == day && item.Session.Kind == "plan"
+                && item.Session.Status == "active" && item.Session.EndsAt > now
                 && item.State != "answered" && item.State != "skipped")
             .Select(item => item.EntryId).ToArrayAsync(cancellationToken);
         var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId).ToArrayAsync(cancellationToken);

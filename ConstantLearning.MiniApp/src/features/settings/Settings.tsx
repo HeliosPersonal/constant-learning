@@ -8,9 +8,10 @@ import { timeZoneOptions } from '../onboarding/timeZone';
 import { SettingsApiError, updateSettings } from './api';
 import { draftFromLearner, limitLabel, settingsChanges, validateSettings, weekDays, type Learner, type SettingsErrors } from './model';
 import { ThemeChoices } from './ThemeChoices';
+import { ResetProgressSection } from './ResetProgressSection';
 import './settings.css';
 
-export default function Settings({ learner, onBack, onStart }: { learner: Learner; onBack: () => void; onStart: () => void }) {
+export default function Settings({ learner, onBack, onStart }: { learner: Learner; onBack: (notice?: string) => void; onStart: () => void }) {
   const [saved, setSaved] = useState(learner);
   const [draft, setDraft] = useState(() => draftFromLearner(learner));
   const [errors, setErrors] = useState<SettingsErrors>({});
@@ -62,7 +63,7 @@ export default function Settings({ learner, onBack, onStart }: { learner: Learne
   }
 
   return <>
-    <nav className="settings-navigation" aria-label="Навігація налаштувань"><Button mode="plain" size="l" onClick={onBack}>← До «Сьогодні»</Button></nav>
+    <nav className="settings-navigation" aria-label="Навігація налаштувань"><Button mode="plain" size="l" onClick={() => onBack()}>← До «Сьогодні»</Button></nav>
     <div className="intro"><p className="eyebrow">ВАШ ПРОСТІР</p><h1>Налаштування</h1><p>Знайдіть зручний ритм і вигляд для щоденної польської.</p></div>
     <Card aria-labelledby="settings-theme-title"><span className="card-index">ВИГЛЯД</span><h2 id="settings-theme-title">Світла чи темна?</h2>
       <ThemeChoices /><p className="caption">Тема змінюється одразу й зберігається на цьому пристрої.</p><Button size="l" mode="outline" stretched onClick={() => setDialogOpen(true)}>Про оформлення</Button>
@@ -100,6 +101,7 @@ export default function Settings({ learner, onBack, onStart }: { learner: Learne
       {blocked === 'onboarding' && <Button size="l" mode="outline" stretched onClick={() => { queryClient.setQueryData(learnerQueryKey, null); onStart(); }}>До початку</Button>}
       <Button type="submit" size="l" stretched loading={mutation.isPending} disabled={!dirty || mutation.isPending || !!blocked}>{mutation.isPending ? 'Зберігаємо зміни…' : 'Зберегти зміни'}</Button>
     </form>
+    {!blocked && <ResetProgressSection onDone={onBack} />}
     <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}><p>Приглушені теми Everforest допомагають зосередитися на словах.</p><ThemeChoices group="settings-dialog-theme" /><p className="caption">Вигляд змінюється лише на цьому пристрої. Ваші відповіді та незбережені налаштування залишаться на місці.</p></Dialog>
   </>;
 }

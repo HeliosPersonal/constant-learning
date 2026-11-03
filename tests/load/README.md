@@ -73,3 +73,37 @@ python tests/load/summarize.py
 docker rm -f --volumes constant-learning-load-app constant-learning-load-db
 docker network rm constant-learning-load-local
 ```
+
+## Скидання прогресу (T09)
+
+Окремий сценарій [`reset.js`](reset.js) відповідає [T09](../../docs/features/reset-progress/tasks/T09-reset-load-check.md). Seed LoadHost додає когорту з 50 learner (`930000001..930000050`), кожен із повним графом найгіршого випадку — 2 000 слів і 20 000 відповідей, заняття з items і content reports, привʼязані до відповідей. Сценарій одним VU послідовно скидає прогрес кожного learner рівно раз (50 ітерацій), тож кожен вимір — це скидання повного набору. Межа [PRD §6](../../docs/features/reset-progress/PRD.md#6-non-functional-requirements): p95 ≤ 2 000 ms.
+
+Запускайте окремо від профілю T49 (щоб скидання не конкурувало за CPU), на свіжому seed. Поріг `reset_duration: p(95)<2000` у самому сценарії — це gate: k6 завершується ненульовим кодом, якщо p95 перевищено. Авторитетне серверне значення — гістограма `trainer_progress_reset_duration_ms{outcome="erased"}` (T08) у `metrics-after.prom`.
+
+```powershell
+Copy-Item tests/load/results/run/metrics-latest.prom tests/load/results/run/reset-metrics-before.prom
+docker run --rm --name constant-learning-load-reset --network constant-learning-load-local `
+  -e BASE_URL=http://constant-learning-load-app:8888 -v "${PWD}/tests/load:/scripts" `
+  -v "${PWD}/tests/load/results/run:/results" grafana/k6:0.57.0 run `
+  --summary-export=/results/reset-summary.json /scripts/reset.js
+Copy-Item tests/load/results/run/metrics-latest.prom tests/load/results/run/reset-metrics-after.prom
+```
+
+Звіт: p95 з `reset-summary.json` (`metrics.reset_duration["p(95)"]`) і серверна гістограма з `reset-metrics-after.prom` зберігаються в каталог прогону разом з рештою артефактів. CI, як і для T49, лише завантажує збережені результати — повний прогін із Docker і k6 виконується на локальному стенді.
+
+## Старт extra і практики (T12)
+
+Окремий сценарій [`extra-start.js`](extra-start.js) відповідає [T12](../../docs/features/unlimited-learning/tasks/T12-extra-load-check.md). Seed LoadHost додає когорту з 100 learner (`940000001..940000100`) з виконаним планом дня: нові слова відкладено на завтра, повторень на сьогодні немає, але лишаються непоказані слова курсу й придатні до практики слова. `940000001..940000050` обслуговують старт extra-слова, `940000051..940000100` — старт додаткової практики. Перший дотик кожного learner створює extra-session (201), наступні повертають активну (200) — обидва шляхи вимірюють тривалість старту. Межі [PRD §6](../../docs/features/unlimited-learning/PRD.md#6-non-functional-requirements): p95 старту extra-слова ≤ 500 ms, старту практики ≤ 800 ms.
+
+Сценарій тримає два `constant-vus` блоки по 50 VU протягом 2 хвилин (1 запит на секунду на VU, `sleep(1)`), по одному на кожну дію. Пороги `extra_word_duration: p(95)<500` і `extra_practice_duration: p(95)<800` у самому сценарії — це gate: k6 завершується ненульовим кодом, якщо p95 перевищено. Авторитетні серверні значення — гістограми `trainer_extra_word_start_ms` і `trainer_extra_practice_start_ms` у `metrics-after.prom` (визначають p95 першим bucket із принаймні 95% спостережень). Запускайте окремо від профілю T49 і сценарію скидання на свіжому seed.
+
+```powershell
+Copy-Item tests/load/results/run/metrics-latest.prom tests/load/results/run/extra-metrics-before.prom
+docker run --rm --name constant-learning-load-extra --network constant-learning-load-local `
+  -e BASE_URL=http://constant-learning-load-app:8888 -v "${PWD}/tests/load:/scripts" `
+  -v "${PWD}/tests/load/results/run:/results" grafana/k6:0.57.0 run `
+  --summary-export=/results/extra-summary.json /scripts/extra-start.js
+Copy-Item tests/load/results/run/metrics-latest.prom tests/load/results/run/extra-metrics-after.prom
+```
+
+Звіт: p95 зі `extra-summary.json` (`metrics.extra_word_duration["p(95)"]` і `metrics.extra_practice_duration["p(95)"]`) та серверні гістограми зі `extra-metrics-after.prom` зберігаються в каталог прогону. CI, як і для T49, лише завантажує збережені результати — повний прогін із Docker і k6 виконується на локальному стенді.

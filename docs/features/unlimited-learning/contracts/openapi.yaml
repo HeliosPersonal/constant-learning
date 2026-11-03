@@ -53,9 +53,10 @@ paths:
             application/json:
               schema:
                 $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Session"
+              # kind: extra_word додається до схеми Session амендментом (див. components.x-amendments, застосовує T02);
+              # у прикладі не показуємо його, щоб приклад лишався валідним до батьківської схеми до реалізації.
               example:
                 id: 0192f0a0-0000-7000-8000-0000000000c1
-                kind: extra_word
                 learner_day: "2026-11-03"
                 ends_at: "2026-11-03T22:00:00Z"
                 status: active
@@ -128,9 +129,11 @@ paths:
             application/json:
               schema:
                 $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Session"
+              # kind: extra_practice (Session) і current_item.kind: extra_practice (SessionItem.kind) додаються
+              # амендментом (див. components.x-amendments, застосовує T02/T09). До реалізації приклад показує
+              # найближчі наявні значення, щоб лишатися валідним до батьківської схеми.
               example:
                 id: 0192f0a0-0000-7000-8000-0000000000c2
-                kind: extra_practice
                 learner_day: "2026-11-03"
                 ends_at: "2026-11-03T22:00:00Z"
                 status: active
@@ -141,7 +144,7 @@ paths:
                 current_item:
                   id: 0192f0a0-0000-7000-8000-0000000000d2
                   position: 1
-                  kind: extra_practice
+                  kind: review  # після амендменту SessionItem.kind повертається extra_practice
                   prompt_uk: хата
                   context_uk: null
                   card: null
@@ -204,8 +207,10 @@ components:
 
   x-amendments:
     description: |
-      Зміни наявних схем контракту personal-trainer-mvp, які застосовуються разом із реалізацією
-      (завдання в tasks); до того батьківський файл не редагується.
-    TodaySummary: "додати обов'язкове поле extra_actions: $ref ExtraActions"
-    Session: "додати обов'язкове поле kind: $ref SessionKind"
-    SessionItem.kind: "додати значення extra_new_word_check, extra_practice до enum (new_word_card використовується й для extra_word)"
+      Зміни наявних схем контракту personal-trainer-mvp, які застосовуються разом із реалізацією;
+      до того батьківський файл не редагується. Коли амендмент застосовують, батьківський
+      info.version підіймається з рядком у CHANGELOG, а наявні приклади Session/TodaySummary
+      батьківського контракту доповнюються новими обов'язковими полями в тому самому PR.
+    TodaySummary: "додати обов'язкове поле extra_actions: $ref ExtraActions (застосовує T05, контракт — T09)"
+    Session: "додати обов'язкове поле kind: $ref SessionKind (застосовує T02, контракт — T09)"
+    SessionItem.kind: "додати значення extra_new_word_check, extra_practice до enum, new_word_card використовується й для extra_word (застосовує T09)"

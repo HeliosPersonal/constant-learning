@@ -6,7 +6,10 @@ namespace ConstantLearning.Features.Learning.Domain.Scheduling;
 public enum ReviewExerciseKind
 {
     NewWordCheck,
-    ScheduledReview
+    ScheduledReview,
+    // unlimited-learning (ADR-0002): додаткова практика вивчених слів. extra_new_word_check відображається
+    // на NewWordCheck; походження (звичайне/extra) розрізняє лише exercise_kind журналу.
+    ExtraPractice
 }
 
 /// <summary>Id є сталим seed: повторне застосування події не використовує випадковість процесу.</summary>

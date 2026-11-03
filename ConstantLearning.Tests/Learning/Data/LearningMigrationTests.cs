@@ -332,7 +332,8 @@ public sealed class LearningMigrationTests(PostgresFixture postgres) : PostgresI
             LearnerId = learner.Id,
             LearnerDay = sessionData.LearnerDay,
             EndsAt = sessionData.EndsAt,
-            Status = sessionData.Status
+            Status = sessionData.Status,
+            Kind = "plan"
         };
         var itemData = sessionData.Items.Single();
         var item = new SessionItem
@@ -363,7 +364,8 @@ public sealed class LearningMigrationTests(PostgresFixture postgres) : PostgresI
         LearnerId = learnerId,
         LearnerDay = new LocalDate(2026, 10, 31),
         EndsAt = Clock.GetCurrentInstant() + Duration.FromHours(14),
-        Status = status
+        Status = status,
+        Kind = "plan"
     };
 
     private AnswerEvent NewAnswer(Scenario scenario) => new()

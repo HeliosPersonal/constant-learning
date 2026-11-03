@@ -29,7 +29,7 @@ public sealed class LearnerSettingsTests(PostgresFixture postgres) : PostgresInt
         Db.LearningSessions.Add(new LearningSession
         {
             LearnerId = learner.Id, LearnerDay = new LocalDate(2026, 1, 15), EndsAt = previousBoundary,
-            Status = "active", CreatedAt = Clock.GetCurrentInstant()
+            Status = "active", Kind = "plan", CreatedAt = Clock.GetCurrentInstant()
         });
         await Db.SaveChangesAsync();
         await using var app = await StartAsync();

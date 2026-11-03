@@ -74,7 +74,53 @@ using (var scope = factory.Services.CreateScope())
         db.LearnerWords.Add(new LearnerWord { LearnerId = learner.Id, EntryId = entries[0].Id, Status = "review", FirstShownDay = day.PlusDays(-10), DueOn = day, IntervalDays = 2, ModelState = "{\"forgetting_rate\":0.3}", SchedulerVersion = "memorize-v1", CreatedAt = now });
         if (i % 100 == 0) { await db.SaveChangesAsync(); db.ChangeTracker.Clear(); }
     }
-    await db.Database.ExecuteSqlRawAsync("ANALYZE dictionary_entries; ANALYZE entry_versions; ANALYZE version_translations; ANALYZE version_accepted_answers; ANALYZE search_forms; ANALYZE learners; ANALYZE learner_words; ANALYZE session_items; ANALYZE answer_events; ANALYZE reminder_schedules; ANALYZE notification_dispatches;");
+    // Когорта для навантажувального тесту скидання (T09): кожен learner має повний граф найгіршого
+    // випадку з [PRD §6](../../docs/features/reset-progress/PRD.md#6-non-functional-requirements) — 2000 слів,
+    // 20000 відповідей, заняття з items і content reports, привʼязані до відповідей. reset.js скидає їх по черзі.
+    day = now.InZone(DateTimeZone.Utc).Date;
+    for (var i = 1; i <= 50; i++)
+    {
+        var resetLearner = new Learner { TelegramUserId = 930000000 + i, TimeZone = "UTC", TimeZoneConfirmed = true, DailyNewWordsLimit = 3, OnboardedAt = now, CreatedAt = now };
+        db.Learners.Add(resetLearner);
+        foreach (var entry in entries) db.LearnerWords.Add(new LearnerWord { LearnerId = resetLearner.Id, EntryId = entry.Id, Status = "review", FirstShownDay = day.PlusDays(-10), DueOn = day, IntervalDays = 2, ModelState = "{\"forgetting_rate\":0.3}", SchedulerVersion = "memorize-v1", CreatedAt = now });
+        var resetSession = new LearningSession { LearnerId = resetLearner.Id, LearnerDay = day, EndsAt = now.Plus(Duration.FromHours(1)), Status = "completed", Kind = "plan", CompletedAt = now, CreatedAt = now };
+        db.LearningSessions.Add(resetSession);
+        var resetItems = new List<SessionItem>();
+        for (short p = 0; p < 20; p++) { var item = new SessionItem { SessionId = resetSession.Id, EntryId = entries[p].Id, Position = p, Kind = "review", State = "graded", AnsweredAt = now, CreatedAt = now }; resetItems.Add(item); db.SessionItems.Add(item); }
+        await db.SaveChangesAsync();
+        var linkedAnswers = new List<AnswerEvent>();
+        for (var r = 0; r < 3; r++) { var linked = new AnswerEvent { LearnerId = resetLearner.Id, EntryId = entries[r].Id, VersionId = versions[r].Id, SessionItemId = resetItems[r].Id, ExerciseKind = "recall", Outcome = "correct", RawAnswer = "slowo", NormalizedAnswer = "slowo", AnsweredAt = now, LearnerDay = day, TimeZone = "UTC", SchedulerVersion = "memorize-v1", StateBefore = "{\"forgetting_rate\":0.3}", CreatedAt = now }; linkedAnswers.Add(linked); db.AnswerEvents.Add(linked); }
+        await db.SaveChangesAsync();
+        foreach (var linked in linkedAnswers) db.ContentReports.Add(new ContentReport { LearnerId = resetLearner.Id, EntryId = linked.EntryId, VersionId = linked.VersionId, AnswerEventId = linked.Id, Origin = "answer", Status = "open", CreatedAt = now });
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var answerBatch = new List<AnswerEvent>(5000);
+        for (var a = 3; a < 20000; a++)
+        {
+            var index = a % entries.Count;
+            answerBatch.Add(new AnswerEvent { LearnerId = resetLearner.Id, EntryId = entries[index].Id, VersionId = versions[index].Id, ExerciseKind = "recall", Outcome = a % 4 == 0 ? "mistake_typo" : "correct", RawAnswer = "slowo", NormalizedAnswer = "slowo", AnsweredAt = now, LearnerDay = day, TimeZone = "UTC", SchedulerVersion = "memorize-v1", StateBefore = "{\"forgetting_rate\":0.3}", CreatedAt = now });
+            if (answerBatch.Count == 5000) { db.AnswerEvents.AddRange(answerBatch); await db.SaveChangesAsync(); db.ChangeTracker.Clear(); answerBatch.Clear(); }
+        }
+        if (answerBatch.Count > 0) { db.AnswerEvents.AddRange(answerBatch); await db.SaveChangesAsync(); db.ChangeTracker.Clear(); }
+    }
+    await File.WriteAllTextAsync("/results/reset-cohort.txt", "50 learners 930000001..930000050, 2000 words / 20000 answers each");
+    // Когорта для навантажувального тесту старту extra (T12 unlimited-learning): план дня виконано (нові
+    // слова відкладено на завтра, повторень на сьогодні немає), але лишилися непоказані слова курсу й
+    // придатні до практики слова. 940000001..940000050 — extra-word, 940000051..940000100 — extra-practice.
+    // Межі [PRD §6](../../docs/features/unlimited-learning/PRD.md#6-non-functional-requirements):
+    // старт extra-слова p95 ≤ 500 ms, старт практики p95 ≤ 800 ms. extra-start.js бʼє ці когорти.
+    day = now.InZone(DateTimeZone.Utc).Date;
+    var extraDeferred = now.Plus(Duration.FromDays(1));
+    for (var i = 1; i <= 100; i++)
+    {
+        var extraLearner = new Learner { TelegramUserId = 940000000 + i, TimeZone = "UTC", TimeZoneConfirmed = true, DailyNewWordsLimit = 3, NewWordsAvailableFrom = extraDeferred, OnboardedAt = now, CreatedAt = now };
+        db.Learners.Add(extraLearner);
+        foreach (var entry in entries.Take(1000)) db.LearnerWords.Add(new LearnerWord { LearnerId = extraLearner.Id, EntryId = entry.Id, Status = "review", FirstShownDay = day.PlusDays(-10), DueOn = day.PlusDays(1), IntervalDays = 2, ModelState = "{\"forgetting_rate\":0.3}", SchedulerVersion = "memorize-v1", CreatedAt = now });
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+    }
+    await File.WriteAllTextAsync("/results/extra-cohort.txt", "100 learners 940000001..940000100 (план дня виконано); 940000001..50 extra-word, 940000051..100 extra-practice");
+    await db.Database.ExecuteSqlRawAsync("ANALYZE dictionary_entries; ANALYZE entry_versions; ANALYZE version_translations; ANALYZE version_accepted_answers; ANALYZE search_forms; ANALYZE learners; ANALYZE learner_words; ANALYZE session_items; ANALYZE answer_events; ANALYZE content_reports; ANALYZE reminder_schedules; ANALYZE notification_dispatches;");
     await scope.ServiceProvider.GetRequiredService<IPublishedCourseReader>().ReadAsync();
     await File.WriteAllTextAsync("/results/reminder-due.txt", due.ToString());
 }

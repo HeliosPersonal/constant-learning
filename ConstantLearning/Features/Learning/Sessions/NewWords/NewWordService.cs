@@ -65,9 +65,11 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         }
         if (next?.Id != item.Id) return Error("new_word.item_not_current", "Спершу опрацюйте поточну картку.");
 
+        // Додаткове нове слово (unlimited-learning) не рахується до денного ліміту і не вимагає квоти (AC-02).
+        var isExtra = session.Kind == "extra_word";
         var words = await db.LearnerWords.Where(value => value.LearnerId == learnerId).ToListAsync(cancellationToken);
         var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
-        if (!limits.NewWordsAvailable || limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) == 0)
+        if (!isExtra && (!limits.NewWordsAvailable || limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) == 0))
             return Error("new_word.limit_reached", "Нові слова стануть доступні наступної навчальної доби.");
         var word = words.SingleOrDefault(value => value.EntryId == item.EntryId);
         if (word?.FirstShownDay is not null || limits.Course.Single(value => value.EntryId == item.EntryId).IsPresented)
@@ -121,7 +123,8 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
 
         var replacementAdded = false;
-        if (alreadyKnown && limits.Usage.AlreadyKnownWords <= DailyNewWordUsage.FreeAlreadyKnownWords)
+        // extra_word ніколи не підставляє нове слово замість «Вже знаю» (AC-03); заміна лише для плану.
+        if (!isExtra && alreadyKnown && limits.Usage.AlreadyKnownWords <= DailyNewWordUsage.FreeAlreadyKnownWords)
         {
             var pending = items.Where(value => value.State == "pending" && value.Kind == "new_word_card")
                 .Select(value => value.EntryId).ToHashSet();
@@ -142,10 +145,12 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         else if (!alreadyKnown)
         {
             // Окремий діапазон залишає всі картки показу та до десяти замін перед перевірками.
+            // extra_word має єдину картку показу, тож перевірка стає на ту саму позицію 31 (data-model).
             var firstCheck = SessionComposer.MaximumSessionWords + DailyNewWordUsage.FreeAlreadyKnownWords + 1;
             var position = checked((short)Math.Max(firstCheck,
-                items.Where(value => value.Kind == "new_word_check").Select(value => (int)value.Position).DefaultIfEmpty(0).Max() + 1));
-            AddItem(item.EntryId, "new_word_check", position);
+                items.Where(value => value.Kind is "new_word_check" or "extra_new_word_check")
+                    .Select(value => (int)value.Position).DefaultIfEmpty(0).Max() + 1));
+            AddItem(item.EntryId, isExtra ? "extra_new_word_check" : "new_word_check", position);
         }
 
         next = SessionViewBuilder.PrepareNextItem(session, items, published, now);

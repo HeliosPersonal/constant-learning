@@ -76,8 +76,10 @@ public sealed class ReviewHistoryProjector(IReviewScheduler scheduler)
             throw new InvalidOperationException("Після відповіді стан слова вже змінився.");
         }
 
-        return answer.ExerciseKind == ReviewExerciseKind.ScheduledReview
-            ? recorded.StateBefore with { LastScheduledAttemptDay = answer.LearnerDay }
-            : recorded.StateBefore;
+        // Планове повторення й додаткова практика (ADR-0002) виключають слово до кінця доби;
+        // перевірка нового слова відновлює знімок без позначки спроби.
+        return answer.ExerciseKind == ReviewExerciseKind.NewWordCheck
+            ? recorded.StateBefore
+            : recorded.StateBefore with { LastScheduledAttemptDay = answer.LearnerDay };
     }
 }

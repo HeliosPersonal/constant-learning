@@ -538,6 +538,7 @@ public sealed class ReminderNotificationsTests(PostgresFixture postgres) : Postg
             LearnerId = learner.Id,
             LearnerDay = Day,
             Status = status,
+            Kind = "plan",
             EndsAt = Instant.FromUtc(2026, 11, 2, 23, 0),
             CreatedAt = Clock.GetCurrentInstant(),
             CompletedAt = status == "completed" ? Clock.GetCurrentInstant() : null
