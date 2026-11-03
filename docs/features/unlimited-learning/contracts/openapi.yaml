@@ -1,0 +1,211 @@
+# Контракт HTTP API unlimited-learning, згенерований /sdlc:api-forge (сценарій A: дельта до personal-trainer-mvp).
+#   поля й обмеження      ← data-model.md (нова колонка kind і значення exercise_kind)
+#   відповіді з помилками ← sad.md §6 (гілки alt/else)
+#   перелік ендпоінтів    ← PRD.md §4 user stories / §5 AC
+# Спільні схеми Session, Error і відповіді Unauthorized / LearnerNotOnboarded беруться з контракту personal-trainer-mvp.
+# Зміни наявних схем цього контракту (TodaySummary, Session, SessionItem) описано нижче в components.x-amendments.
+openapi: 3.1.0
+
+info:
+  title: unlimited-learning API
+  version: 0.1.0
+  description: |
+    Додаткові дії після виконання плану дня: «Ще одне слово» (extra new word) і «Потренувати вивчені»
+    (extra practice). Обидві дії створюють типізоване заняття (ADR-0001) і повертають ту саму схему
+    Session, що й startSession, тож картки, відповіді, перехід від результату та закриття доби
+    користуються наявними операціями personal-trainer-mvp. Доповнює API personal-trainer-mvp тією
+    самою автентифікацією initData.
+
+servers:
+  - url: https://trainer.example.test
+    description: Production (той самий origin, що й Mini App)
+  - url: http://localhost:8888
+    description: Local
+
+security:
+  - TelegramInitData: []
+
+tags:
+  - name: learning
+
+paths:
+  /api/v1/sessions/extra-word:
+    post:
+      tags: [learning]
+      summary: Взяти ще одне нове слово понад план дня (US-01)
+      operationId: startExtraWord
+      description: |
+        Створює session kind = extra_word з карткою наступного нового слова в порядку вибору базового
+        PRD (AC-01). Дозволено лише коли план дня виконано (AC-16, AC-17). Нове слово не рахується до
+        денного ліміту (AC-02). Якщо активна extra-session уже існує, повертає її (200) — повторне
+        натискання й другий пристрій безпечні (AC-05), тож окремий Idempotency-Key не потрібен.
+        Технічний захист: не більше 30 викликів на хвилину на learner.
+      responses:
+        "200":
+          description: Активна extra-session уже існує (повторне натискання або інший пристрій)
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Session"
+        "201":
+          description: Extra-session створено, повернуто картку слова
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Session"
+              example:
+                id: 0192f0a0-0000-7000-8000-0000000000c1
+                kind: extra_word
+                learner_day: "2026-11-03"
+                ends_at: "2026-11-03T22:00:00Z"
+                status: active
+                total_items: 2
+                completed_items: 0
+                notices: []
+                last_result: null
+                current_item:
+                  id: 0192f0a0-0000-7000-8000-0000000000d1
+                  position: 1
+                  kind: new_word_card
+                  prompt_uk: хата
+                  context_uk: null
+                  card:
+                    lemma_pl: chata
+                    translations_uk: [хата]
+                    pronunciation_uk: хата
+                    example_pl: Mieszkam w małej chacie.
+                    example_uk: Я живу в маленькій хаті.
+                    gender: f
+        "401":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/LearnerNotOnboarded"
+        "409":
+          description: Додаткове слово зараз недоступне — або план дня не виконано, або base course завершено (AC-04, AC-17)
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Error"
+              examples:
+                plan_not_done:
+                  value:
+                    code: extra.plan_not_done
+                    message: Спершу завершіть заняття за планом — потім можна брати додаткові слова.
+                course_completed:
+                  value:
+                    code: extra.course_completed
+                    message: Нових слів у курсі більше немає.
+        "429":
+          description: Забагато натискань за хвилину (технічний захист від зловживань, не навчальний ліміт)
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Error"
+              example:
+                code: extra.rate_limited
+                message: Занадто швидко — зачекайте кілька секунд.
+
+  /api/v1/sessions/extra-practice:
+    post:
+      tags: [learning]
+      summary: Почати додаткову практику вивчених слів (US-02)
+      operationId: startExtraPractice
+      description: |
+        Створює session kind = extra_practice до 20 карток зі слів зі статусом «На повторення» або
+        «Вже пригадую»; порядок — найближча дата наступного повторення (AC-08). Не пропонує слів із
+        control repetition, слів із відповіддю сьогодні, слів, отриманих сьогодні, і слів, що втратили
+        approved (AC-09, AC-11). Якщо активна extra-session уже існує, повертає її (200).
+      responses:
+        "200":
+          description: Активна extra-session уже існує
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Session"
+        "201":
+          description: Практику створено, повернуто першу картку
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Session"
+              example:
+                id: 0192f0a0-0000-7000-8000-0000000000c2
+                kind: extra_practice
+                learner_day: "2026-11-03"
+                ends_at: "2026-11-03T22:00:00Z"
+                status: active
+                total_items: 12
+                completed_items: 0
+                notices: []
+                last_result: null
+                current_item:
+                  id: 0192f0a0-0000-7000-8000-0000000000d2
+                  position: 1
+                  kind: extra_practice
+                  prompt_uk: хата
+                  context_uk: null
+                  card: null
+        "401":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/LearnerNotOnboarded"
+        "409":
+          description: Практика недоступна — план дня не виконано або немає придатних слів (AC-10, AC-17)
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Error"
+              examples:
+                plan_not_done:
+                  value:
+                    code: extra.plan_not_done
+                    message: Спершу завершіть заняття за планом — потім можна тренуватися додатково.
+                no_eligible_words:
+                  value:
+                    code: extra.no_eligible_words
+                    message: Зараз немає слів для додаткової практики — спробуйте, коли будуть вивчені слова без відповіді сьогодні.
+
+components:
+  securitySchemes:
+    TelegramInitData:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "Authorization: tma <initData>, перевіряється в кожному запиті (ADR-0005 personal-trainer-mvp)"
+
+  schemas:
+    SessionKind:
+      type: string
+      enum: [plan, extra_word, extra_practice]
+      description: Тип заняття (ADR-0001). Додається до схеми Session батьківського контракту як обов'язкове поле kind.
+
+    ExtraActionAvailability:
+      type: object
+      required: [available, reason]
+      additionalProperties: false
+      properties:
+        available: { type: boolean }
+        reason:
+          type: [string, "null"]
+          enum: [plan_not_done, course_completed, no_eligible_words, null]
+          description: Чому дія недоступна; null, якщо available = true.
+
+    ExtraActions:
+      type: object
+      required: [plan_done, extra_new_word, extra_practice]
+      additionalProperties: false
+      description: Нове поле extra_actions відповіді getToday (див. x-amendments). Лише сервер вирішує доступність дій (AC-16, AC-17).
+      properties:
+        plan_done:
+          type: boolean
+          description: true, якщо слів до повторення немає, активної session немає і нових слів на сьогодні немає (ліміт вичерпано або base course завершено).
+        extra_new_word: { $ref: "#/components/schemas/ExtraActionAvailability" }
+        extra_practice: { $ref: "#/components/schemas/ExtraActionAvailability" }
+
+  x-amendments:
+    description: |
+      Зміни наявних схем контракту personal-trainer-mvp, які застосовуються разом із реалізацією
+      (завдання в tasks); до того батьківський файл не редагується.
+    TodaySummary: "додати обов'язкове поле extra_actions: $ref ExtraActions"
+    Session: "додати обов'язкове поле kind: $ref SessionKind"
+    SessionItem.kind: "додати значення extra_new_word_check, extra_practice до enum (new_word_card використовується й для extra_word)"

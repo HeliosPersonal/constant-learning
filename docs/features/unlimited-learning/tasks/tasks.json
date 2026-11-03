@@ -1,0 +1,309 @@
+{
+  "slug": "unlimited-learning",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Додати колонку kind у learning_sessions і писати її в нових session (expand)",
+      "layer": "migration",
+      "deps": [],
+      "acs": [
+        "AC-18"
+      ],
+      "dod": "міграція застосовується й відкочується без втрати даних (інтеграційний тест на тимчасовій БД)",
+      "files_hint": [
+        "docs/features/unlimited-learning/migrations/20261103120000_add_kind_to_learning_sessions.up.sql",
+        "ConstantLearning/Migrations/",
+        "ConstantLearning/Features/Learning/Data/LearningSession.cs",
+        "ConstantLearning/Features/Learning/Data/LearningSessionConfiguration.cs",
+        "ConstantLearning/Features/Learning/Sessions/Start/StartSessionService.cs"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T02",
+      "title": "Заповнити kind для наявних session і зробити колонку NOT NULL (backfill + contract)",
+      "layer": "migration",
+      "deps": [
+        "T01"
+      ],
+      "acs": [
+        "AC-18"
+      ],
+      "dod": "після backfill жодна session не має NULL у `kind` (перевірка в інтеграційному тесті)",
+      "files_hint": [
+        "docs/features/unlimited-learning/migrations/20261103120001_backfill_kind_in_learning_sessions.up.sql",
+        "docs/features/unlimited-learning/migrations/20261103120002_set_kind_not_null_on_learning_sessions.up.sql",
+        "ConstantLearning/Migrations/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T03",
+      "title": "Додати третій вид вправи ExtraPractice у планувальник і проєктор",
+      "layer": "domain",
+      "deps": [],
+      "acs": [
+        "AC-12",
+        "AC-13",
+        "AC-14",
+        "AC-15"
+      ],
+      "dod": "юніт-тести правил практики зелені (правильна відповідь не відсуває дату, помилка знижує статус, спроба цієї доби не підвищує)",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Domain/Scheduling/",
+        "ConstantLearning.Tests/Learning/Domain/Scheduling/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T04",
+      "title": "Обмежити лічильники, нагадування й початок заняття видом plan",
+      "layer": "app",
+      "deps": [
+        "T01"
+      ],
+      "acs": [
+        "AC-17",
+        "AC-18"
+      ],
+      "dod": "додаткові дії не змінюють completed за 7 днів і правила нагадувань (AC-18 — інтеграційний тест)",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Today/TodayService.cs",
+        "ConstantLearning/Features/Learning/Notifications/ReminderLearningReader.cs",
+        "ConstantLearning/Features/Learning/Sessions/Start/StartSessionService.cs",
+        "ConstantLearning/Features/Learning/Sessions/DayBoundary/",
+        "ConstantLearning/Features/Learning/Sessions/Current/",
+        "ConstantLearning.Tests/Learning/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T05",
+      "title": "Обчислити доступність extra-дій і додати extra_actions у відповідь екрана «Сьогодні»",
+      "layer": "app",
+      "deps": [
+        "T01",
+        "T04"
+      ],
+      "acs": [
+        "AC-04",
+        "AC-10",
+        "AC-16",
+        "AC-17"
+      ],
+      "dod": "компонентні/інтеграційні тести AC-16, AC-17, AC-04, AC-10 зелені",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Today/",
+        "ConstantLearning/Features/Learning/Sessions/Extra/",
+        "ConstantLearning.Tests/Learning/Today/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T06",
+      "title": "Реалізувати старт «Ще одне слово»: session extra_word, добір слова, ідемпотентність, захист від зловживань",
+      "layer": "app",
+      "deps": [
+        "T01",
+        "T04"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-02",
+        "AC-03",
+        "AC-05",
+        "AC-06"
+      ],
+      "dod": "інтеграційні тести AC-01, AC-02, AC-03, AC-05, AC-06 зелені на тимчасовій БД",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Extra/",
+        "ConstantLearning/Features/Learning/Sessions/NewWords/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ],
+      "estimate": "L",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T07",
+      "title": "Реалізувати старт «Потренувати вивчені»: відбір до 20 слів і session extra_practice",
+      "layer": "app",
+      "deps": [
+        "T03",
+        "T05"
+      ],
+      "acs": [
+        "AC-08",
+        "AC-09",
+        "AC-10",
+        "AC-11"
+      ],
+      "dod": "інтеграційні тести AC-08, AC-09, AC-10, AC-11 зелені",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Extra/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T08",
+      "title": "Підтримати extra-картки у відповіді, межі доби й походженні відповіді",
+      "layer": "app",
+      "deps": [
+        "T03",
+        "T06",
+        "T07"
+      ],
+      "acs": [
+        "AC-07",
+        "AC-12",
+        "AC-13",
+        "AC-14",
+        "AC-15",
+        "AC-20"
+      ],
+      "dod": "інтеграційні тести AC-07, AC-12, AC-13, AC-14, AC-15, AC-20 зелені",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Answer/",
+        "ConstantLearning/Features/Learning/Sessions/DayBoundary/",
+        "ConstantLearning/Features/Learning/Sessions/Current/",
+        "ConstantLearning/Features/Learning/Disputes/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ],
+      "estimate": "L",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T09",
+      "title": "Додати дії extra в API, зареєструвати коди помилок і внести зміни в контракт батьківської фічі",
+      "layer": "ports",
+      "deps": [
+        "T05",
+        "T06",
+        "T07"
+      ],
+      "acs": [
+        "AC-04",
+        "AC-10",
+        "AC-17",
+        "AC-19"
+      ],
+      "dod": "інтеграційні тести авторизації AC-19 і відповідей-помилок зелені (чужі дані не розкриваються)",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Sessions/Extra/",
+        "ConstantLearning/Features/Learning/",
+        "docs/features/personal-trainer-mvp/contracts/openapi.yaml",
+        "docs/features/unlimited-learning/contracts/openapi.yaml"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T10",
+      "title": "Показати дії extra на екрані «Сьогодні» й підтримати extra-заняття в екрані заняття",
+      "layer": "ui",
+      "deps": [
+        "T09"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-04",
+        "AC-08",
+        "AC-10",
+        "AC-16",
+        "AC-17"
+      ],
+      "dod": "компонентні тести AC-04, AC-10, AC-16, AC-17 зелені; e2e через UI AC-01 і AC-08 проходить",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/today/",
+        "ConstantLearning.MiniApp/src/features/session/",
+        "ConstantLearning.MiniApp/src/api/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T11",
+      "title": "Дописати інтеграційні тести крайових випадків і відтворення журналу",
+      "layer": "tests",
+      "deps": [
+        "T08",
+        "T09"
+      ],
+      "acs": [
+        "AC-02",
+        "AC-05",
+        "AC-07",
+        "AC-09",
+        "AC-11",
+        "AC-18",
+        "AC-19",
+        "AC-20"
+      ],
+      "dod": "усі перелічені AC мають щонайменше один зелений інтеграційний тест на тимчасовій БД",
+      "files_hint": [
+        "ConstantLearning.Tests/Learning/",
+        "ConstantLearning.Tests/Learning/Sessions/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T12",
+      "title": "Перевірити швидкість старту extra й практики на навантажувальному наборі",
+      "layer": "tests",
+      "deps": [
+        "T09"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-08"
+      ],
+      "dod": "p95 старту extra-слова ≤ 500 ms і запуску практики ≤ 800 ms на навантажувальному наборі",
+      "files_hint": [
+        "tests/",
+        "ConstantLearning.Tests/Learning/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    },
+    {
+      "id": "T13",
+      "title": "Оновити README, CONTEXT і документацію батьківської фічі",
+      "layer": "docs",
+      "deps": [
+        "T10",
+        "T11"
+      ],
+      "acs": [
+        "AC-16"
+      ],
+      "dod": "README і CONTEXT описують фічу",
+      "files_hint": [
+        "README.md",
+        "CONTEXT.md",
+        "docs/features/personal-trainer-mvp/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "todo"
+    }
+  ]
+}
