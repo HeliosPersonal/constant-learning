@@ -33,7 +33,11 @@ public sealed class ResultViewMigrationTests(PostgresFixture postgres) : Postgre
             Assert.Contains(after, line => line.StartsWith("index:ix_learning_sessions_result_item_id:", StringComparison.Ordinal));
             Assert.Contains(after, line => line.StartsWith("constraint:fk_learning_sessions_result_item_id:", StringComparison.Ordinal));
             Assert.False(db.Database.HasPendingModelChanges());
-            Assert.Empty(await db.Database.GetPendingMigrationsAsync());
+            // PersistSessionResultView is no longer HEAD (unlimited-learning added the kind migrations
+            // after it), so later migrations are expectedly pending here; HasPendingModelChanges above
+            // is the snapshot-consistency guard. We only assert this migration itself is applied.
+            Assert.DoesNotContain(await db.Database.GetPendingMigrationsAsync(),
+                migration => migration.EndsWith("PersistSessionResultView", StringComparison.Ordinal));
             await migrator.MigrateAsync("PersistSessionItemResponse");
             Assert.Equal(before, await Schema(db));
             await migrator.MigrateAsync("PersistSessionResultView");

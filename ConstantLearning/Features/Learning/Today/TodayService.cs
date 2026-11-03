@@ -2,6 +2,7 @@ using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Learning.Sessions.Current;
 using ConstantLearning.Features.Learning.Sessions.DayBoundary;
+using ConstantLearning.Features.Learning.Sessions.Extra;
 using ConstantLearning.Features.Learning.Sessions.Start.Limits;
 using ConstantLearning.Features.Learning.Sessions.Results;
 using ConstantLearning.Platform.Persistence;
@@ -54,11 +55,26 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
         var from = day.PlusDays(-6).AtStartOfDayInZone(zone).ToInstant();
         var until = day.PlusDays(1).AtStartOfDayInZone(zone).ToInstant();
         var completed = await db.LearningSessions.AsNoTracking().CountAsync(value => value.LearnerId == learnerId
-            && value.Status == "completed" && value.CompletedAt >= from && value.CompletedAt < until,
+            && value.Kind == "plan" && value.Status == "completed"
+            && value.CompletedAt >= from && value.CompletedAt < until,
             cancellationToken);
+
+        // Дії після плану (unlimited-learning AC-16/AC-17). План виконано, коли немає активної session,
+        // слів до повторення й нових слів на сьогодні (ліміт вичерпано або base course завершено).
+        var hasActive = session is not null && (session.Status == "active" || session.ResultItemId is not null);
+        var newWordsForPlan = limits.NewWordsAvailable
+            && limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) > 0 && !limits.CourseCompleted;
+        var planDone = ExtraEligibility.PlanDone(hasActive, due, newWordsForPlan);
+        var answeredToday = (await db.AnswerEvents.AsNoTracking().Where(answer => answer.LearnerId == learnerId
+                && answer.LearnerDay == day).Select(answer => answer.EntryId).Distinct()
+            .ToArrayAsync(cancellationToken)).ToHashSet();
+        var hasPractice = planDone && ExtraEligibility.HasEligiblePracticeWord(words, published, answeredToday, day);
+        var extra = ExtraEligibility.Evaluate(planDone, limits.CourseCompleted, hasPractice);
+
         var response = new TodayResponse(LocalDatePattern.Iso.Format(day), due, recalled, completed,
-            session is not null && (session.Status == "active" || session.ResultItemId is not null), limits.CourseCompleted ? "completed" : "in_progress",
-            notices.Contains("course_replenished"), !notices.Contains("new_words_limit_reached"));
+            hasActive, limits.CourseCompleted ? "completed" : "in_progress",
+            notices.Contains("course_replenished"), !notices.Contains("new_words_limit_reached"),
+            ExtraActionsResponse.From(extra));
         await transaction.CommitAsync(cancellationToken);
         return response;
     }

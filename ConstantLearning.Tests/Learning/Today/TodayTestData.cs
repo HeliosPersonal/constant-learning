@@ -49,7 +49,7 @@ internal static class TodayTestData
 
     public static LearningSession Completed(Learner learner, Instant at) => new()
     {
-        LearnerId = learner.Id, LearnerDay = Day.PlusDays(-20), Status = "completed",
+        LearnerId = learner.Id, LearnerDay = Day.PlusDays(-20), Status = "completed", Kind = "plan",
         CompletedAt = at, EndsAt = at + Duration.FromHours(1), CreatedAt = at - Duration.FromMinutes(1)
     };
 

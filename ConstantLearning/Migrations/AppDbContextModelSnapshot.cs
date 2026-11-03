@@ -18,7 +18,7 @@ namespace ConstantLearning.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -1307,6 +1307,12 @@ namespace ConstantLearning.Migrations
                     b.Property<Instant>("EndsAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("ends_at");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)")
+                        .HasColumnName("kind");
 
                     b.Property<Instant?>("LastActivityAt")
                         .HasColumnType("timestamp with time zone")

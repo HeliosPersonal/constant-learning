@@ -65,6 +65,7 @@ internal static class AnswerTestData
                 LearnerDay = Day,
                 EndsAt = Instant.FromUtc(2026, 10, 31, 23, 0),
                 Status = "active",
+                Kind = "plan",
                 LastActivityAt = clock.GetCurrentInstant(),
                 CreatedAt = clock.GetCurrentInstant()
             };

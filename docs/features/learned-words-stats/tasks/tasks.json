@@ -1,0 +1,142 @@
+{
+  "slug": "learned-words-stats",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Додати ендпоінти /stats/* у контракт батьківської фічі й зареєструвати коди помилок stats.*",
+      "layer": "ports",
+      "deps": [],
+      "acs": [
+        "AC-04",
+        "AC-06",
+        "AC-13"
+      ],
+      "dod": "api-sync-report після повторного запуску має Verdict PASS або PASS (with deferrals); кожен код помилки з контракту має одне визначення в реєстрі з тим самим рядком",
+      "files_hint": [
+        "docs/features/personal-trainer-mvp/contracts/openapi.yaml",
+        "docs/features/learned-words-stats/contracts/openapi.yaml",
+        "ConstantLearning/Features/Learning/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "done"
+    },
+    {
+      "id": "T02",
+      "title": "Реалізувати LearnedWordsStatsService: лічильники наживо з журналу з анти-join оскаржень і показ з опублікованої версії",
+      "layer": "app",
+      "deps": [],
+      "acs": [
+        "AC-02",
+        "AC-03",
+        "AC-08",
+        "AC-12"
+      ],
+      "dod": "інтеграційні тести AC-02, AC-03, AC-08, AC-12 зелені на тимчасовій БД",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Stats/LearnedWordsStatsService.cs",
+        "ConstantLearning/Features/Learning/Stats/StatsResponses.cs",
+        "ConstantLearning.Tests/Learning/Stats/"
+      ],
+      "estimate": "L",
+      "owner": "Viacheslav Melnichenko",
+      "status": "done"
+    },
+    {
+      "id": "T03",
+      "title": "Додати StatsController і LearnedWordsStatsRequest: розбір запиту, курсор за entry_id, валідація вкладки/сортування/пошуку й телеметрія",
+      "layer": "app",
+      "deps": [
+        "T01",
+        "T02"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-09",
+        "AC-10",
+        "AC-11",
+        "AC-13"
+      ],
+      "dod": "інтеграційні тести AC-01, AC-09, AC-10, AC-11, AC-13 зелені; невалідні параметри дають stats.invalid_request, чужі дані приховано",
+      "files_hint": [
+        "ConstantLearning/Features/Learning/Stats/StatsController.cs",
+        "ConstantLearning/Features/Learning/Stats/LearnedWordsStatsRequest.cs",
+        "ConstantLearning/Features/Learning/LearningModule.cs",
+        "ConstantLearning/Platform/Metrics/TrainerMetrics.cs"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "done"
+    },
+    {
+      "id": "T04",
+      "title": "Побудувати екран «Мої слова» в Mini App: вкладки, пошук, сортування, лічильники й картка з розбивкою помилок",
+      "layer": "ui",
+      "deps": [
+        "T03"
+      ],
+      "acs": [
+        "AC-01",
+        "AC-04",
+        "AC-05",
+        "AC-09",
+        "AC-10"
+      ],
+      "dod": "компонентні тести AC-01, AC-04, AC-09, AC-10 зелені; дія «тренувати слабкі» запускає наявний POST /api/v1/sessions/extra-practice (AC-05)",
+      "files_hint": [
+        "ConstantLearning.MiniApp/src/features/stats/",
+        "ConstantLearning.MiniApp/src/api/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "done"
+    },
+    {
+      "id": "T05",
+      "title": "Дописати інтеграційні тести трьох ендпоінтів: семантика лічильників, вкладки, пагінація, авторизація й очищення після скидання",
+      "layer": "tests",
+      "deps": [
+        "T02",
+        "T03"
+      ],
+      "acs": [
+        "AC-02",
+        "AC-03",
+        "AC-06",
+        "AC-07",
+        "AC-08",
+        "AC-11",
+        "AC-12",
+        "AC-13"
+      ],
+      "dod": "усі перелічені AC мають щонайменше один зелений інтеграційний тест на тимчасовій БД",
+      "files_hint": [
+        "ConstantLearning.Tests/Learning/Stats/"
+      ],
+      "estimate": "M",
+      "owner": "Viacheslav Melnichenko",
+      "status": "done"
+    },
+    {
+      "id": "T06",
+      "title": "Оновити README, CONTEXT і документацію батьківської фічі",
+      "layer": "docs",
+      "deps": [
+        "T04",
+        "T05"
+      ],
+      "acs": [
+        "AC-05"
+      ],
+      "dod": "README і CONTEXT описують екран «Мої слова» й тренування слабких слів; перевірка посилань без проблем",
+      "files_hint": [
+        "README.md",
+        "CONTEXT.md",
+        "docs/features/personal-trainer-mvp/"
+      ],
+      "estimate": "S",
+      "owner": "Viacheslav Melnichenko",
+      "status": "done"
+    }
+  ]
+}

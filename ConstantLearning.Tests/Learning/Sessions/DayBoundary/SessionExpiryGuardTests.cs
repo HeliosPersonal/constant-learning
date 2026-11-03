@@ -55,6 +55,7 @@ public sealed class SessionExpiryGuardTests
         LearnerDay = new LocalDate(2026, 10, 31),
         EndsAt = Boundary,
         Status = status,
+        Kind = "plan",
         LastActivityAt = Boundary - Duration.FromHours(1),
         CreatedAt = Boundary - Duration.FromHours(2)
     };

@@ -36,6 +36,7 @@ public sealed class TodayTests(PostgresFixture postgres) : PostgresIntegrationTe
             LearnerId = learner.Id,
             LearnerDay = Day,
             Status = "incomplete",
+            Kind = "plan",
             EndsAt = Clock.GetCurrentInstant(),
             CreatedAt = Clock.GetCurrentInstant()
         });
@@ -127,6 +128,7 @@ public sealed class TodayTests(PostgresFixture postgres) : PostgresIntegrationTe
             LearnerId = learner.Id,
             LearnerDay = Day,
             Status = "active",
+            Kind = "plan",
             EndsAt = now + Duration.FromHours(1),
             CreatedAt = now,
             LastActivityAt = now
@@ -171,6 +173,7 @@ public sealed class TodayTests(PostgresFixture postgres) : PostgresIntegrationTe
             LearnerId = learner.Id,
             LearnerDay = Day,
             Status = "active",
+            Kind = "plan",
             EndsAt = Clock.GetCurrentInstant() + Duration.FromHours(1),
             CreatedAt = Clock.GetCurrentInstant()
         };

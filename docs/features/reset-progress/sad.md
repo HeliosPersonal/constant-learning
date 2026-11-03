@@ -159,7 +159,7 @@ sequenceDiagram
 | Idempotency | Повторне скидання порожнього прогресу — успіх без змін; ознака — стан, а не ключ запиту. Свідоме відхилення від правила `Idempotency-Key` в `.claude/rules/openapi.md`, зафіксоване в [ADR-0001](adr/0001-erase-learner-progress-in-one-transaction-under-learner-lock.md) і [api-sync-report](contracts/api-sync-report.md) | [ADR-0001](adr/0001-erase-learner-progress-in-one-transaction-under-learner-lock.md) |
 | Concurrency | Блокування рядка learner серіалізує скидання з відповідями й зміною налаштувань | [ADR-0001](adr/0001-erase-learner-progress-in-one-transaction-under-learner-lock.md) |
 | Logging | Лише агрегований лічильник (успішні, порожні, невдалі, невдалі перевірки цілісності) без персональних даних; окремої події на кожне скидання немає | [PRD §6.1](./PRD.md#61-security--privacy) |
-| Completeness | Тест повноти скидання: кожна таблиця з посиланням на learner або його слова має обробник або явно збережена | тут |
+| Completeness | Тест повноти скидання: кожна таблиця з посиланням на learner або його слова має обробник скидання **або** стоїть у явному whitelist збережених. Стирається: `learner_words` (word status), `learning_sessions` (усіх видів `kind`), `session_items`, `answer_events`, нейтралізації оскаржень; на `learners` скидаються `course_completed_at` і `new_words_available_from`. Явно зберігаються (whitelist): `reminder_schedules` (налаштування нагадувань), `notification_dispatches` (черга повідомлень learner), `publication_log.actor_learner_id` (журнал дій content editor), `content_reports` (автор-псевдонім лишається; `answer_event_id` лише відвʼязується). Новий learner-FK, якого немає в жодному списку, провалює тест | тут |
 
 ## 9. Architecture decisions
 

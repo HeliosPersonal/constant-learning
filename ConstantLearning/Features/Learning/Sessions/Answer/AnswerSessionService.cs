@@ -47,7 +47,7 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
             return Error(409, "answer.result_not_continued", "Спершу перейдіть із результату до наступної картки.");
         if (item.State != "pending") return Error(409, "answer.content_unavailable", "Слово більше недоступне в цьому занятті.");
         if (session.Status != "active") return Error(409, "answer.session_inactive", "Заняття вже закрито.");
-        if (item.Kind is not ("review" or "control_repetition" or "new_word_check"))
+        if (item.Kind is not ("review" or "control_repetition" or "new_word_check" or "extra_practice" or "extra_new_word_check"))
             return Error(409, "answer.invalid_item_kind", "Ця картка очікує підтвердження показу, а не відповіді.");
 
         var content = await contentReader.ReadAsync(item.EntryId, cancellationToken);
@@ -76,12 +76,26 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
         if (word?.FirstShownDay is null || word.DueOn is null || word.IntervalDays is null)
             return Error(409, "answer.word_not_ready", "Спершу перегляньте картку нового слова.");
         var before = AnswerWordState.Read(word);
-        var initial = item.Kind == "new_word_check";
-        if (initial ? before.ControlPending || before.LastReviewDay is not null || before.FirstShownDay != current.Day.Date
-            : !before.IsDue(current.Day.Date) || await db.AnswerEvents.AnyAsync(answer => answer.LearnerId == learnerId
+        var exerciseKind = item.Kind switch
+        {
+            "new_word_check" or "extra_new_word_check" => ReviewExerciseKind.NewWordCheck,
+            "extra_practice" => ReviewExerciseKind.ExtraPractice,
+            _ => ReviewExerciseKind.ScheduledReview
+        };
+        // Практика (ADR-0002) не вимагає, щоб слово було до повторення, але дозволена лише раз на добу
+        // і не для слова, отриманого сьогодні чи в контрольному повторенні (AC-08/AC-09).
+        var notDue = exerciseKind switch
+        {
+            ReviewExerciseKind.NewWordCheck => before.ControlPending || before.LastReviewDay is not null
+                || before.FirstShownDay != current.Day.Date,
+            ReviewExerciseKind.ExtraPractice => before.ControlPending || before.FirstShownDay >= current.Day.Date
+                || await db.AnswerEvents.AnyAsync(answer => answer.LearnerId == learnerId
+                    && answer.EntryId == item.EntryId && answer.LearnerDay == current.Day.Date, cancellationToken),
+            _ => !before.IsDue(current.Day.Date) || await db.AnswerEvents.AnyAsync(answer => answer.LearnerId == learnerId
                 && answer.EntryId == item.EntryId && answer.LearnerDay == current.Day.Date
-                && (answer.ExerciseKind == "review" || answer.ExerciseKind == "control_repetition"), cancellationToken))
-            return Error(409, "answer.not_due", "Це слово зараз не очікує повторення.");
+                && (answer.ExerciseKind == "review" || answer.ExerciseKind == "control_repetition"), cancellationToken)
+        };
+        if (notDue) return Error(409, "answer.not_due", "Це слово зараз не очікує повторення.");
 
         var answerEvent = new AnswerEvent
         {
@@ -92,8 +106,7 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
             StateBefore = AnswerWordState.Snapshot(word), CreatedAt = now
         };
         var after = scheduler.Apply(before, new ReviewAnswer(answerEvent.Id, current.Day.Date,
-            initial ? ReviewExerciseKind.NewWordCheck : ReviewExerciseKind.ScheduledReview,
-            evaluation.Outcome.Value, scheduler.Version));
+            exerciseKind, evaluation.Outcome.Value, scheduler.Version));
 
         // Умовне захоплення страхує картку; усі наступні записи належать цій самій транзакції.
         var claimed = await db.SessionItems.Where(value => value.Id == item.Id && value.SessionId == session.Id && value.State == "pending")

@@ -1,0 +1,299 @@
+# Контракт HTTP API learned-words-stats, згенерований /sdlc:api-forge (сценарій A: дельта до personal-trainer-mvp).
+#   поля й обмеження      ← data-model.md (читання learner_words + answer_events + answer_neutralizations)
+#   відповіді з помилками ← sad.md §6 (гілки alt/else)
+#   перелік ендпоінтів    ← PRD.md §4 user stories / §5 AC
+# Спільні схеми Error, WordStatus, Translation і відповіді Unauthorized / LearnerNotOnboarded беруться з
+# контракту personal-trainer-mvp. Нові схеми статистики описано нижче в components.schemas.
+# Жодної нової таблиці: усі лічильники читаються наживо з таблиць, які очищає reset-progress (ADR-0003).
+openapi: 3.1.0
+
+info:
+  title: learned-words-stats API
+  version: 0.1.0
+  description: |
+    Екран «Мої слова»: перегляд вивчених слів з особистою статистикою (показ / правильно / неправильно /
+    серія / забуте), фільтр за статусом (всі / на повторення / вже пригадую), пошук і сортування, а також
+    картка слова з розбивкою помилок. Усі лічильники сервер рахує наживо з журналу відповідей (answer_events)
+    за винятком успішно оскаржених помилок (answer_neutralizations), статус слова — з learner_words
+    (єдине джерело істини, як на екрані «Сьогодні»). Слабкі слова тренуються наявною дією
+    POST /api/v1/sessions/extra-practice — окремого ендпоінта тренування немає. Доповнює API
+    personal-trainer-mvp тією самою автентифікацією initData.
+
+servers:
+  - url: https://trainer.example.test
+    description: Production (той самий origin, що й Mini App)
+  - url: http://localhost:8888
+    description: Local
+
+security:
+  - TelegramInitData: []
+
+tags:
+  - name: learning
+
+paths:
+  /api/v1/stats/words:
+    get:
+      tags: [learning]
+      summary: Список вивчених слів з особистою статистикою (US-01)
+      operationId: listLearnedWords
+      description: |
+        Повертає лише слова, які learner уже бачив (мають learner_word; вкладка «Усі» ніколи не розкриває
+        порядок непоказаних слів курсу — AC-01). Фільтр `tab`: all — усі побачені; recalled — status = recalled;
+        review — status = review. `sort`: recent — за датою останнього повторення; alpha — за лемою; weakest —
+        спершу найслабші (найбільше забувань і помилок). Необов'язковий `q` звужує за лемою або перекладом
+        (діакритика ігнорується). Пагінація курсором за entry_id, курсор непрозорий.
+      parameters:
+        - in: query
+          name: tab
+          schema: { $ref: "#/components/schemas/StatsTab" }
+        - in: query
+          name: sort
+          schema: { $ref: "#/components/schemas/StatsSort" }
+        - in: query
+          name: q
+          description: необов'язковий фільтр за лемою або перекладом
+          schema: { type: string, minLength: 1, maxLength: 200 }
+        - in: query
+          name: after
+          description: курсор — entry_id останнього побаченого слова
+          schema: { type: string, format: uuid }
+        - in: query
+          name: before
+          schema: { type: string, format: uuid }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        "200":
+          description: Сторінка статистики; порожній список означає, що вивчених слів ще немає
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnedWordsPage" }
+              example:
+                items:
+                  - entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                    lemma_pl: chata
+                    transcription_uk: хата
+                    translation_uk: хата
+                    status: review
+                    shown_count: 7
+                    correct_count: 4
+                    incorrect_count: 3
+                    streak: 1
+                    forgotten_count: 2
+                    first_shown_day: "2026-10-20"
+                    last_review_day: "2026-10-31"
+                    due_on: "2026-11-02"
+                    is_weak: true
+                has_next: false
+                has_prev: false
+                next_cursor: null
+        "400":
+          description: Невалідні параметри запиту (невідома вкладка/сортування, зайвий параметр, курсор не-uuid)
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Error"
+              example:
+                code: stats.invalid_request
+                message: Невалідні параметри запиту.
+        "401":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/LearnerNotOnboarded"
+
+  /api/v1/stats/words/{entry_id}:
+    get:
+      tags: [learning]
+      summary: Картка вивченого слова з розбивкою помилок (US-02)
+      operationId: getLearnedWordCard
+      description: |
+        Розширює рядок списку перекладами й розбивкою помилок (друкарська / діакритична / «не знаю»).
+        404, якщо learner цього слова ще не бачив (приховування існування непоказаних слів — AC-06).
+      parameters:
+        - in: path
+          name: entry_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Картка слова з особистою статистикою
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnedWordCard" }
+              example:
+                entry_id: 0192f0a0-0000-7000-8000-0000000000e1
+                lemma_pl: chata
+                transcription_uk: хата
+                translation_uk: хата
+                status: review
+                shown_count: 7
+                correct_count: 4
+                incorrect_count: 3
+                streak: 1
+                forgotten_count: 2
+                first_shown_day: "2026-10-20"
+                last_review_day: "2026-10-31"
+                due_on: "2026-11-02"
+                is_weak: true
+                translations_uk:
+                  - { kind: canonical, text_uk: хата }
+                mistake_breakdown:
+                  typo: 1
+                  diacritic: 1
+                  dont_know: 1
+        "401":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          description: Learner цього слова ще не бачив
+          content:
+            application/json:
+              schema:
+                $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Error"
+              example:
+                code: stats.word_not_found
+                message: Слово ще не вивчалося.
+
+  /api/v1/stats/summary:
+    get:
+      tags: [learning]
+      summary: Зведення для шапки екрана «Мої слова» (US-01)
+      operationId: getLearnedWordsSummary
+      description: |
+        Лічильники вкладок рахуються з learner_words.status — те саме джерело, що й «Сьогодні» (AC-04).
+        weak_count — скільки слів позначено is_weak (забуте або з помилками й ще не пригадується).
+      responses:
+        "200":
+          description: Зведення лічильників
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnedWordsSummary" }
+              example:
+                seen_count: 42
+                recalled_count: 18
+                review_count: 24
+                weak_count: 6
+        "401":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/Unauthorized"
+        "404":
+          $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/responses/LearnerNotOnboarded"
+
+components:
+  securitySchemes:
+    TelegramInitData:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "Authorization: tma <initData>, перевіряється в кожному запиті (ADR-0005 personal-trainer-mvp)"
+
+  schemas:
+    StatsTab:
+      type: string
+      enum: [all, recalled, review]
+      default: all
+      description: Вкладка фільтра за learner_words.status; all — усі побачені слова.
+
+    StatsSort:
+      type: string
+      enum: [recent, alpha, weakest]
+      default: recent
+      description: recent — за останнім повторенням; alpha — за лемою; weakest — спершу найслабші.
+
+    MistakeBreakdown:
+      type: object
+      required: [typo, diacritic, dont_know]
+      additionalProperties: false
+      description: Кількість зарахованих помилок за типом (успішно оскаржені друкарські не враховуються).
+      properties:
+        typo: { type: integer, minimum: 0, description: mistake_typo за винятком успішно оскаржених }
+        diacritic: { type: integer, minimum: 0 }
+        dont_know: { type: integer, minimum: 0 }
+
+    LearnedWordStat:
+      type: object
+      required: [entry_id, lemma_pl, transcription_uk, translation_uk, status, shown_count, correct_count, incorrect_count, streak, forgotten_count, first_shown_day, last_review_day, due_on, is_weak]
+      additionalProperties: false
+      properties:
+        entry_id: { type: string, format: uuid }
+        lemma_pl: { type: string, maxLength: 200 }
+        transcription_uk:
+          type: [string, "null"]
+          maxLength: 200
+          description: вимова українською; null, якщо запис втратив публікацію
+        translation_uk:
+          type: string
+          maxLength: 200
+          description: канонічний переклад (перший серед translations_uk)
+        status: { $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/WordStatus" }
+        shown_count: { type: integer, minimum: 0, description: "показ — кількість зарахованих спроб (review / control_repetition / extra_practice)" }
+        correct_count: { type: integer, minimum: 0 }
+        incorrect_count: { type: integer, minimum: 0, description: помилки за винятком успішно оскаржених }
+        streak: { type: integer, minimum: 0, description: learner_words.consecutive_scheduled_correct }
+        forgotten_count: { type: integer, minimum: 0, description: learner_words.lapses — скільки разів забув }
+        first_shown_day: { type: [string, "null"], format: date }
+        last_review_day: { type: [string, "null"], format: date }
+        due_on: { type: [string, "null"], format: date }
+        is_weak: { type: boolean, description: status != recalled і (forgotten_count > 0 або incorrect_count > 0) }
+
+    LearnedWordCard:
+      # Поля LearnedWordStat повторено явно (а не через allOf): additionalProperties:false на базовій
+      # схемі під allOf відкидає translations_uk / mistake_breakdown, тож картка — самостійний strict-об'єкт.
+      type: object
+      required: [entry_id, lemma_pl, transcription_uk, translation_uk, status, shown_count, correct_count, incorrect_count, streak, forgotten_count, first_shown_day, last_review_day, due_on, is_weak, translations_uk, mistake_breakdown]
+      additionalProperties: false
+      properties:
+        entry_id: { type: string, format: uuid }
+        lemma_pl: { type: string, maxLength: 200 }
+        transcription_uk:
+          type: [string, "null"]
+          maxLength: 200
+          description: вимова українською; null, якщо запис втратив публікацію
+        translation_uk:
+          type: string
+          maxLength: 200
+          description: канонічний переклад (перший серед translations_uk)
+        status: { $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/WordStatus" }
+        shown_count: { type: integer, minimum: 0, description: "показ — кількість зарахованих спроб (review / control_repetition / extra_practice)" }
+        correct_count: { type: integer, minimum: 0 }
+        incorrect_count: { type: integer, minimum: 0, description: помилки за винятком успішно оскаржених }
+        streak: { type: integer, minimum: 0, description: learner_words.consecutive_scheduled_correct }
+        forgotten_count: { type: integer, minimum: 0, description: learner_words.lapses — скільки разів забув }
+        first_shown_day: { type: [string, "null"], format: date }
+        last_review_day: { type: [string, "null"], format: date }
+        due_on: { type: [string, "null"], format: date }
+        is_weak: { type: boolean, description: status != recalled і (forgotten_count > 0 або incorrect_count > 0) }
+        translations_uk:
+          type: array
+          items: { $ref: "../../personal-trainer-mvp/contracts/openapi.yaml#/components/schemas/Translation" }
+        mistake_breakdown: { $ref: "#/components/schemas/MistakeBreakdown" }
+
+    LearnedWordsPage:
+      type: object
+      required: [items, has_next, has_prev, next_cursor]
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/LearnedWordStat" }
+        has_next: { type: boolean }
+        has_prev: { type: boolean }
+        next_cursor: { type: [string, "null"], format: uuid }
+
+    LearnedWordsSummary:
+      type: object
+      required: [seen_count, recalled_count, review_count, weak_count]
+      additionalProperties: false
+      properties:
+        seen_count: { type: integer, minimum: 0, description: усі побачені слова }
+        recalled_count: { type: integer, minimum: 0, description: learner_words.status = recalled }
+        review_count: { type: integer, minimum: 0, description: learner_words.status = review }
+        weak_count: { type: integer, minimum: 0, description: скільки слів is_weak }
+
+  x-amendments:
+    description: |
+      Нові ендпоінти додаються до контракту personal-trainer-mvp разом із реалізацією; батьківський
+      info.version підіймається з рядком у CHANGELOG у тому самому PR. Жодна наявна схема батьківського
+      контракту не змінюється — додаються лише нові шляхи /api/v1/stats/* і нові схеми статистики.
+    paths: "додати GET /api/v1/stats/words (listLearnedWords), GET /api/v1/stats/words/{entry_id} (getLearnedWordCard), GET /api/v1/stats/summary (getLearnedWordsSummary)"
+    schemas: "додати StatsTab, StatsSort, MistakeBreakdown, LearnedWordStat, LearnedWordCard, LearnedWordsPage, LearnedWordsSummary"
