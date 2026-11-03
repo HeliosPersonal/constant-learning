@@ -119,6 +119,7 @@ public sealed class LearnedWordsStatsTests(PostgresFixture postgres) : PostgresI
         var course = await SeedCourseAsync(2);
         SetLemma(course[0], "chata");
         SetTranslation(course[0], "хата");
+        AddTranslation(course[0], "домівка"); // другорядний переклад, який теж показано на картці
         SetLemma(course[1], "auto");
         SetTranslation(course[1], "авто");
         await Db.SaveChangesAsync();
@@ -129,6 +130,8 @@ public sealed class LearnedWordsStatsTests(PostgresFixture postgres) : PostgresI
         await using var app = await StartAsync();
         Assert.Equal(new[] { course[0].Id }, await EntryIdsAsync(app, $"{WordsPath}?q=chata"));
         Assert.Equal(new[] { course[0].Id }, await EntryIdsAsync(app, $"{WordsPath}?q=хата"));
+        // Пошук за другорядним перекладом теж знаходить слово (не лише за канонічним).
+        Assert.Equal(new[] { course[0].Id }, await EntryIdsAsync(app, $"{WordsPath}?q=домівка"));
     }
 
     [DockerFact]
@@ -282,6 +285,12 @@ public sealed class LearnedWordsStatsTests(PostgresFixture postgres) : PostgresI
         var translation = Db.VersionTranslations.Local
             .First(value => value.VersionId == entry.PublishedVersionId!.Value && value.Kind == "canonical");
         translation.TextUk = textUk;
+    }
+
+    private void AddTranslation(DictionaryEntry entry, string textUk)
+    {
+        var position = (short)Db.VersionTranslations.Local.Count(value => value.VersionId == entry.PublishedVersionId!.Value);
+        Db.VersionTranslations.Add(new() { VersionId = entry.PublishedVersionId!.Value, Kind = "alternate", TextUk = textUk, Position = position });
     }
 
     private void AddLearnerWord(Learner learner, DictionaryEntry entry, string status,

@@ -225,8 +225,11 @@ public sealed class LearnedWordsStatsService(AppDbContext db, TrainerMetrics met
     private static bool Matches(Row row, string? foldedQuery)
     {
         if (foldedQuery is null) return true;
-        return SearchTextNormalizer.Fold(row.LemmaPl).Contains(foldedQuery, StringComparison.Ordinal)
-            || SearchTextNormalizer.Fold(row.TranslationUk).Contains(foldedQuery, StringComparison.Ordinal);
+        if (SearchTextNormalizer.Fold(row.LemmaPl).Contains(foldedQuery, StringComparison.Ordinal)) return true;
+        // Пошук за будь-яким перекладом, що показано на картці, а не лише за канонічним.
+        foreach (var translation in row.Translations)
+            if (SearchTextNormalizer.Fold(translation.TextUk).Contains(foldedQuery, StringComparison.Ordinal)) return true;
+        return false;
     }
 
     private static List<Row> Order(List<Row> rows, string sort) => sort switch

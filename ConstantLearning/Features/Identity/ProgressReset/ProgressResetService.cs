@@ -67,6 +67,11 @@ public sealed class ProgressResetService(AppDbContext db, ILearnerDayStateServic
             learner.NewWordsAvailableFrom = null;
             await db.SaveChangesAsync(cancellationToken);
         }
+        catch (OperationCanceledException)
+        {
+            // Клієнт відʼєднався / запит скасовано — це не збій скидання. Відкат зробить dispose транзакції; не псуємо метрику збоїв.
+            throw;
+        }
         catch (Exception)
         {
             await transaction.RollbackAsync(cancellationToken);
