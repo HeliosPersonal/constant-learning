@@ -1,4 +1,5 @@
 import { LimitSlider } from '../../components/LimitSlider';
+import { BackButton } from '../../components/BackButton';
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Switch } from '@telegram-apps/telegram-ui';
@@ -63,7 +64,7 @@ export default function Settings({ learner, onBack, onStart }: { learner: Learne
   }
 
   return <>
-    <nav className="settings-navigation" aria-label="Навігація налаштувань"><Button mode="plain" size="l" onClick={() => onBack()}>← До «Сьогодні»</Button></nav>
+    <BackButton className="settings-navigation" navLabel="Навігація налаштувань" onBack={() => onBack()}>← До «Сьогодні»</BackButton>
     <div className="intro"><p className="eyebrow">ВАШ ПРОСТІР</p><h1>Налаштування</h1><p>Знайдіть зручний ритм і вигляд для щоденної польської.</p></div>
     <Card aria-labelledby="settings-theme-title"><span className="card-index">ВИГЛЯД</span><h2 id="settings-theme-title">Світла чи темна?</h2>
       <ThemeChoices /><p className="caption">Тема змінюється одразу й зберігається на цьому пристрої.</p><Button size="l" mode="outline" stretched onClick={() => setDialogOpen(true)}>Про оформлення</Button>

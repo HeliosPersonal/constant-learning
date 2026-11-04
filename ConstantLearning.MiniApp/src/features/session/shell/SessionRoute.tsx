@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { BackButton } from '../../../components/BackButton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../../components/ui';
 import { openSession, startExtraWord, todayQueryKey, TodayApiError, type SessionResponse } from '../../today/api';
@@ -68,18 +69,18 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
   }
   if (terminal === 'complete') {
     const extra = session.data?.kind === 'extra_word';
-    return <Card><p className="eyebrow">ГОТОВО</p><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p>{extra && startError && <Result tone="error">{startError}</Result>}{extra && <Button size="l" stretched disabled={startingExtra} onClick={() => { void startExtra(); }}>{startingExtra ? 'Беремо нове слово…' : 'Ще одне слово'}</Button>}<Button size="l" mode={extra ? 'outline' : undefined} stretched onClick={() => leave()}>← На головну</Button></Card>;
+    return <Card><p className="eyebrow">ГОТОВО</p><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p>{extra && startError && <Result tone="error">{startError}</Result>}{extra && <Button size="l" stretched disabled={startingExtra} onClick={() => { void startExtra(); }}>{startingExtra ? 'Беремо нове слово…' : 'Ще одне слово'}</Button>}<Button size="l" mode={extra ? 'outline' : undefined} stretched onClick={() => leave()}>На головну</Button></Card>;
   }
   if (terminal === 'missing') return <Card><div className="loading-state" role="status"><Spinner size="s" /> Повертаємось на «Сьогодні»…</div></Card>;
   if (terminal || session.isError) {
     const error = session.error;
-    if (error instanceof SessionApiError && error.code === 'session.not_found') return <Card><h1>Активного заняття немає</h1><p>Можна почати нове заняття.</p>{startError && <Result tone="error">{startError}</Result>}<Button size="l" stretched disabled={starting} onClick={() => { void startNew(); }}>{starting ? 'Відкриваємо заняття…' : 'Почати заняття'}</Button><Button size="l" mode="outline" stretched onClick={() => leave()}>← На головну</Button></Card>;
+    if (error instanceof SessionApiError && error.code === 'session.not_found') return <Card><h1>Активного заняття немає</h1><p>Можна почати нове заняття.</p>{startError && <Result tone="error">{startError}</Result>}<Button size="l" stretched disabled={starting} onClick={() => { void startNew(); }}>{starting ? 'Відкриваємо заняття…' : 'Почати заняття'}</Button><Button size="l" mode="outline" stretched onClick={() => leave()}>На головну</Button></Card>;
     const text = terminal === 'expired' ? 'Час цього заняття минув. Поверніться на «Сьогодні», щоб продовжити навчання.' : terminal === 'auth' || (error instanceof SessionApiError && error.status === 401) ? 'Відкрийте тренер знову в Telegram, щоб продовжити.' : terminal === 'missing' || (error instanceof SessionApiError && error.status === 404) ? 'Заняття або картку не знайдено. Можливо, заняття вже закрито або належить іншому користувачу.' : 'Не вдалося завантажити заняття. Спробуйте ще раз.';
-    return <Card><h1>Заняття недоступне</h1><Result tone="error">{text}</Result>{!terminal && !(error instanceof SessionApiError && [401, 404].includes(error.status)) && <Button size="l" stretched onClick={() => { void session.refetch(); }}>Спробувати ще раз</Button>}<Button size="l" mode="outline" stretched onClick={() => leave()}>← На головну</Button></Card>;
+    return <Card><h1>Заняття недоступне</h1><Result tone="error">{text}</Result>{!terminal && !(error instanceof SessionApiError && [401, 404].includes(error.status)) && <Button size="l" stretched onClick={() => { void session.refetch(); }}>Спробувати ще раз</Button>}<Button size="l" mode="outline" stretched onClick={() => leave()}>На головну</Button></Card>;
   }
   if (!session.data || (session.isFetching && !pending)) return <Card><div className="loading-state" role="status"><Spinner size="s" /> Завантажуємо заняття…</div></Card>;
   const data = session.data;
-  return <Card aria-label="Заняття"><div className="session-progress"><span>Опрацьовано {data.completed_items} із {data.total_items}</span><progress aria-label="Прогрес заняття" value={data.completed_items} max={Math.max(data.total_items, 1)} /></div>
+  return <Card className="card session-card" aria-label="Заняття"><div className="session-progress"><span>Опрацьовано {data.completed_items} із {data.total_items}</span><progress aria-label="Прогрес заняття" value={data.completed_items} max={Math.max(data.total_items, 1)} /></div>
     {data.notices.map(notice => <p className="caption" role="status" key={notice}>{{ new_words_limit_reached: 'Денний ліміт нових слів вичерпано. Продовжуємо повторення за розкладом.', course_completed: 'Базовий курс завершено. Продовжуємо повторення за розкладом.', course_replenished: 'Курс поповнено новими словами. Вони з’являтимуться у вашому щоденному темпі.' }[notice]}</p>)}
     {data.last_result ? (renderResult ? renderResult(data, refresh) : <Recall key={data.last_result.item_id} session={data} refresh={refresh} replace={replace} onBusy={updateBusy} onTerminal={setTerminal} />)
       : data.current_item?.kind === 'new_word_card' ? <NewWordCard item={data.current_item} pending={pending || !!message} onAction={action} />
@@ -87,6 +88,6 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
       : data.status === 'completed' ? <><h1>Заняття завершено</h1><p>Ви пройшли всі картки цього заняття.</p>{data.kind === 'extra_word' && <>{startError && <Result tone="error">{startError}</Result>}<Button size="l" stretched disabled={startingExtra} onClick={() => { void startExtra(); }}>{startingExtra ? 'Беремо нове слово…' : 'Ще одне слово'}</Button></>}</> : <><h1>Картка недоступна</h1><p>Не вдалося отримати поточну картку заняття. Поверніться на «Сьогодні».</p></>}
     {pending && <p role="status">Зберігаємо та оновлюємо заняття…</p>}
     {message && <><Result tone="error">{message}</Result><Button size="l" stretched disabled={pending} onClick={() => { setPending(true); void refresh().then(() => setMessage(undefined)).catch(() => setMessage('Не вдалося оновити заняття. Спробуйте ще раз.')).finally(() => setPending(false)); }}>Оновити стан</Button></>}
-    <Button className="session-leave" size="l" mode="plain" stretched disabled={pending || recallBusy} onClick={() => leave()}>← На головну</Button>
+    <BackButton className="session-leave" disabled={pending || recallBusy} onBack={() => leave()}>← На головну</BackButton>
   </Card>;
 }

@@ -41,8 +41,8 @@ describe('Прогрес і стани дня', () => {
     const fetcher = network(); mount();
     const progress = await screen.findByLabelText('Ваш навчальний прогрес');
     expect(within(progress).getByText('Слів до повторення').parentElement).toHaveTextContent('8');
-    expect(within(progress).getByText('Уже вдається пригадати').parentElement).toHaveTextContent('12');
-    expect(within(progress).getByText('Завершених занять за 7 днів').parentElement).toHaveTextContent('3');
+    expect(within(progress).getByText('Пригадуєте').parentElement).toHaveTextContent('12');
+    expect(within(progress).getByText('Занять за 7 днів').parentElement).toHaveTextContent('3');
     expect(screen.getByText(/2 листопада/)).toBeVisible();
     expect(requests(fetcher, '/api/v1/today')).toHaveLength(1);
   });

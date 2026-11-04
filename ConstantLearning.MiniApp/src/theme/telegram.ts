@@ -11,6 +11,7 @@ export interface TelegramWebApp {
   onEvent?: (event: 'themeChanged', listener: () => void) => void;
   offEvent?: (event: 'themeChanged', listener: () => void) => void;
   ready?: () => void;
+  BackButton?: { show: () => void; hide: () => void; onClick: (listener: () => void) => void; offClick: (listener: () => void) => void };
 }
 
 declare global {
@@ -20,7 +21,7 @@ declare global {
 export const getTelegram = () => window.Telegram?.WebApp;
 export const isTheme = (value: unknown): value is Theme => value === 'light' || value === 'dark';
 
-function supports(app: TelegramWebApp, minimum: string): boolean {
+export function supports(app: TelegramWebApp, minimum: string): boolean {
   try {
     if (app.isVersionAtLeast) return app.isVersionAtLeast(minimum);
     if (!app.version || !/^\d+\.\d+(\.\d+)?$/.test(app.version)) return false;

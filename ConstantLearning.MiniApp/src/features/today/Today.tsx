@@ -114,7 +114,7 @@ export function Today({ learner, onOpenSession, onStart, notice, onNoticeShown, 
   }, [today.data, today.isError, blocked, session.isPending, extra.isPending, zone.isPending]);
 
   const startOver = () => { queryClient.setQueryData(learnerQueryKey, null); queryClient.removeQueries({ queryKey: todayQueryKey }); onStart?.(); };
-  const heading = <><p className="eyebrow">ВАШ РИТМ</p><h1 id="today-title">Сьогодні</h1></>;
+  const heading = <h1 id="today-title">Сьогодні</h1>;
   if (today.isPending) return <Card aria-labelledby="today-title">{heading}<div className="loading-state" role="status"><Spinner size="s" /> Збираємо ваш прогрес…</div></Card>;
   if (today.isError) {
     const unauthorized = today.error instanceof TodayApiError && today.error.status === 401;
@@ -147,15 +147,14 @@ export function Today({ learner, onOpenSession, onStart, notice, onNoticeShown, 
 
   return <>
     {notification && <Card className="card today-notice" role="status" aria-label="Повідомлення про прогрес"><p className="caption">{notification}</p><Button size="l" mode="outline" stretched onClick={() => setNotification(undefined)}>Зрозуміло</Button></Card>}
-    <Card aria-labelledby="today-title">{heading}<p className="caption today-date"><time dateTime={summary.learner_day}>{date}</time> · <span className="today-zone-name">{learner.time_zone}</span></p>
-      <p className="caption">Крок за кроком до впевненої польської.</p>
+    <Card className="card today" aria-labelledby="today-title">{heading}<p className="caption today-date"><time dateTime={summary.learner_day}>{date}</time> · <span className="today-zone-name">{learner.time_zone}</span></p>
       <dl className="today-statistics" aria-label="Ваш навчальний прогрес">
         <div><dt>Слів до повторення</dt><dd>{summary.due_review_count}</dd></div>
-        <div><dt>Уже вдається пригадати</dt><dd>{summary.recalled_words_count}</dd></div>
-        <div><dt>Завершених занять за 7 днів</dt><dd>{summary.completed_sessions_last_7_days}</dd></div>
+        <div><dt>Пригадуєте</dt><dd>{summary.recalled_words_count}</dd></div>
+        <div><dt>Занять за 7 днів</dt><dd>{summary.completed_sessions_last_7_days}</dd></div>
       </dl>
       {summary.course_state === 'completed' ? <div className="today-course"><h2>Базовий курс завершено</h2><p className="caption">Ви вже отримали всі слова курсу. Повторення триватимуть за вашим розкладом.</p></div>
-        : <p className="caption">Ваш темп — {learner.daily_new_words_limit} {learner.daily_new_words_limit === 3 ? 'нові слова' : 'нових слів'} на день. Нові слова додаються в межах денного ліміту.</p>}
+        : <p className="caption today-pace">Темп — {learner.daily_new_words_limit} {learner.daily_new_words_limit === 3 ? 'нові слова' : 'нових слів'} на день</p>}
       {summary.due_review_count === 0 && !summary.has_active_session && !planDone && <p className="caption" id="today-no-reviews">{summary.course_state === 'completed' ? 'На зараз повторень немає. Завітайте пізніше.' : noNewWords ? 'Нові слова на сьогодні вже пройдено. Повторення з’являться за розкладом.' : 'На зараз повторень немає. У занятті можуть бути нові слова за вашим темпом.'}</p>}
       {summary.has_active_session && <p className="caption">На вас чекає розпочате заняття. Продовжимо з того місця, де зупинилися.</p>}
       {planDone

@@ -87,9 +87,9 @@ export function Recall({ session, refresh, replace, onBusy, onTerminal }: Props)
   if (!item) return null;
   return <><p className="eyebrow">ПРИГАДАЙТЕ ПОЛЬСЬКОЮ</p><h1>{item.prompt_uk}</h1>{item.context_uk && <p className="caption">{item.context_uk}</p>}
     <form onSubmit={event => { event.preventDefault(); if (!draft && text.trim()) void submit({ sessionId: session.id, itemId: item.id, body: { answer: text, dont_know: false } }); }}>
-      <label className="recall-label" htmlFor="recall-answer">Ваша відповідь</label><input id="recall-answer" className="recall-input" lang="pl" autoComplete="off" maxLength={200} value={text} disabled={pending || !!draft} onChange={event => setText(event.target.value)} />
+      <label className="sr-only" htmlFor="recall-answer">Ваша відповідь</label><input id="recall-answer" className="recall-input" lang="pl" placeholder="Польською…" autoCapitalize="none" spellCheck={false} autoComplete="off" maxLength={200} value={text} disabled={pending || !!draft} onChange={event => setText(event.target.value)} />
       {error && <Result tone="error">{error}</Result>}
-      <div className="recall-actions">{draft ? <Button size="l" stretched disabled={pending} onClick={() => { if (needsRecovery) void runRecovery(); else void submit(draft); }}>{needsRecovery ? 'Оновити стан' : 'Повторити відповідь'}</Button> : <><Button type="submit" size="l" stretched disabled={pending || !text.trim()}>Перевірити</Button><Button type="button" size="l" mode="outline" stretched disabled={pending} onClick={() => { void submit({ sessionId: session.id, itemId: item.id, body: { answer: null, dont_know: true } }); }}>Не знаю</Button></>}</div>
+      <div className="recall-actions">{draft ? <Button size="l" stretched disabled={pending} onClick={() => { if (needsRecovery) void runRecovery(); else void submit(draft); }}>{needsRecovery ? 'Оновити стан' : 'Повторити відповідь'}</Button> : <><Button type="submit" size="l" stretched disabled={pending || !text.trim()}>Перевірити</Button><Button type="button" size="l" mode="plain" stretched disabled={pending} onClick={() => { void submit({ sessionId: session.id, itemId: item.id, body: { answer: null, dont_know: true } }); }}>Не знаю</Button></>}</div>
       {pending && <p role="status">Перевіряємо відповідь…</p>}
     </form></>;
 }

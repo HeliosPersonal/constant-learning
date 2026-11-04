@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { BackButton } from '../../components/BackButton';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../components/ui';
 import { startExtraPractice, TodayApiError, type SessionResponse } from '../today/api';
@@ -31,7 +32,7 @@ function WordDetail({ entry, onBack }: { entry: string; onBack: () => void }) {
   useEffect(() => { heading.current?.focus(); }, [entry]);
   const missing = card.isError && card.error instanceof StatsApiError && card.error.status === 404;
   return <div className="stats-word">
-    <Button mode="plain" size="l" onClick={onBack}>← До списку</Button>
+    <BackButton className="stats-back" onBack={onBack}>← До списку</BackButton>
     <Card aria-labelledby="stats-word-title">
       <p className="eyebrow">КАРТКА СЛОВА</p>
       <h2 id="stats-word-title" ref={heading} tabIndex={-1} lang={card.data ? 'pl' : 'uk'}>{card.data ? card.data.lemma_pl : 'Вивчене слово'}</h2>
@@ -107,12 +108,11 @@ export default function Stats({ onBack, onOpenSession }: { onBack: () => void; o
   const heading = <><p className="eyebrow">ВАШІ ЗДОБУТКИ</p><h1 id="stats-title">Мої слова</h1></>;
 
   if (selected) return <div className="stats">
-    <nav className="stats-navigation" aria-label="Навігація статистики"><Button mode="plain" size="l" onClick={onBack}>← На головну</Button></nav>
     <WordDetail entry={selected} onBack={closeWord} />
   </div>;
 
   return <div className="stats">
-    <nav className="stats-navigation" aria-label="Навігація статистики"><Button mode="plain" size="l" onClick={onBack}>← На головну</Button></nav>
+    <BackButton className="stats-navigation" navLabel="Навігація статистики" onBack={onBack}>← На головну</BackButton>
     <Card aria-labelledby="stats-title">{heading}
       {summary.isPending && <div className="loading-state" role="status"><Spinner size="s" /> Збираємо статистику…</div>}
       {summary.isError && <Result tone="error">{terminalMessage(summary.error) ?? 'Не вдалося завантажити статистику. Спробуйте ще раз.'}</Result>}

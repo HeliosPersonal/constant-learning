@@ -13,6 +13,7 @@ const Dictionary = lazy(() => import('./features/dictionary/search/Dictionary'))
 const Stats = lazy(() => import('./features/stats/Stats'));
 const SessionRoute = lazy(() => import('./features/session/shell/SessionRoute'));
 const Editor = lazy(() => import('./features/editor/Editor'));
+const navigation = [['/stats', 'Мої слова'], ['/dictionary', 'Словник'], ['/settings', 'Налаштування']] as const;
 
 export function App({ onNavigateToToday, privacyContact, onReportMissing, onOpenSession }: { onNavigateToToday?: (learner: Learner) => void; privacyContact?: PrivacyContact | null; onReportMissing?: (request: MissingWordReportRequest) => void; onOpenSession?: (session: SessionResponse) => void }) {
   const [route, setRoute] = useState(window.location.pathname);
@@ -24,7 +25,6 @@ export function App({ onNavigateToToday, privacyContact, onReportMissing, onOpen
   const toToday = useCallback((learner: Learner) => { setRoute('/today'); onNavigateToToday?.(learner); }, [onNavigateToToday]);
   if (route === '/dev/components') return <Suspense fallback={<p role="status">Завантажуємо приклад…</p>}><ComponentPreview /></Suspense>;
   return <main className="app-shell">
-    <header className="app-header"><a className="brand" href="/" onClick={event => { if (sessionBusy.current) event.preventDefault(); }} aria-label="Constant Learning — головна"><span className="brand-icon" aria-hidden="true">cl.</span><span>Constant<br />Learning</span></a><span className="eyebrow">ПОЛЬСЬКА ЩОДНЯ</span></header>
     {route === '/editor' ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо редактор…</div>}><Editor onBack={() => go('/today')} /></Suspense> : <OnboardingGate onNavigateToToday={toToday} privacyContact={privacyContact} preserveRoute={route === '/settings' || route === '/dictionary' || route === '/session' || route === '/stats'}
       notOnboarded={route === '/settings' || route === '/dictionary' || route === '/session' || route === '/stats' ? <Card><h1>Почнімо знайомство</h1><p>Спершу налаштуйте тренер.</p><Button size="l" stretched onClick={() => go('/')}>До початку</Button></Card> : undefined}
       renderLearner={learner => route === '/session'
@@ -35,7 +35,6 @@ export function App({ onNavigateToToday, privacyContact, onReportMissing, onOpen
         ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо ваші слова…</div>}><Stats onBack={() => go('/today')} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} /></Suspense>
         : route === '/settings'
         ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо налаштування…</div>}><Settings learner={learner} onBack={notice => { setTodayNotice(notice); go('/today'); }} onStart={() => go('/')} /></Suspense>
-        : <><Today learner={learner} notice={todayNotice} onNoticeShown={() => setTodayNotice(undefined)} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} onStart={() => go('/')} /><nav className="app-navigation" aria-label="Основна навігація"><Button mode="outline" size="l" stretched onClick={() => go('/stats')}>Мої слова</Button><Button mode="outline" size="l" stretched onClick={() => go('/dictionary')}>Словник</Button><Button mode="outline" size="l" stretched onClick={() => go('/settings')}>Налаштування</Button></nav></>} />}
-    <footer>По слову ближче до впевненості.</footer>
+        : <><Today learner={learner} notice={todayNotice} onNoticeShown={() => setTodayNotice(undefined)} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} onStart={() => go('/')} /><nav className="app-navigation" aria-label="Основна навігація">{navigation.map(([path, label]) => <button key={path} type="button" className="app-navigation-row" onClick={() => go(path)}>{label}<span aria-hidden="true">›</span></button>)}</nav></>} />}
   </main>;
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { BackButton } from '../../components/BackButton';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../components/ui';
 import { decideReport, EditorApiError, editorQueryKey, listApplied, listQueue, rollbackChange, type AppliedChange, type Cursor, type QueueItem } from './api';
@@ -73,7 +74,7 @@ export default function Editor({ onBack }: { onBack: () => void }) {
     onSettled() { rollingBack.current = false; },
   });
   const busy = decision.isPending || rollback.isPending;
-  const header = <><nav className="editor-navigation" aria-label="Навігація редактора"><Button size="l" mode="plain" onClick={onBack} disabled={busy}>← До навчання</Button></nav><div className="intro"><p className="eyebrow">ЯКІСТЬ КОЖНОГО СЛОВА</p><h1>Редактор словника</h1><p>Перевіряйте повідомлення й керуйте опублікованими змінами.</p></div></>;
+  const header = <><BackButton className="editor-navigation" navLabel="Навігація редактора" onBack={onBack} disabled={busy}>← До навчання</BackButton><div className="intro"><p className="eyebrow">ЯКІСТЬ КОЖНОГО СЛОВА</p><h1>Редактор словника</h1><p>Перевіряйте повідомлення й керуйте опублікованими змінами.</p></div></>;
   if (access) return <>{header}<Card aria-labelledby="editor-access-title"><h2 id="editor-access-title">{access === 'role' ? 'Потрібен доступ редактора' : 'Підтвердьте доступ'}</h2><Result tone="error">{access === 'role' ? 'Цей розділ доступний лише редакторам словника.' : 'Відкрийте тренер знову в Telegram, щоб продовжити.'}</Result></Card></>;
 
   function selectView(next: View) { if (busy) return; setView(next); setNotice(undefined); }

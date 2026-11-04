@@ -11,6 +11,6 @@ export function NewWordCard({ item, pending, onAction }: { item: Item; pending: 
     <p className="session-translation">{card.translations_uk.join(', ')}</p>
     <div className="session-example"><p lang="pl">{card.example_pl}</p><p>{card.example_uk}</p></div>
     <div className="session-actions"><Button size="l" stretched disabled={pending} loading={pending} onClick={() => onAction('acknowledge')}>Далі</Button>
-      <Button size="l" mode="outline" stretched disabled={pending} onClick={() => onAction('already-known')}>Вже знаю</Button></div>
+      <Button size="l" mode="plain" stretched disabled={pending} onClick={() => onAction('already-known')}>Вже знаю</Button></div>
   </>;
 }

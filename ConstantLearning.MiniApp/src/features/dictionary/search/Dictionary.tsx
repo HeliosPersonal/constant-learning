@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { BackButton } from '../../../components/BackButton';
 import { Button, Card, Result, Spinner } from '../../../components/ui';
 import { DictionaryApiError, getDictionaryEntry, searchDictionary, type EntryCard, type MissingWordReportRequest, type SearchCursor } from './api';
 import { useDictionaryResource } from './useDictionaryResource';
@@ -42,7 +43,7 @@ function Entry({ entryId, onBack, onRefresh, onReport }: { entryId: string; onBa
   const resource = useDictionaryResource(`${entryId}:${attempt}`, load);
   useEffect(() => { heading.current?.focus(); }, [entryId]);
   return <div className="dictionary-entry">
-    <Button mode="plain" size="l" onClick={onBack}>← До результатів</Button>
+    <BackButton onBack={onBack}>← До результатів</BackButton>
     <Card aria-labelledby="dictionary-entry-title">
       <p className="eyebrow">КАРТКА СЛОВА</p>
       <h2 id="dictionary-entry-title" ref={heading} tabIndex={-1} lang={resource.status === 'ready' ? 'pl' : 'uk'}>{resource.status === 'ready' ? resource.data.lemma_pl : 'Слово зі словника'}</h2>
@@ -69,7 +70,7 @@ export default function Dictionary({ onBack, onReportMissing }: { onBack: () => 
   function closeEntry() { setSelected(null); requestAnimationFrame(() => resultsHeading.current?.focus()); }
   function refreshSearch() { closeEntry(); setCursor({}); setAttempt(value => value + 1); }
   return <div className="dictionary">
-    <nav className="dictionary-navigation" aria-label="Навігація словника"><Button mode="plain" size="l" onClick={onBack}>← До «Сьогодні»</Button></nav>
+    {!selected && <BackButton className="dictionary-navigation" navLabel="Навігація словника" onBack={onBack}>← До «Сьогодні»</BackButton>}
     <div className="intro"><p className="eyebrow">ЗНАЙДІТЬ ПОТРІБНЕ СЛОВО</p><h1>Словник</h1><p>Польське слово, український переклад або знайома форма.</p></div>
     <div className="dictionary-search"><label htmlFor="dictionary-query">Слово для пошуку</label><div className="dictionary-input-row"><input id="dictionary-query" type="search" autoComplete="off" spellCheck={false} maxLength={200} aria-describedby="dictionary-search-hint" value={rawQuery} onChange={event => changeQuery(event.target.value)} placeholder="Наприклад, urzedzie або установа" />{rawQuery && <Button mode="outline" size="l" onClick={() => changeQuery('')}>Очистити</Button>}</div>
       <p id="dictionary-search-hint" className="caption">Можна без діакритики. Один символ — точний збіг, від двох — також початок слова.</p></div>
