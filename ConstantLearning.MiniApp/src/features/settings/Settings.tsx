@@ -1,4 +1,5 @@
-import { DAILY_LIMIT_MAX, DAILY_LIMIT_MIN, newWordsLabel } from '../../components/LimitSlider';
+import { DAILY_LIMIT_MAX, DAILY_LIMIT_MIN } from '../../components/LimitSlider';
+import { LimitStepper } from '../../components/LimitStepper';
 import { BackButton } from '../../components/BackButton';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -96,11 +97,8 @@ export default function Settings({ learner, onBack, onStart, onOpenEditor }: { l
 
         <div className="ios-caption">Навчання</div>
         <div className="ios-group"><div className="ios-row"><span id="settings-limit-label">Нових слів на день</span>
-          <div className="ios-stepper" role="group" aria-labelledby="settings-limit-label" aria-describedby="settings-limit-hint">
-            <button type="button" className="ios-plain" aria-label="Менше" disabled={draft.limit <= DAILY_LIMIT_MIN} onClick={() => setLimit(draft.limit - 1)}>−</button>
-            <output aria-live="polite">{draft.limit}<span className="sr-only"> {newWordsLabel(draft.limit)}</span></output>
-            <button type="button" className="ios-plain" aria-label="Більше" disabled={draft.limit >= DAILY_LIMIT_MAX} onClick={() => setLimit(draft.limit + 1)}>+</button>
-          </div></div></div>
+          <LimitStepper value={draft.limit} onChange={setLimit} labelledBy="settings-limit-label" describedBy="settings-limit-hint" />
+        </div></div>
         <div className="ios-footnote" id="settings-limit-hint">
           <p>Зміна діятиме з наступної навчальної доби.</p>
           {showCurrent && <p>Сьогодні: <strong>{limitLabel(saved.daily_new_words_limit)}</strong>.</p>}

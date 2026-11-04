@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '../src/theme/ThemeProvider';
@@ -32,6 +32,10 @@ function form(onComplete = vi.fn(), zone: string | null = 'Europe/Warsaw') {
 }
 function submit() { fireEvent.submit(screen.getByRole('form', { name: 'Налаштування навчання' })); }
 function enableReminder() { fireEvent.click(screen.getByLabelText('Нагадувати про заняття')); }
+const limitValue = () => Number.parseInt(within(screen.getByRole('group', { name: 'Нових слів на день' })).getByRole('status').textContent ?? '', 10);
+function chooseLimit(value: number) {
+  while (limitValue() !== value) fireEvent.click(screen.getByRole('button', { name: limitValue() < value ? 'Більше' : 'Менше' }));
+}
 
 afterEach(() => { clients.forEach(client => client.clear()); clients.length = 0; vi.unstubAllGlobals(); vi.restoreAllMocks(); window.history.replaceState(null, '', '/'); });
 
@@ -42,10 +46,10 @@ describe('Приватність перед початком', () => {
     expect(resolvePrivacyContact('invalid')).toBeUndefined();
     expect(resolvePrivacyContact('mailto:privacy@example.test')?.url).toBe('mailto:privacy@example.test');
   });
-  it('показує склад даних, строки видалення та контакт перед формою', () => {
+  it('показує склад даних, строки видалення та контакт перед кнопкою початку', () => {
     form();
     const privacy = screen.getByRole('heading', { name: 'Ваші дані — під вашим контролем' });
-    expect(privacy.compareDocumentPosition(screen.getByRole('form')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(privacy.compareDocumentPosition(screen.getByRole('button', { name: 'Почати навчання' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText(/Telegram-ідентифікатор, налаштування та навчальну історію/)).toBeVisible();
     expect(screen.getByText(/7 календарних днів.*14 днів/)).toBeVisible();
     expect(screen.getByRole('link', { name: /Запит на видалення/ })).toHaveAttribute('href', 'mailto:privacy@example.test');
@@ -67,7 +71,7 @@ describe('Новий learner і форма', () => {
     let body: OnboardingRequest | undefined;
     mockFetch(async request => { body = await request.json() as OnboardingRequest; return json({ ...learner, daily_new_words_limit: limit }, 201); });
     const complete = form();
-    fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: String(limit) } });
+    chooseLimit(limit);
     submit();
     await waitFor(() => expect(complete).toHaveBeenCalledOnce());
     expect(body).toEqual({ daily_new_words_limit: limit, time_zone: 'Europe/Warsaw', reminder: null });
@@ -77,13 +81,12 @@ describe('Новий learner і форма', () => {
     expect(screen.getByText('Виберіть хоча б один день або вимкніть нагадування.')).toBeVisible();
     expect(fetcher).not.toHaveBeenCalled();
   });
-  it('AC-27: нагадування без визначеного поясу потребує ручного підтвердження', async () => {
+  it('AC-27: нагадування без визначеного поясу потребує вибору поясу, вибраний вручну пояс підтверджений', async () => {
     let body: OnboardingRequest | undefined;
     const fetcher = mockFetch(async request => { body = await request.json() as OnboardingRequest; return json(learner, 201); });
     const complete = form(vi.fn(), null); enableReminder(); fireEvent.click(screen.getByLabelText('Понеділок')); submit();
     expect(screen.getByText('Виберіть і підтвердьте часовий пояс для нагадування.')).toBeVisible(); expect(fetcher).not.toHaveBeenCalled();
-    fireEvent.change(screen.getByLabelText('Часовий пояс'), { target: { value: 'Europe/Kyiv' } }); submit(); expect(fetcher).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Підтвердити часовий пояс' }));
+    fireEvent.change(screen.getByLabelText('Часовий пояс'), { target: { value: 'Europe/Kyiv' } });
     fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '18:30' } });
     fireEvent.click(screen.getByLabelText('П’ятниця')); submit();
     await waitFor(() => expect(complete).toHaveBeenCalledOnce());
@@ -96,9 +99,9 @@ describe('Новий learner і форма', () => {
     await waitFor(() => expect(complete).toHaveBeenCalledOnce());
     expect(body?.time_zone).toBeNull();
   });
-  it('нагадування можна пропустити після помилки без днів', async () => {
+  it('нагадування можна вимкнути після помилки без днів', async () => {
     mockFetch(() => json(learner, 201)); const complete = form(); enableReminder(); submit();
-    fireEvent.click(screen.getByRole('button', { name: 'Пропустити нагадування' })); submit();
+    enableReminder(); submit();
     await waitFor(() => expect(complete).toHaveBeenCalledOnce());
   });
   it('pending блокує повторне надсилання навіть до наступного рендера', async () => {
@@ -108,21 +111,21 @@ describe('Новий learner і форма', () => {
     act(() => { submit(); submit(); });
     await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
     expect(screen.getByRole('button', { name: 'Зберігаємо налаштування…' })).toBeDisabled();
-    expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Більше' })).toBeDisabled();
     await act(async () => { resolve(json(learner, 201)); });
     await waitFor(() => expect(complete).toHaveBeenCalledOnce());
   });
   it('тимчасова помилка зберігає введення та дозволяє свідомий повтор', async () => {
     let attempts = 0;
     const fetcher = mockFetch(() => ++attempts === 1 ? json({ code: 'server.unavailable', message: 'Недоступно' }, 503) : json(learner, 201));
-    const complete = form(); fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: '10' } }); enableReminder(); fireEvent.click(screen.getByLabelText('Середа')); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '20:15' } }); submit();
+    const complete = form(); chooseLimit(10); enableReminder(); fireEvent.click(screen.getByLabelText('Середа')); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '20:15' } }); submit();
     await screen.findByText(/Ваш вибір збережено на екрані/);
-    expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('10'); expect(screen.getByLabelText('Середа')).toBeChecked(); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:15');
+    expect(limitValue()).toBe(10); expect(screen.getByLabelText('Середа')).toBeChecked(); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:15');
     expect(fetcher).toHaveBeenCalledOnce(); submit(); await waitFor(() => expect(complete).toHaveBeenCalledOnce()); expect(fetcher).toHaveBeenCalledTimes(2);
   });
   it('помилка мережі не скидає ліміт і не повторює мутацію автоматично', async () => {
-    const fetcher = mockFetch(() => { throw new TypeError('Недоступна мережа'); }); form(); fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: '3' } }); submit();
-    await screen.findByText(/Ваш вибір збережено на екрані/); expect(screen.getByRole('slider', { name: 'Денний ліміт нових слів' })).toHaveValue('3'); expect(fetcher).toHaveBeenCalledOnce();
+    const fetcher = mockFetch(() => { throw new TypeError('Недоступна мережа'); }); form(); chooseLimit(3); submit();
+    await screen.findByText(/Ваш вибір збережено на екрані/); expect(limitValue()).toBe(3); expect(fetcher).toHaveBeenCalledOnce();
   });
   it('зміна теми зберігає форму та не викликає API', () => {
     const fetcher = mockFetch(() => json(learner, 201)); form(); enableReminder(); fireEvent.click(screen.getByLabelText('Понеділок')); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '18:15' } });
@@ -144,7 +147,7 @@ describe('Новий learner і форма', () => {
   });
   it('AC-53: 200 повертає наявний профіль замість вибраних нових налаштувань', async () => {
     const existing: Learner = { ...learner, daily_new_words_limit: 3, reminder: { local_time: '18:00', days_of_week: ['wed'] } };
-    mockFetch(() => json(existing, 200)); const complete = form(); fireEvent.change(screen.getByRole('slider', { name: 'Денний ліміт нових слів' }), { target: { value: '10' } }); submit();
+    mockFetch(() => json(existing, 200)); const complete = form(); chooseLimit(10); submit();
     await waitFor(() => expect(complete).toHaveBeenCalledWith(existing));
   });
 });

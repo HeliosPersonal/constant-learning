@@ -1,8 +1,6 @@
-import { LimitSlider } from '../../components/LimitSlider';
+import { LimitStepper } from '../../components/LimitStepper';
 import { useRef, useState, type FormEvent } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Switch } from '@telegram-apps/telegram-ui';
-import { Button, Card, Result } from '../../components/ui';
 import { completeOnboarding, learnerQueryKey, OnboardingApiError, type Learner, type OnboardingRequest } from './api';
 import { configuredPrivacyContact, type PrivacyContact } from './privacy';
 import { detectTimeZone, isTimeZone, timeZoneOptions } from './timeZone';
@@ -28,7 +26,6 @@ export function Onboarding({ onComplete, privacyContact = configuredPrivacyConta
   const [time, setTime] = useState('19:00');
   const [detectedZone] = useState(() => getDeviceTimeZone());
   const [zone, setZone] = useState(detectedZone ?? '');
-  const [zoneConfirmed, setZoneConfirmed] = useState(!!detectedZone);
   const [errors, setErrors] = useState<Errors>({});
   const [authBlocked, setAuthBlocked] = useState(false);
   const submitting = useRef(false);
@@ -64,59 +61,66 @@ export function Onboarding({ onComplete, privacyContact = configuredPrivacyConta
     const next: Errors = {};
     if (reminder && selectedDays.length === 0) next.days = 'Виберіть хоча б один день або вимкніть нагадування.';
     if (reminder && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) next.time = 'Виберіть час нагадування у форматі годин і хвилин.';
-    if ((reminder || zone) && (!isTimeZone(zone) || !zoneConfirmed)) next.zone = reminder ? 'Виберіть і підтвердьте часовий пояс для нагадування.' : 'Підтвердьте вибраний часовий пояс або залиште його невизначеним.';
+    if (reminder && !isTimeZone(zone)) next.zone = 'Виберіть і підтвердьте часовий пояс для нагадування.';
     setErrors(next);
     if (Object.keys(next).length) { requestAnimationFrame(() => errorRef.current?.focus()); return; }
     submitting.current = true;
     mutation.mutate({
       daily_new_words_limit: limit,
-      time_zone: zoneConfirmed && zone ? zone : null,
+      time_zone: zone || null,
       reminder: reminder ? { local_time: time, days_of_week: days.filter(day => selectedDays.includes(day.value)).map(day => day.value) } : null,
     });
   }
 
   return <>
-    <div className="intro"><p className="eyebrow">ПЕРШИЙ КРОК</p><h1>Ваш темп. Ваші слова.</h1><p>Кілька хвилин польської щодня — почнімо з комфортного ритму.</p></div>
-    <Card aria-labelledby="privacy-title"><span className="card-index">ПЕРЕД ПОЧАТКОМ</span><h2 id="privacy-title">Ваші дані — під вашим контролем</h2>
-      <p className="caption">Для навчання ми обробляємо ваш Telegram-ідентифікатор, налаштування та навчальну історію.</p>
-      <p className="caption">Власник проєкту видаляє ваші дані за запитом протягом 7 календарних днів. У зашифрованих резервних копіях вони можуть залишатися до 14 днів.</p>
-      {privacyContact ? <a className="privacy-contact" href={privacyContact.url} rel="noopener noreferrer">Запит на видалення: {privacyContact.label}</a>
-        : <p className="caption" role="status">Контакт для запитів на видалення тимчасово недоступний.</p>}
-    </Card>
+    <div className="onboarding-hero"><h1>Ваш темп. Ваші слова.</h1><p>Кілька хвилин польської щодня — почнімо з комфортного ритму.</p></div>
     <form onSubmit={submit} noValidate aria-label="Налаштування навчання" aria-busy={mutation.isPending}>
       <fieldset className="onboarding-fields" disabled={mutation.isPending || authBlocked}>
-        <Card aria-labelledby="pace-title"><span className="card-index">01 / ТЕМП</span><h2 id="pace-title">Скільки нових слів на день?</h2>
-          <p className="caption">Повторення знайомих слів додаватимуться окремо.</p>
-          <fieldset className="pace-options"><legend className="sr-only">Денний ліміт нових слів</legend><LimitSlider value={limit} onChange={setLimit} /></fieldset>
-          {errors.limit && <Result tone="error">{errors.limit}</Result>}
-          <p className="caption onboarding-hint">Темп можна змінити пізніше в налаштуваннях.</p>
-        </Card>
-        <Card aria-labelledby="zone-title"><span className="card-index">02 / МІСЦЕВИЙ ЧАС</span><h2 id="zone-title">Коли починається ваш день</h2>
-          <label className="field-label" htmlFor="time-zone">Часовий пояс</label>
-          <select id="time-zone" value={zone} aria-invalid={!!errors.zone} aria-describedby={errors.zone ? 'zone-error' : 'zone-hint'} onChange={event => { setZone(event.target.value); setZoneConfirmed(false); setErrors(value => ({ ...value, zone: undefined })); }}>
+        <div className="ios-caption">Навчання</div>
+        <div className="ios-group"><div className="ios-row"><span id="pace-label">Нових слів на день</span><LimitStepper value={limit} onChange={setLimit} labelledBy="pace-label" describedBy="pace-hint" /></div></div>
+        <p className="ios-footnote" id="pace-hint">Повторення знайомих слів додаються окремо. Темп можна змінити пізніше в налаштуваннях.</p>
+        {errors.limit && <p className="ios-footnote ios-footnote--error" role="alert">{errors.limit}</p>}
+
+        <div className="ios-caption">Місцевий час</div>
+        <div className="ios-group"><div className="ios-row ios-row--select"><span>Часовий пояс</span><span className="ios-value">{zone || 'Не визначено'}<span className="ios-chevron" aria-hidden="true">›</span></span>
+          <select aria-label="Часовий пояс" value={zone} aria-invalid={!!errors.zone} aria-describedby={errors.zone ? 'zone-error' : 'zone-hint'} onChange={event => { setZone(event.target.value); setErrors(value => ({ ...value, zone: undefined })); }}>
             <option value="">Не визначено — вибрати вручну</option>
             {timeZoneOptions(detectedZone).map(value => <option key={value} value={value}>{value}</option>)}
-          </select>
-          <p className="caption onboarding-hint" id="zone-hint">{zoneConfirmed ? (zone === detectedZone ? 'Визначено за часом вашого пристрою.' : 'Часовий пояс підтверджено.') : 'Без вибраного поясу навчальний день рахується за часом Варшави. Для нагадувань потрібно вибрати пояс.'}</p>
-          {!!zone && !zoneConfirmed && <Button mode="outline" size="l" stretched onClick={() => { setZoneConfirmed(true); setErrors(value => ({ ...value, zone: undefined })); }}>Підтвердити часовий пояс</Button>}
-          {errors.zone && <div id="zone-error"><Result tone="error">{errors.zone}</Result></div>}
-        </Card>
-        <Card aria-labelledby="reminder-title"><span className="card-index">03 / НАГАДУВАННЯ</span><div className="reminder-heading"><h2 id="reminder-title">Лагідне нагадування</h2><Switch id="reminder-enabled" checked={reminder} onChange={event => { setReminder(event.target.checked); setErrors({}); }} aria-label="Нагадувати про заняття" /></div>
-          <p className="caption">За бажанням бот нагадає про заняття у вибрані дні.</p>
-          {reminder ? <div className="reminder-options">
-            <label className="field-label" htmlFor="reminder-time">Час нагадування</label><input id="reminder-time" type="time" value={time} aria-invalid={!!errors.time} aria-describedby={errors.time ? 'time-error' : undefined} onChange={event => setTime(event.target.value)} />
-            {errors.time && <div id="time-error"><Result tone="error">{errors.time}</Result></div>}
-            <fieldset className="day-options" aria-describedby={errors.days ? 'days-error' : undefined}><legend>Дні тижня</legend>
-              {days.map(day => <label key={day.value}><input type="checkbox" aria-label={day.full} checked={selectedDays.includes(day.value)} onChange={event => setSelectedDays(value => event.target.checked ? [...value, day.value] : value.filter(item => item !== day.value))} /><span>{selectedDays.includes(day.value) ? '✓ ' : ''}{day.label}</span></label>)}
-            </fieldset>{errors.days && <div id="days-error"><Result tone="error">{errors.days}</Result></div>}
-            <Button mode="plain" size="l" stretched onClick={() => { setReminder(false); setErrors({}); }}>Пропустити нагадування</Button>
-          </div> : <p className="caption onboarding-hint">Нагадування вимкнені. Можна ввімкнути пізніше.</p>}
-        </Card>
+          </select></div></div>
+        <p className="ios-footnote" id="zone-hint">{zone ? (zone === detectedZone ? 'Визначено за часом вашого пристрою.' : 'Часовий пояс вибрано.') : 'Без вибраного поясу навчальний день рахується за часом Варшави. Для нагадувань потрібно вибрати пояс.'}</p>
+        {errors.zone && <p className="ios-footnote ios-footnote--error" id="zone-error" role="alert">{errors.zone}</p>}
+
+        <div className="ios-caption">Нагадування</div>
+        <div className="ios-group">
+          <label className="ios-row"><span>Нагадувати про заняття</span><input type="checkbox" role="switch" className="ios-switch" id="reminder-enabled" checked={reminder} onChange={event => { setReminder(event.target.checked); setErrors({}); }} /></label>
+          {reminder && <>
+            <div className="ios-row"><span>Час</span><input type="time" className="ios-time" aria-label="Час нагадування" value={time} aria-invalid={!!errors.time} aria-describedby={errors.time ? 'time-error' : undefined} onChange={event => setTime(event.target.value)} /></div>
+            <fieldset className="ios-days" aria-invalid={!!errors.days} aria-describedby={errors.days ? 'days-error' : undefined}><legend className="sr-only">Дні тижня</legend>
+              {days.map(day => <label key={day.value} className={`ios-day${selectedDays.includes(day.value) ? ' ios-day--on' : ''}`}><input type="checkbox" aria-label={day.full} checked={selectedDays.includes(day.value)} onChange={event => setSelectedDays(value => event.target.checked ? [...value, day.value] : value.filter(item => item !== day.value))} /><span aria-hidden="true">{day.label}</span></label>)}
+            </fieldset>
+          </>}
+        </div>
+        <p className="ios-footnote">{reminder ? 'Бот нагадає про заняття у вибрані дні за вашим місцевим часом.' : 'Нагадування вимкнені. Можна ввімкнути пізніше.'}</p>
+        {errors.time && <p className="ios-footnote ios-footnote--error" id="time-error" role="alert">{errors.time}</p>}
+        {errors.days && <p className="ios-footnote ios-footnote--error" id="days-error" role="alert">{errors.days}</p>}
       </fieldset>
-      <div ref={errorRef} tabIndex={-1} className="submission-message" aria-live="polite">{errors.general && <Result tone="error">{errors.general}</Result>}{Object.keys(errors).some(key => key !== 'general' && errors[key as keyof Errors]) && <p className="caption">Перевірте позначені поля вище.</p>}</div>
-      {!privacyContact && <p id="onboarding-unavailable" className="caption" role="status">Почати навчання зараз не вдається. Спробуйте пізніше.</p>}
-      <Button type="submit" size="l" stretched loading={mutation.isPending} disabled={mutation.isPending || authBlocked || !privacyContact} aria-describedby={!privacyContact ? 'onboarding-unavailable' : undefined}>{mutation.isPending ? 'Зберігаємо налаштування…' : 'Почати навчання'}</Button>
-      <p className="caption submit-note">Ваші налаштування можна змінити будь-коли.</p>
+
+      <section aria-labelledby="privacy-title">
+        <h2 className="ios-caption" id="privacy-title">Ваші дані — під вашим контролем</h2>
+        <div className="ios-group">
+          <div className="onboarding-privacy">
+            <p>Для навчання ми обробляємо ваш Telegram-ідентифікатор, налаштування та навчальну історію.</p>
+            <p>Власник проєкту видаляє ваші дані за запитом протягом 7 календарних днів. У зашифрованих резервних копіях вони можуть залишатися до 14 днів.</p>
+          </div>
+          {privacyContact ? <a className="ios-row ios-accent privacy-contact" href={privacyContact.url} rel="noopener noreferrer">Запит на видалення: {privacyContact.label}</a>
+            : <p className="onboarding-privacy" role="status">Контакт для запитів на видалення тимчасово недоступний.</p>}
+        </div>
+      </section>
+
+      <div ref={errorRef} tabIndex={-1} className="submission-message" aria-live="polite">{errors.general && <p className="ios-footnote ios-footnote--error" role="alert">{errors.general}</p>}{Object.keys(errors).some(key => key !== 'general' && errors[key as keyof Errors]) && <p className="ios-footnote">Перевірте позначені поля вище.</p>}</div>
+      {!privacyContact && <p id="onboarding-unavailable" className="ios-footnote" role="status">Почати навчання зараз не вдається. Спробуйте пізніше.</p>}
+      <button type="submit" className="ios-primary ios-plain" disabled={mutation.isPending || authBlocked || !privacyContact} aria-describedby={!privacyContact ? 'onboarding-unavailable' : undefined}>{mutation.isPending ? 'Зберігаємо налаштування…' : 'Почати навчання'}</button>
+      <p className="ios-footnote submit-note">Ваші налаштування можна змінити будь-коли.</p>
     </form>
   </>;
 }
