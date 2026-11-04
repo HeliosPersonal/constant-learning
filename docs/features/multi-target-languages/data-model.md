@@ -185,7 +185,7 @@ erDiagram
 | `ix_learner_words_learner_lang_status` | `learner_words(learner_id, target_language, status)` | Лічильник recalled активної мови (AC-05/AC-07) |
 | `ix_answer_events_learner_lang_day_outcome` | `answer_events(learner_id, target_language, learner_day, outcome)` | Ліміт «Вже знаю» на добу **per-language** (AC-05); мово-свідома версія поряд із наявним `ix_answer_events_learner_day_outcome` (старий чиститься в contract-фазі) |
 | `ix_answer_events_target_language` | `answer_events(target_language)` | FK-індекс |
-| `ix_learning_sessions_learner_lang_active` | `learning_sessions(learner_id, target_language) WHERE status='active'` | Активна session активної мови; продовження доби своєї мови (AC-04, flow 1) |
+| `ux_learning_sessions_one_active_lang` | **UNIQUE** `learning_sessions(learner_id, target_language) WHERE status='active'` | Активна session активної мови + **інваріант «одна активна session НА МОВУ»** (AC-04, flow 1). **Замінює** глобальний `ux_learning_sessions_one_active (learner_id) WHERE status='active'`, який дозволяв лише одну активну session на learner у всіх мовах і блокував AC-04 (друга мова не могла стартувати session). Унікальний partial-індекс водночас обслуговує lookup активної session активної мови. |
 | `ix_learning_sessions_target_language` | `learning_sessions(target_language)` | FK-індекс |
 | `ix_content_reports_lang_status_created` | `content_reports(target_language, status, created_at)` | Черга редактора з розмежуванням за мовою (AC-11, flow 7); доповнює `ix_content_reports_status_created` |
 | `ix_content_reports_target_language` | `content_reports(target_language)` | FK-індекс |
@@ -223,16 +223,17 @@ erDiagram
 22. `20261104092100_alter_learning_sessions_add_target_language` — ADD nullable + inline FK + backfill `'pl'`.
 23. `20261104092200_learning_sessions_target_language_not_null` — `SET NOT NULL`.
 24. `20261104092300_index_learning_sessions_target_language` — `CREATE INDEX CONCURRENTLY` FK-індекс.
-25. `20261104092400_index_learning_sessions_learner_lang_active` — `CREATE INDEX CONCURRENTLY` (learner_id, target_language) partial `WHERE status='active'`.
-26. `20261104092500_alter_content_reports_add_target_language` — ADD nullable + inline FK + backfill `'pl'`.
-27. `20261104092600_content_reports_target_language_not_null` — `SET NOT NULL`.
-28. `20261104092700_index_content_reports_target_language` — `CREATE INDEX CONCURRENTLY` FK-індекс.
-29. `20261104092800_index_content_reports_lang_status_created` — `CREATE INDEX CONCURRENTLY` (target_language, status, created_at).
+25. `20261104092400_create_learning_sessions_one_active_lang_unique` — `CREATE UNIQUE INDEX CONCURRENTLY ux_learning_sessions_one_active_lang` (learner_id, target_language) partial `WHERE status='active'`.
+26. `20261104092450_drop_learning_sessions_one_active_unique` — `DROP INDEX CONCURRENTLY ux_learning_sessions_one_active` (глобальний UNIQUE одна-активна-session-на-learner, що блокував AC-04). Пара 25→26 = своп під мовний вимір без вікна без обмеження (спершу створити мово-свідомий UNIQUE, потім зняти глобальний). `.down` відновлює глобальний UNIQUE — **лише якщо немає >1 активної session на learner** (інакше revert неможливий; задокументовано в самому файлі).
+27. `20261104092500_alter_content_reports_add_target_language` — ADD nullable + inline FK + backfill `'pl'`.
+28. `20261104092600_content_reports_target_language_not_null` — `SET NOT NULL`.
+29. `20261104092700_index_content_reports_target_language` — `CREATE INDEX CONCURRENTLY` FK-індекс.
+30. `20261104092800_index_content_reports_lang_status_created` — `CREATE INDEX CONCURRENTLY` (target_language, status, created_at).
 
 **3-крок (expand → backfill → contract) застосовано так:**
 - Нові NOT NULL дискримінатори: **add nullable + inline FK + backfill** в одному файлі (backfill — константний/`entry_id`-похідний UPDATE на pre-pilot даних, без батчингу) + окремий файл `SET NOT NULL` (після деплою коду, що пише колонку). Колапс add+backfill виправданий: мала pre-pilot база, детермінований backfill.
 - **Індекси на наявних таблицях** — `CREATE INDEX CONCURRENTLY`, рівно один statement на файл. Промоушен у EF: кожен такий файл іде в окремий `migrationBuilder.Sql(..., suppressTransaction: true)` (нотатка implement-tasks).
-- **Своп індексу** (unique `external_id`, partial `course_position`) розбито на пару файлів: спершу `CREATE … CONCURRENTLY` нового, потім `DROP` старого — щоб не лишати вікна без індексу.
+- **Своп індексу** (unique `external_id`, partial `course_position`, **та UNIQUE однієї активної session: глобальний `ux_learning_sessions_one_active` → мово-свідомий `ux_learning_sessions_one_active_lang`**, кроки 25→26) розбито на пару файлів: спершу `CREATE … CONCURRENTLY` нового, потім `DROP` старого — щоб не лишати вікна без індексу/обмеження. Своп session-UNIQUE — **обов'язкова передумова AC-04**: без нього друга мова не може мати активну session одночасно з першою.
 
 **Борг (contract-фаза, окремий PR):** (а) видалення `learners.current_day_*`, `daily_new_words_limit`, `pending_daily_new_words_limit`, `pending_limit_effective_from`, `new_words_available_from`, `course_completed_at` після переходу застосунку на `learner_language_states`; (б) чистка старих не-мово-свідомих індексів `ix_learner_words_learner_due`, `ix_learner_words_learner_status`, `ix_answer_events_learner_day_outcome`, що стали надлишковими після мово-свідомих версій. Не входить у цю фічу (dual-write проміжок).
 
