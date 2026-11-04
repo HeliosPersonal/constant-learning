@@ -37,9 +37,8 @@ describe('Шапка й зведення «Мої слова»', () => {
     network(); mount();
     const header = await screen.findByLabelText('Зведення вивчених слів');
     expect(within(header).getByText('Побачено').parentElement).toHaveTextContent('42');
-    expect(within(header).getByText('Вже пригадую').parentElement).toHaveTextContent('18');
-    expect(within(header).getByText('На повторення').parentElement).toHaveTextContent('24');
-    expect(within(header).getByText('Потребують уваги').parentElement).toHaveTextContent('6');
+    expect(within(header).getByText('Пригадую').parentElement).toHaveTextContent('18');
+    expect(within(header).getByText('Повторити').parentElement).toHaveTextContent('24');
   });
   it('без вивчених слів показує порожній стан', async () => {
     network(request => new URL(request.url).pathname === '/api/v1/stats/words' ? json({ items: [], has_next: false, has_prev: false, next_cursor: null }) : undefined as unknown as Response);
@@ -64,9 +63,9 @@ describe('Вкладки, пошук і сортування', () => {
   it('вкладки «На повторення» і «Вже пригадую» фільтрують за tab', async () => {
     const fetcher = network(); mount();
     await screen.findByRole('button', { name: /chata/ });
-    fireEvent.click(screen.getByRole('tab', { name: 'На повторення' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Повторити' }));
     await waitFor(() => expect(lastWords(fetcher).get('tab')).toBe('review'));
-    fireEvent.click(screen.getByRole('tab', { name: 'Вже пригадую' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Пригадую' }));
     await waitFor(() => expect(lastWords(fetcher).get('tab')).toBe('recalled'));
   });
   it('пошук додає q, а сортування — sort', async () => {
@@ -83,9 +82,9 @@ describe('Рядок слова й картка', () => {
   it('рядок показує лічильники й позначає слабке слово', async () => {
     network(); mount();
     const row = await screen.findByRole('button', { name: /chata/ });
-    expect(row).toHaveTextContent('показ 7'); expect(row).toHaveTextContent('правильно 4'); expect(row).toHaveTextContent('неправильно 3');
-    expect(row).toHaveTextContent('серія 1'); expect(row).toHaveTextContent('забуте 2');
-    expect(row.className).toContain('stats-result--weak');
+    expect(row).toHaveTextContent('4 / 3'); expect(within(row).getByLabelText('правильно 4, неправильно 3')).toBeInTheDocument();
+    expect(row).toHaveTextContent('потребує уваги'); expect(row.querySelector('.stats-dot--weak')).not.toBeNull();
+    expect(row.querySelector('.stats-bar s')).toHaveStyle({ width: '57%' });
   });
   it('тап на рядок відкриває картку з розбивкою помилок', async () => {
     const fetcher = network(); mount();
@@ -104,7 +103,7 @@ describe('Тренувати слабкі', () => {
     let release!: (value: Response) => void;
     const fetcher = network(request => new URL(request.url).pathname === '/api/v1/sessions/extra-practice' ? new Promise<Response>(resolve => { release = resolve; }) : undefined as unknown as Response);
     const open = vi.fn(); mount({ onOpenSession: open });
-    const button = await screen.findByRole('button', { name: 'Тренувати слабкі' });
+    const button = await screen.findByRole('button', { name: 'Тренувати слабкі · 6' });
     act(() => { fireEvent.click(button); fireEvent.click(button); });
     await waitFor(() => expect(requests(fetcher, '/api/v1/sessions/extra-practice')).toHaveLength(1));
     expect(requests(fetcher, '/api/v1/sessions/extra-practice')[0].method).toBe('POST');
@@ -119,7 +118,7 @@ describe('Тренувати слабкі', () => {
   it('409 не відкриває заняття й пояснює стан', async () => {
     const fetcher = network(request => new URL(request.url).pathname === '/api/v1/sessions/extra-practice' ? json({ code: 'extra.no_eligible_words' }, 409) : undefined as unknown as Response);
     const open = vi.fn(); mount({ onOpenSession: open });
-    fireEvent.click(await screen.findByRole('button', { name: 'Тренувати слабкі' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Тренувати слабкі · 6' }));
     await screen.findByText(/немає слів для практики/);
     expect(open).not.toHaveBeenCalled(); expect(requests(fetcher, '/api/v1/sessions/extra-practice')).toHaveLength(1);
   });
