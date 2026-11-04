@@ -24,7 +24,7 @@ for (const theme of ['light', 'dark']) for (const state of ['diff', 'diacritic',
  test('кнопка браузера назад не закриває заняття під час відповіді', async ({ page }) => {
   await page.route('https://telegram.org/**', route => route.fulfill({ contentType: 'text/javascript', body: 'window.Telegram={WebApp:{initData:"fixture",colorScheme:"light",version:"6.0"}};' }));
   await page.route('**/api/v1/learners/me', route => route.fulfill({ json: learner }));
-  await page.route('**/api/v1/today', route => route.fulfill({ json: { learner_day: '2026-11-02', due_review_count: 1, recalled_words_count: 0, completed_sessions_last_7_days: 0, has_active_session: false, course_state: 'active', course_replenished_notice: false } }));
+  await page.route('**/api/v1/today', route => route.fulfill({ json: { learner_day: '2026-11-02', due_review_count: 1, recalled_words_count: 0, completed_sessions_last_7_days: 0, has_active_session: false, course_state: 'active', course_replenished_notice: false, new_words_available_today: true, extra_actions: { plan_done: false, extra_new_word: { available: false, reason: 'plan_not_done' }, extra_practice: { available: false, reason: 'plan_not_done' } } } }));
   await page.route('**/api/v1/telemetry/client-timings', route => route.fulfill({ status: 204 }));
   await page.route('**/api/v1/sessions', route => route.fulfill({ json: session, status: 201 }));
   await page.route('**/api/v1/sessions/current', route => route.fulfill({ json: session }));
