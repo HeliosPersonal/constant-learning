@@ -6,18 +6,19 @@ deps: ["[T09](./T09-migrate-sessions-reports.md)", "[T11](./T11-read-apis-error-
 acs: ["AC-09", "AC-11"]
 files_hint:
   - "ConstantLearning/Features/Content/"
-owner: "<TBD Security Lead>"
+owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "blocked"
+status: "todo"
 ---
 
 # T14 — `listEditorQueueByLanguage` + прив'язка report до мови запису
 
 **Шар:** app · **Залежить від:** [T09](./T09-migrate-sessions-reports.md), [T11](./T11-read-apis-error-registry.md) · **AC:** AC-09, AC-11 · **Оцінка:** M · **Фаза:** 5 (API)
 
-> **Blocked — OQ-9** (owner: Security Lead): чи обмежувати редактора мовами, які він здатен
-> верифікувати. Поки роль content editor єдина для всіх мов — операція без per-language authz; рішення
-> «обмежити» додасть 403-гілку. [PRD §6.1](../PRD.md#61-security--privacy), [api-sync-report §open items](../contracts/api-sync-report.md).
+> **Розблоковано (2026-11-04).** **OQ-9** = роль content editor **лишається єдиною для всіх мов** —
+> операція **без per-language authz й без 403-гілки**. AC-11 — коректність маршрутизації (повідомлення й
+> схвалення/відкат лягають на словник правильної мови), не контроль доступу. Ревізія — коли редакторів
+> і мов побільшає. [PRD §6.1](../PRD.md#61-security--privacy), [api-sync-report §open items](../contracts/api-sync-report.md).
 
 ## Why
 
@@ -38,6 +39,6 @@ AC-09: content report прив'язується до запису **активн
 - [ ] Черга фільтрується за `target_language`; повідомлення різних мов не змішуються (AC-11); курсорна пагінація за контрактом.
 - [ ] Новий report отримує `target_language` запису з `entry_id`; не змінює контент інших мов (AC-09).
 - [ ] Схвалення/відкат зачіпає лише словник мови повідомлення (integration-тест).
-- [ ] OQ-9 закрито Security Lead (єдина роль → без 403; «обмежити» → додано 403-гілку + тест).
+- [ ] Жодної per-language authz-гілки (OQ-9 = єдина роль); маршрутизація зміни за мовою покрита integration-тестом.
 - [ ] Contract-тест на `openapi.yaml` зелений.
 - [ ] PR ≤500 LOC.

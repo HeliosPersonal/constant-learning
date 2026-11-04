@@ -58,7 +58,7 @@ erDiagram
         varchar display_name_uk
         boolean is_enabled
         smallint sort_order
-        varchar normalization_profile "NULL = OQ-5 не підтверджено"
+        varchar normalization_profile "pl/en/de/nl профілі (OQ-5 RESOLVED); NULL лише доки не задано"
         timestamptz created_at
     }
     learner_language_states {
@@ -110,7 +110,7 @@ erDiagram
 | `display_name_uk` | VARCHAR(64) | NOT NULL | укр. назва мови для списку вибору (US-01) |
 | `is_enabled` | BOOLEAN | NOT NULL | адмін-перемикач: чи може learner почати мову; значення задає seed/застосунок, без DB-DEFAULT |
 | `sort_order` | SMALLINT | NOT NULL | порядок у списку мов UI |
-| `normalization_profile` | VARCHAR(32) | NULL | посилання на per-language каркас нормалізації/форм (OQ-5); NULL → AC-08 застосовна лише частково |
+| `normalization_profile` | VARCHAR(32) | NULL | посилання на per-language каркас нормалізації/форм; **OQ-5 RESOLVED** — `pl`/`en`/`de`/`nl` кодуються одразу (T07), AC-08 застосовна до всіх; NULL лише для ще-не-заведеної мови |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
 **Aggregate root:** root (lookup). **PK-деві­ація:** природний ключ `code` замість UUID v7 — дискримінатор посилається всюди як `VARCHAR(2)`; UUID-сурогат змусив би денормалізувати `code` окремо. Прецедент природного ключа — `reminder_schedules(learner_id)` PK у reference. **Seed:** lookup-міграція `ON CONFLICT DO NOTHING` (нижче). **Увімкнення мови** (ADR-0004): `is_enabled=true` **і** наявний approved-контент (AC-02, перевіряє застосунок) **і** підтверджений `normalization_profile` для повної AC-08.
@@ -121,7 +121,7 @@ erDiagram
 |---|---|---|---|
 | `learner_id` | UUID | PK, FK → `learners(id)` ON DELETE CASCADE | |
 | `target_language` | VARCHAR(2) | PK, FK → `target_languages(code)` | рядок = «learner вивчає цю мову» |
-| `daily_new_words_limit` | SMALLINT | NOT NULL | ліміт нових слів **цієї мови** (AC-05); дозволяє різні значення на мову (OQ-1а) |
+| `daily_new_words_limit` | SMALLINT | NOT NULL | ліміт нових слів **цієї мови** (AC-05); різні значення на мову — **OQ-1а RESOLVED** (незалежний per-language ліміт) |
 | `pending_daily_new_words_limit` | SMALLINT | NULL | новий ліміт до наступної доби цієї мови |
 | `pending_limit_effective_from` | TIMESTAMPTZ | NULL | |
 | `new_words_available_from` | TIMESTAMPTZ | NULL | кінець доби видачі останньої порції цієї мови (AC-07) |
@@ -154,7 +154,7 @@ erDiagram
 - `ux_dictionary_entries_external_id` (глобальний UNIQUE) → **`ux_dictionary_entries_lang_external_id` UNIQUE (`target_language`, `external_id`)**: одне слово = один запис **у межах мови** (ідемпотентний імпорт per-language).
 - `ix_dictionary_entries_course_position` → **`ix_dictionary_entries_lang_course_position` (`target_language`, `course_position`) WHERE `published_version_id IS NOT NULL`**: добір нових лем у власному порядку мови (AC-06).
 
-`entry_versions` **не змінюється**: `lemma_pl`/`example_pl` семантично стають «лема/приклад активної мови», `pronunciation_uk`/`example_uk` лишаються source-мовними. Перейменування польсько-іменованих колонок — **борг** ([SAD §11](sad.md#11-ризики-і-технічний-борг)); формат транскрипції на мову — **OQ-8** (TBD). Мова версії досяжна через `entry_id → dictionary_entries.target_language`.
+`entry_versions` **не змінюється**: `lemma_pl`/`example_pl` семантично стають «лема/приклад активної мови», `pronunciation_uk`/`example_uk` лишаються source-мовними. Перейменування польсько-іменованих колонок — **борг** ([SAD §11](sad.md#11-ризики-і-технічний-борг)). Формат транскрипції — **OQ-8 RESOLVED**: єдина наближена (не-IPA) транскрипція для всіх мов, `pronunciation_uk` зберігає той самий формат для pl/en/de/nl — **без per-language колонки транскрипції**. Мова версії досяжна через `entry_id → dictionary_entries.target_language`.
 
 ### `learner_words`, `answer_events`, `learning_sessions`, `content_reports` — дискримінатор прогресу/черги
 
@@ -234,7 +234,7 @@ erDiagram
 
 ## Seeds
 
-- **Lookup `target_languages`** (міграція 2): `pl` (`is_enabled=true`, `normalization_profile='pl'`, `sort_order=1`), `en`/`de`/`nl` (`is_enabled=false`, `normalization_profile=NULL`, `sort_order=2/3/4`) — `ON CONFLICT (code) DO NOTHING`. `en/de/nl` вмикаються адміном, коли є approved-контент (AC-02) і підтверджено каркас (OQ-5). Назви: `Польська`/`Англійська`/`Німецька`/`Нідерландська`.
+- **Lookup `target_languages`** (міграція 2): `pl` (`is_enabled=true`, `normalization_profile='pl'`, `sort_order=1`), `en`/`de`/`nl` (`is_enabled=false`, `normalization_profile='en'`/`'de'`/`'nl'`, `sort_order=2/3/4`) — `ON CONFLICT (code) DO NOTHING`. Профілі заводяться одразу (OQ-5 RESOLVED — правила кодуються в T07 після spike OQ-7); `en/de/nl` вмикаються адміном, коли є approved-контент (AC-02). Назви: `Польська`/`Англійська`/`Німецька`/`Нідерландська`.
 - **Backfill** (міграції 4, 5, 7, 13, 18, 22, 26): наявні дані → `'pl'` (єдина поточна мова). Не bootstrap/lookup — data-міграція.
 - **Bootstrap:** немає.
 - **PII guard:** сидів із персональними даними немає.
@@ -250,8 +250,12 @@ erDiagram
 
 PII guard: `Test User`, Telegram id `900000000+`, без реальних контактів.
 
-## TBD / відкриті (due before implement-tasks)
+## Відкриті питання — закрито (2026-11-04)
 
-- `target_languages.normalization_profile` для `de`/`nl` — **OQ-5** (owner: Tech Lead): до підтвердження каркасу форм/нормалізації профіль NULL, AC-08 для мови неповна.
-- Формат підказки вимови на мову (чи лишається `pronunciation_uk` українською наближеною) — **OQ-8** (owner: Viacheslav Melnichenko): може додати per-language колонку транскрипції окремою міграцією.
+- **OQ-5 RESOLVED** — `target_languages.normalization_profile` для `en`/`de`/`nl` заводиться одразу (`'en'`/`'de'`/`'nl'`); повні правила de/nl (рід, артиклі, капіталізація, складені слова) кодуються в [T07](tasks/T07-generalize-forms-normalization.md). AC-08 застосовна до всіх чотирьох мов. (OQ-7: джерела відбирає spike-крок T07.)
+- **OQ-8 RESOLVED** — єдина наближена (не-IPA) транскрипція для всіх мов; `pronunciation_uk` зберігає формат для pl/en/de/nl, **per-language колонки транскрипції не додаємо** — схема не змінюється.
+- **OQ-1а RESOLVED** — незалежний per-language `daily_new_words_limit` (колонка вже в `learner_language_states`).
+
+### Лишається борг (не в цій фічі)
+
 - Перейменування `lemma_pl`/`example_pl` → мово-нейтральні імена — борг [SAD §11](sad.md#11-ризики-і-технічний-борг), 3-крок, окремий PR.

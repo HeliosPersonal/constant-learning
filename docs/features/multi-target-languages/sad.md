@@ -36,8 +36,8 @@ ticket: "TBD"
 |---|---|---|
 | learner | обирає й веде кілька target languages з окремим прогресом | No |
 | content editor | готує й схвалює словник кожної мови окремо | No |
-| Tech Lead | затвердження SAD, форма моделі даних (OQ-3), конкурентність (OQ-4) | Yes |
-| Security Lead | ізоляція прогресу між learner і між мовами, обмеження редактора за мовою (OQ-9) | Yes |
+| Tech Lead | затвердження SAD, форма моделі даних (OQ-3 → ADR-0001), конкурентність (OQ-4 → оптимістична `xmin`) | Yes |
+| Security Lead | ізоляція прогресу між learner і між мовами; роль редактора єдина для всіх мов (OQ-9 закрито) | Yes |
 
 ## 2. Constraints
 
@@ -66,7 +66,7 @@ ticket: "TBD"
 
 **Regulatory / external.**
 - Data classification: **confidential** — навчальна історія конкретних людей. Нових категорій PII фіча не додає; з'являється лише ознака мови при записах прогресу й content report (PRD §6.1).
-- AuthN: перевірена Telegram-ідентичність. Нових authz-меж між мовами фіча не вводить (роль content editor поки єдина для всіх мов; обмеження за мовою — OQ-9).
+- AuthN: перевірена Telegram-ідентичність. Нових authz-меж між мовами фіча не вводить (роль content editor єдина для всіх мов; per-language обмеження не вводиться — OQ-9 закрито 2026-11-04).
 - Окремого security review ще не проводилося (PRD §6.1) — verdict має дати Security Lead; до того ризик прийнятий (§11).
 
 ## 3. Context and scope
@@ -149,7 +149,7 @@ ConstantLearning/Features/
 │   ├── Data/            #   Learner (active_target_language); per-(learner,lang) day-state рядок
 │   │                    #   (CurrentDay*, NewWordsAvailableFrom, DailyNewWordsLimit, CourseCompletedAt) — ADR-0002
 │   ├── Data/            #   нова target_languages (код, enabled, прапорці правил) — ADR-0004
-│   ├── Settings/        #   вибір/перемикання активної мови (OQ-2 — UI-розміщення)
+│   ├── Settings/        #   вибір/перемикання + додавання активної мови (OQ-2 закрито — усе в налаштуваннях)
 │   └── ILearnerDayStateService   # блокування рядка (learner_id, target_language) — ADR-0002
 ├── Content/             # ← мовний вимір словника й пошуку
 │   ├── Data/            #   dictionary_entries.target_language + per-language CoursePosition/external_id — ADR-0003
@@ -410,7 +410,7 @@ sequenceDiagram
 | Ізоляція за мовою (наскрізний інваріант) | Кожен запит/запис прогресу фільтрує за складеним ключем `(learner_id, target_language)`; пропуск = витік між мовами. Перевіряється інтеграційним тестом ізоляції + щоденною звіркою (QG-1) | тут; ADR-0001 |
 | Активна мова | Серверний стан `active_target_language` на `learner`; запити резолвляться на активну мову learner, не на клієнтський параметр без перевірки | тут; §4 |
 | Продовження session тієї ж доби (AC-04) | session лишається доступною для продовження в межах вікна доби **своєї мови**; за повного per-language day-state «та сама доба learner» для продовження = вікно доби мови цієї session (жодна картка не переноситься між мовами) | тут; ADR-0002 |
-| Конкурентність (OQ-4 — відкрито, §11) | Схиляємося до оптимістичної конкурентності `xmin` (`uint Version`) + блокування рядка день-стану `(learner_id, target_language)`; повторний вибір мови ідемпотентний (AC-12). Фінальне рішення — після аналізу OQ-4 | тут; §11 |
+| Конкурентність (OQ-4 — закрито 2026-11-04) | Оптимістична конкурентність через наявний `xmin`, ключ `(learner_id, target_language)`; конфлікт версії → `409 language.concurrent_update`, клієнт повторює (без server-side retry й песимістичних блокувань); повторний вибір мови ідемпотентний (AC-12) | тут; §11; T12 |
 | Маршрутизація content report за мовою | Повідомлення й схвалення/відкат прив'язані до `target_language` запису; черга редактора відокремлює за мовою (AC-09, AC-11) | тут; ADR-0003 |
 | Error handling | Конверт `{code, message, details?}`, `code = module.error_name`; нові коди напр. `language.not_available` (AC-02). Один код = одне визначення в реєстрі помилок | `.claude/rules/openapi.md` |
 | ID strategy | UUID v7, app-side; `created_at` only | `.claude/rules/migrations.md` |
@@ -478,16 +478,16 @@ Each top-3 goal from §1 expanded into a full scenario:
 | Пропуск фільтра `target_language` у запиті прогресу → витік між мовами | High | Наскрізний інваріант §8 + інтеграційний тест ізоляції + щоденна звірка `answer_events` за мовою (QG-1); security review цього виміру (PRD §6.1) | Tech Lead / Security Lead |
 | Важча перебудова day-state у `Identity` (повна per-language доба, ADR-0002, важче за PRD default) | Medium | Зеро-даунтайм 3-крок із бекфілом `'pl'` день-стану; поетапні PR; блокування рядка `(learner_id, target_language)` | Tech Lead |
 | Міграція глобальних `external_id`/`CoursePosition` на складені з `target_language` (ADR-0003) на наявних даних | Medium | Зеро-даунтайм перебудова індексів, бекфіл `'pl'` перед SET NOT NULL/UNIQUE | Tech Lead |
-| OQ-5: звірка відповіді й словоформи для DE/NL (рід, капіталізація, складені слова) можуть потребувати мово-специфічних правил — гейтить AC-08 для мови | Open question | Resolve before implement-tasks (stage 07); конфіг-вузол ADR-0004 тримає точку прив'язки | Tech Lead |
-| OQ-7: наявність/ліцензійність per-language джерел (частотність, морфологія, довідка звірки) для EN/DE/NL | Open question | Resolve before implement-tasks (stage 07); без джерела мова не вмикається (AC-02) | Viacheslav Melnichenko |
-| OQ-8: перенос української наближеної транскрипції на EN/DE/NL орфографію/фонетику | Open question | Resolve before implement-tasks (stage 07); формат транскрипції — прапорець у `target_languages` | Viacheslav Melnichenko |
-| OQ-9: чи обмежувати редактора мовами, які він здатен верифікувати (ризик схвалення незнайомої мови) | Open question | Resolve before implement-tasks (stage 07); рішення Security Lead на review PRD §6.1 | Security Lead |
-| OQ-4: розв'язання конкурентних змін активної мови з різних вкладок (паралельні session різних мов) | Open question | Resolve before implement-tasks (stage 07); схиляємося до наявної `xmin`-конкурентності + ідемпотентного перемикання (§8), потребує підтвердження | Tech Lead |
+| OQ-5: звірка відповіді й словоформи для DE/NL (рід, капіталізація, складені слова) | Closed (2026-11-04) | **Повні мово-специфічні правила de/nl кодуються одразу** (рід `der/die/das`, артиклі `de/het`, капіталізація іменників, складені слова); `normalization_profile` `'de'`/`'nl'` заведено; реалізація — T07 (розбити на T07a/T07b якщо PR >500 LOC). AC-08 застосовна до всіх чотирьох мов | Viacheslav Melnichenko |
+| OQ-7: наявність/ліцензійність per-language джерел (частотність, морфологія, довідка звірки) для EN/DE/NL | Open question | **Spike-крок на початку T07** відбирає вільно-ліцензовані джерела (Wiktionary / Unimorph / CC-корпуси) і фіксує профілі; без джерела мова лишається `is_enabled=false` (AC-02) | Viacheslav Melnichenko |
+| OQ-8: перенос української наближеної транскрипції на EN/DE/NL орфографію/фонетику | Closed (2026-11-04) | **Єдиний формат наближеної (не-IPA) транскрипції для всіх мов** як звична навчальна практика; `pronunciation_uk` зберігає той самий формат для pl/en/de/nl, **без per-language колонки й без IPA** — схема не змінюється | Viacheslav Melnichenko |
+| OQ-9: чи обмежувати редактора мовами, які він здатен верифікувати | Closed (2026-11-04) | **Роль content editor лишається єдиною для всіх мов** — `listEditorQueueByLanguage` без per-language authz й без 403-гілки; ревізія, коли редакторів і мов побільшає (T14) | Viacheslav Melnichenko |
+| OQ-4: розв'язання конкурентних змін активної мови з різних вкладок (паралельні session різних мов) | Closed (2026-11-04) | **Оптимістична конкурентність через `xmin`** `(learner_id, target_language)`; конфлікт → `409 language.concurrent_update`, клієнт повторює (без server-side retry); повторний вибір ідемпотентний (AC-12, T12) | Viacheslav Melnichenko |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
 - Польсько-іменовані колонки `entry_versions.LemmaPl`/`ExamplePl` стають семантично «лема/приклад активної мови» — не перейменовуються в цій фічі (перейменування колонки = окремий 3-крок dual-write per конвенції міграцій).
 - `docs/architecture-map.md` застарілий (описує знятий груповий модель) — не в обсязі цієї фічі; довіряти коду, не мапі.
-- OQ-2 (UI-розміщення вибору/перемикання мови) і OQ-6 (чи мають сенс local-equivalents для EN/DE/NL) — продуктові, не гейтять архітектуру; лишаються у PRD §8.
+- OQ-2 (UI-розміщення вибору/перемикання мови) і OQ-6 (чи мають сенс local-equivalents для EN/DE/NL) — продуктові, не гейтять архітектуру; **закрито 2026-11-04** (OQ-2 → перемикання+додавання в налаштуваннях, T15; OQ-6 → local-equivalents опційні на кожну мову). Деталі у [PRD §8](../PRD.md#8-open-questions).
 
 ## 12. Glossary
 
@@ -506,9 +506,9 @@ Each top-3 goal from §1 expanded into a full scenario:
 | base course | Впорядкований набір схвалених лем мови, з якого добираються нові слова; per-language `CoursePosition` (ADR-0003) |
 | day-state (стан доби learner) | Вікно доби learner (`CurrentDay*`), `NewWordsAvailableFrom`, `DailyNewWordsLimit`, `CourseCompletedAt` — у цій фічі власне на кожну мову (ADR-0002) |
 | daily new words limit | Денний ліміт нових слів (1–10); облік видачі окремий на мову (CONTEXT; AC-05) |
-| transcription | Українсько-літерна наближена підказка вимови (не IPA); перенос на EN/DE/NL — OQ-8 (CONTEXT) |
-| local equivalent | Усталений місцевий відповідник слова; чи має сенс для EN/DE/NL — OQ-6 (CONTEXT) |
+| transcription | Українсько-літерна наближена підказка вимови (не IPA); **єдиний формат для всіх мов** (OQ-8 закрито 2026-11-04) (CONTEXT) |
+| local equivalent | Усталений місцевий відповідник слова; **опційний на кожну мову** (OQ-6 закрито 2026-11-04) (CONTEXT) |
 | content report | Повідомлення learner про неточність у слові; маршрутизується до словника активної мови (AC-09, AC-11) |
-| content editor | Роль, що готує й схвалює словник; поки єдина для всіх мов (обмеження за мовою — OQ-9) (CONTEXT) |
+| content editor | Роль, що готує й схвалює словник; **єдина для всіх мов** без per-language обмеження (OQ-9 закрито 2026-11-04) (CONTEXT) |
 | `target_languages` | Конфіг-таблиця підтримуваних мов та їхніх правил (увімкненість, прапорці транскрипції/нормалізації/local-equivalents) (ADR-0004) |
 | validation status | Стан контенту: draft / needs_review / approved; мова доступна, лише коли має схвалений контент (AC-02) (CONTEXT) |

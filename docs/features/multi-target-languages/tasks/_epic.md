@@ -38,7 +38,7 @@ ticket: "TBD"
 - **Contract-фаза** 3-кроку: DROP старих колонок `learners.current_day_*` і старих не-мово-свідомих індексів — окремий PR/deploy після переходу застосунку ([data-model.md §Борг](../data-model.md)).
 - Нові source languages / переклад UI іншими мовами; міжмовні підказки; перенесення прогресу між мовами ([PRD §3](../PRD.md#3-non-goals)).
 - Перейменування `lemma_pl`/`example_pl` → мово-нейтральні імена — борг [SAD §11](../sad.md), окремий 3-крок PR.
-- Увімкнення en/de/nl адміном (потребує approved-контенту + підтвердженого `normalization_profile`, OQ-5/OQ-7).
+- Увімкнення en/de/nl адміном (`is_enabled=true`) — потребує approved-контенту; `available=true` настає з наявністю контенту (OQ-7 spike у T07). `normalization_profile` для en/de/nl уже заведено (OQ-5 закрито 2026-11-04, правила кодуються в T07).
 
 ## Карта задач (граф залежностей)
 
@@ -104,7 +104,7 @@ flowchart TD
 | [T12](./T12-start-learner-language.md) | `startLearnerLanguage` (ідемпотентний старт + активація) | app | T04, T06, T11 | L | AC-01/02/12; 200 ідемпотентно / 409 `language.not_available`/`concurrent_update`; тести |
 | [T13](./T13-set-active-scope-existing.md) | `setActiveLanguage` + scoping наявних ендпоінтів за активною мовою | app | T10, T12 | L | AC-03/AC-04/AC-07; «Сьогодні»/session/словник показують лише активну мову; тести |
 | [T14](./T14-editor-queue-by-language.md) | `listEditorQueueByLanguage` + прив'язка report до мови запису | app | T09, T11 | M | AC-09/AC-11; черга відокремлена за мовою; report → мова `entry_id`; тести |
-| [T15](./T15-ui-language-switcher.md) | SPA: вибір/перемикання мови + порожній початковий стан | ui | T13 | L | OQ-2 UI; AC-07 порожній стан; лічильники лише активної мови; локальні перевірки |
+| [T15](./T15-ui-language-switcher.md) | SPA: вибір/перемикання мови + порожній початковий стан | ui | T13 | L | перемикання+додавання мови в налаштуваннях (OQ-2 закрито); AC-07 порожній стан; лічильники лише активної мови; локальні перевірки |
 | [T16](./T16-ui-editor-queue-by-language.md) | SPA: черга content reports редактора за мовою | ui | T14 | M | AC-11; фільтр за мовою у черзі редактора; локальні перевірки |
 | [T17](./T17-isolation-contract-e2e-load.md) | Наскрізна ізоляція / контракт / e2e / навантаження | tests | T02, T13, T14, T15, T16 | L | [test-plan.md](../test-plan.md): 0 відповідей не своїй мові; 5 контракт-операцій; NFR-сценарії |
 
@@ -131,9 +131,14 @@ flowchart TD
 - **Контрактні hard rules** ([.claude/rules/openapi.md](../../../../.claude/rules/openapi.md)):
   OpenAPI 3.1; конверт помилки `{code, message, details?}`; `code` = `module.error_name`; URL-версіонування;
   курсорна пагінація черги; `TelegramInitData` (ADR-0005), не BearerAuth.
-- **Відкриті питання до implement-tasks:** OQ-4 (конкурентність, Tech Lead → T12), OQ-5 (нормалізація
-  de/nl, Tech Lead → T07), OQ-9 (scoping редактора за мовою, Security Lead → T14). Поки не закриті —
-  en/de/nl лишаються `is_enabled=false`, AC-08 для de/nl неповна.
+- **Відкриті питання — закрито (2026-11-04):** OQ-4 (конкурентність) → оптимістична `xmin`,
+  `409 language.concurrent_update`, клієнт повторює (T12). OQ-5 (нормалізація de/nl) → повні правила
+  одразу, `normalization_profile` `'de'`/`'nl'` заведено, правила кодуються в T07. OQ-9 (scoping
+  редактора за мовою) → єдина роль content editor для всіх мов, без per-language authz й 403-гілки (T14).
+  OQ-2 (UI перемикання/додавання) → усе в налаштуваннях (T15). OQ-1а → незалежний ліміт нових слів на
+  мову. OQ-8 → єдина наближена (не-IPA) транскрипція для всіх мов, без per-language колонки. Лишається
+  борг SAD §11 (перейменування `lemma_pl`/`example_pl`) та OQ-7 (увімкнення en/de/nl gated на наявність
+  контенту — spike у T07). Деталі: [tracker.md](./tracker.md), [PRD §8](../PRD.md#8-open-questions).
 
 ## Трасування AC → задачі
 

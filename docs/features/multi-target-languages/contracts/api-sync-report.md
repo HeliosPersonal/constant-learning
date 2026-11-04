@@ -74,12 +74,12 @@
 
 **Порожньо** (scenario A). Усі поля мають походження в типізованій сутності data-model.md.
 
-## Open items that touch the contract (due before implement-tasks)
+## Open items that touch the contract — закрито (2026-11-04)
 
-- **OQ-5** (Tech Lead): `target_languages.normalization_profile` для de/nl. Контракт `normalization_profile` **не експонує** (внутрішнє рішення коду); `available=true` для de/nl настане, коли профіль підтверджено + є контент. AC-08 для цих мов неповна — на поверхню API не впливає.
-- **OQ-4** (Tech Lead): модель конкурентності. Контракт фіксує `language.concurrent_update` (409) як гілку оптимістичної конкурентності; точна семантика (retry server-side vs клієнту) уточнюється.
-- **OQ-9** (Security Lead): чи обмежувати редактора мовами. Поки роль content editor єдина для всіх мов — `listEditorQueueByLanguage` без per-language authz; при рішенні «обмежити» додасться 403-гілка.
-- **Борг SAD §11:** перейменування `lemma_pl` → `lemma`. Контракт уже вживає мово-нейтральне `lemma` в `EditorQueueItem`; злиття з reference вимагатиме узгодження імені поля.
+- **OQ-5 RESOLVED:** `normalization_profile` для de/nl заводиться одразу (`'de'`/`'nl'`), правила кодуються в T07. Контракт профіль **не експонує** (внутрішнє рішення коду) — рішення на поверхню API не впливає; `available=true` для de/nl настане з наявністю контенту (OQ-7 spike у T07).
+- **OQ-4 RESOLVED:** конкурентність — **оптимістична через `xmin`** `(learner_id, target_language)`; `409 language.concurrent_update` = клієнт повторює (без server-side retry). Контракт уже має цей код — змін не потребує.
+- **OQ-9 RESOLVED:** роль content editor **єдина для всіх мов** — `listEditorQueueByLanguage` **без per-language authz й без 403-гілки**. Контракт лишається як є (без `403`).
+- **Лишається — борг SAD §11:** перейменування `lemma_pl` → `lemma`. Контракт уже вживає мово-нейтральне `lemma` в `EditorQueueItem`; злиття з reference вимагатиме узгодження імені поля.
 
 ## Lint / mock
 
