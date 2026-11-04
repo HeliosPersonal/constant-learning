@@ -139,39 +139,61 @@ Each tactical decision in later sections is traceable to one of these strategic 
 <!--           дерево папок + Mermaid C4Container.                                       -->
 <!-- 📌 Приклад: «web-app, content-api, media-worker, postgres, s3, cdn».                -->
 
-<One paragraph: layered / hexagonal / clean / event-driven. Why.>
+Стиль лишається наявним — **feature-module monoліт** з прямими in-process DI-викликами (ADR-0003 reference-фічі), без шини подій. Фіча не додає нових модулів: вона протягує вимір `target_language` крізь три наявні модулі. Нові/змінені будівельні блоки зосереджені в `Identity` (ідентичність і стан learner), `Content` (словник і пошук) та `Learning` (заняття й відповіді); `Notifications` і `Bot` лишаються без структурних змін. Конфіг підтримуваних мов (`target_languages`) селиться в `Identity`, бо активна мова й день-стан — атрибути learner.
 
-**Internal decomposition:**
+**Internal decomposition (змінені зрізи наявних модулів):**
 
 ```
-<e.g. internal/modules/goals/>
-├── domain/       <entities + sentinel errors>
-├── app/          <use cases / services>
-├── infra/        <repository + outbox impl>
-├── ports/        <HTTP handlers, DTOs, error mapping>
-└── module.go     <self-wiring>
+ConstantLearning/Features/
+├── Identity/            # ← активна мова + per-language день-стан + конфіг мов
+│   ├── Data/            #   Learner (active_target_language); per-(learner,lang) day-state рядок
+│   │                    #   (CurrentDay*, NewWordsAvailableFrom, DailyNewWordsLimit, CourseCompletedAt) — ADR-0002
+│   ├── Data/            #   нова target_languages (код, enabled, прапорці правил) — ADR-0004
+│   ├── Settings/        #   вибір/перемикання активної мови (OQ-2 — UI-розміщення)
+│   └── ILearnerDayStateService   # блокування рядка (learner_id, target_language) — ADR-0002
+├── Content/             # ← мовний вимір словника й пошуку
+│   ├── Data/            #   dictionary_entries.target_language + per-language CoursePosition/external_id — ADR-0003
+│   │                    #   entry_versions/version_accepted_answers лишаються, семантика «активної мови»
+│   └── Search/Forms/    #   SearchFormsProjection/морф-імпортер — конфігуровані на мову (знято хардкод "pl") — ADR-0004
+└── Learning/            # ← прогрес із мовним виміром
+    └── Data/            #   learner_words / learning_sessions / session_items / answer_events
+                         #   + target_language у ключі ізоляції (learner_id, target_language) — ADR-0001
+
+ConstantLearning.MiniApp/src/features/
+├── onboarding/ today/ session/ dictionary/ settings/   # вибір і перемикання активної мови; стан — лише активної мови
+└── editor/                                              # черга content reports, відокремлена за мовою (AC-11)
 ```
 
 **C4 Container (L2):**
 
 ```mermaid
 C4Container
-    title <system> — Containers
+    title multi-target-languages — Containers
 
-    Person(user, "<User>")
+    Person(learner, "learner")
+    Person(editor, "content editor")
 
-    Container_Boundary(boundary, "<Our System>") {
-        Container(web, "<Web/API container>", "<technology>", "<purpose>")
-        Container(svc, "<Service container>", "<technology>", "<purpose>")
-        ContainerDb(db, "<DB>", "<technology>", "<purpose>")
+    Container_Boundary(boundary, "Персональний тренер") {
+        Container(spa, "Mini App SPA", "React 18 / Vite / TS", "Вибір і перемикання мови; екрани стану активної мови")
+        Container(identity, "Identity module", "ASP.NET Core / .NET 10", "Ідентичність, активна мова, per-language день-стан, конфіг target_languages")
+        Container(content, "Content module", ".NET 10 / EF Core", "Словник і пошук із виміром target_language; черга content reports за мовою")
+        Container(learning, "Learning module", ".NET 10 / EF Core", "Заняття, пригадування, відповіді — прогрес на (learner, мова)")
+        ContainerDb(db, "PostgreSQL", "Postgres / EF Core", "Прогрес, контент, день-стан, конфіг мов — з target_language")
     }
 
-    System_Ext(ext, "<External>", "<purpose>")
+    System_Ext(tg, "Telegram", "Ідентичність + хост Mini App")
 
-    Rel(user, web, "<interaction>", "<protocol>")
-    Rel(web, svc, "<service calls>")
-    Rel(svc, db, "<reads/writes>", "<driver>")
-    Rel(svc, ext, "<emits>", "<protocol>")
+    Rel(learner, spa, "Обирає/перемикає мову, займається", "HTTPS")
+    Rel(editor, spa, "Розглядає content reports за мовою", "HTTPS")
+    Rel(spa, tg, "initData", "HTTPS")
+    Rel(spa, identity, "Активна мова, день-стан", "HTTPS /api/v1")
+    Rel(spa, learning, "Заняття, відповіді", "HTTPS /api/v1")
+    Rel(spa, content, "Словник, пошук, content reports", "HTTPS /api/v1")
+    Rel(learning, identity, "Бере активну мову + день-стан (lock)", "in-process DI")
+    Rel(learning, content, "Добір лем із base course мови", "in-process DI")
+    Rel(identity, db, "reads/writes", "EF Core / Npgsql")
+    Rel(content, db, "reads/writes", "EF Core / Npgsql")
+    Rel(learning, db, "reads/writes", "EF Core / Npgsql")
 ```
 
 ## 6. Runtime view
