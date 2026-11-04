@@ -117,13 +117,19 @@ C4Context
 <!-- 📋 Що писати: список з 3-4 виборів. На кожен — заголовок + 2-3 речення rationale.    -->
 <!-- 📌 Приклад: «Зберігати урок як таблицю блоків» — стовп, з якого виросло ADR-0001.    -->
 
-**Top-3 strategic choices (the seeds for ADRs):**
+**Strategic choices (the seeds for ADRs):**
 
-1. **<e.g. Module isolation through events>** — <2-3 sentences rationale referencing Quality Goals and constraints>.
-2. **<e.g. Single-store persistence (Postgres)>** — <2-3 sentences>.
-3. **<e.g. Server-rendered dashboard>** — <2-3 sentences>.
+1. **Мовний вимір на наявних таблицях, а не окрема сутність learner-на-мову** — один `learner` зберігає ідентичність і налаштування; `target_language` стає дискримінатором на таблицях прогресу (`learner_words`, `learning_sessions`, `session_items`, `answer_events`) і контенту. Наявні польські рядки бекфіляться `'pl'` за зеро-даунтайм патерном. Обґрунтування: мінімальна перебудова, єдина Telegram-ідентичність, ізоляція досягається ключем `(learner_id, target_language)`, а не дублюванням learner. Розв'язує OQ-3. → **ADR-0001**.
 
-Each tactical decision in later sections should be traceable to one of these strategic seeds. Tactical decisions that *contradict* a strategic choice are red flags — surface them in §11 Risks.
+2. **Власна доба learner на кожну мову** — кожна активна target language learner-а має власний стан доби (`CurrentDay*`, `NewWordsAvailableFrom`, `DailyNewWordsLimit`), а не спільне вікно доби з per-language лічильником. Обґрунтування: видача нових слів (AC-05) і початковий стан (AC-07) стають повністю незалежними на мову ціною ширшої перебудови day-state у `Identity`. Розв'язує OQ-1 (важчий варіант, ніж PRD default — міграційний ризик у §11). → **ADR-0002**.
+
+3. **`target_language` на рівні `dictionary_entries` + порядок курсу на мову** — один запис словника належить конкретній мові; `CoursePosition` стає per-language впорядкуванням, `external_id` унікальний у межах мови. Обґрунтування: AC-06 вимагає власний base course зі своїм порядком на кожну мову; тримати мову на версії суперечило б глобальному `external_id`/`CoursePosition`. → **ADR-0003**.
+
+4. **Набір підтримуваних мов та їхні правила — дані/конфіг, не код** — таблиця `target_languages` + per-language конфіг (чи застосовні local-equivalents — OQ-6, формат транскрипції — OQ-8, правила нормалізації відповіді/словоформ — OQ-5). Наявний мово-свідомий субстрат пошуку (`search_forms.Lang`/`morph_forms.Lang`) перевикористовується; хардкод `"pl"` у `SearchFormsProjection`/морфологічному імпортері узагальнюється до конфігурованого на мову. Нова мова = рядок конфігу + контент, без зміни коду тренера (стовп розширюваності). → **ADR-0004**.
+
+**Активна мова й конкурентність (OQ-4).** Активна мова — серверний стан на `learner`; перемикання ідемпотентне (AC-12), а конкурентні зміни з різних вкладок розв'язуються наявною оптимістичною конкурентністю `xmin` із ключем прогресу `(learner_id, target_language)` — деталі в §8. Окремого ADR не потребує (перевикористання наявного механізму).
+
+Each tactical decision in later sections is traceable to one of these strategic seeds. Tactical decisions that *contradict* a strategic choice are red flags — surfaced in §11 Risks.
 
 ## 5. Building block view
 
