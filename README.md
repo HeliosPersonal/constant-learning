@@ -150,6 +150,7 @@ k8s/, tools/, tests/         Маніфести, інструменти, нав�
 | [Скидання прогресу (заплановано)](docs/features/reset-progress/PRD.md) | Кнопка в налаштуваннях стирає навчальний прогрес і лишає налаштування; [трекер задач](docs/features/reset-progress/tasks/tracker.md) |
 | [Додаткові дії після плану (заплановано)](docs/features/unlimited-learning/PRD.md) | «Ще одне слово» і «Потренувати вивчені» після виконання плану дня; [трекер задач](docs/features/unlimited-learning/tasks/tracker.md) |
 | [Мої слова (заплановано)](docs/features/learned-words-stats/PRD.md) | Екран статистики вивчених слів: вкладки, пошук, лічильники показ/правильно/неправильно й тренування слабких слів; [трекер задач](docs/features/learned-words-stats/tasks/tracker.md) |
+| [iOS-подібне оформлення Mini App](docs/features/ios-ui-redesign/PRD.md) | Єдина мінімалістична мова екранів, автозбереження налаштувань, окремі екрани редактора й вхід до нього; [дизайн-специфікація](docs/features/ios-ui-redesign/design-spec.md) |
 | [Ідеї та рішення](docs/IDEAS.md) | Журнал рішень інтерв'ю |
 | [Трекер задач](docs/features/personal-trainer-mvp/tasks/tracker.md) | Статус реалізації |
 | [Словник](docs/dictionary/README.md) | Випуск 2 000 схвалених лем і метод перевірки |

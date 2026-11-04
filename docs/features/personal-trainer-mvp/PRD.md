@@ -117,11 +117,15 @@ ticket: "TBD"
 **I want** змінити daily new words limit, часовий пояс і світлу або темну тему в налаштуваннях
 **So that** навчання й нагадування підлаштовуються під зміни в моєму житті
 
+> Оформлення й спосіб збереження змінено фічею [ios-ui-redesign](../ios-ui-redesign/PRD.md): налаштування зберігаються автоматично без кнопки «Зберегти» ([ADR-0001](../ios-ui-redesign/adr/0001-autosave-settings-with-debounce.md)). Критерії AC-44, AC-45 і AC-58 лишаються чинними.
+
 ### US-12: Відкотити помилкову зміну словника
 
 **As a** content editor
 **I want** бачити зміни словника, застосовані за content reports автоматично чи моїм схваленням, і відкотити помилкову до попередньої версії
 **So that** хибне автоматичне підтвердження не лишається в заняттях і словнику всіх learner
+
+> Редактор отримав окремі екрани рішення й відкату та вхід із налаштувань ([ios-ui-redesign](../ios-ui-redesign/PRD.md), [ADR-0002](../ios-ui-redesign/adr/0002-use-separate-screens-instead-of-dialogs-in-the-editor.md), [ADR-0003](../ios-ui-redesign/adr/0003-expose-editor-role-through-a-dedicated-access-endpoint.md)). Критерії AC-48–AC-50 лишаються чинними.
 
 ## 5. Acceptance criteria
 
