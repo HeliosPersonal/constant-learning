@@ -56,7 +56,7 @@ ticket: "TBD"
 **Organisational.**
 - Час релізу: **одразу після польського пілоту** ([idea-brief §4](./idea-brief.md)), поки інтерес свіжий.
 - Пілотна база: **5–10 учнів** — впливає на статистичну вагу KPI (PRD §7, застереження про вибірку), не на архітектуру.
-- `feature_size` формально ще не класифіковано (`sdlc:classify-size` не запускали) — риси класу M прийнято як робочий дефолт; фіксація — відкритий пункт (§11).
+- `feature_size`: **M** (класифіковано `sdlc:classify-size`: 5–15 PR, 1–2 спринти, новий API + потабличні міграції, breaking лише внутрішні).
 
 **Conventions.**
 - Міграції: [`.claude/rules/migrations.md`](../../../.claude/rules/migrations.md) — UUID v7 app-side, `created_at` only, без CHECK/TRIGGER/бізнес-DEFAULT, hard delete, `VARCHAR(N)`; зеро-даунтайм на наявних таблицях (add nullable → backfill → SET NOT NULL; `CREATE INDEX CONCURRENTLY` одним стейтментом); кожен FK має індекс.
@@ -398,7 +398,6 @@ Each top-3 goal from §1 expanded into a full scenario:
 | OQ-8: перенос української наближеної транскрипції на EN/DE/NL орфографію/фонетику | Open question | Resolve before implement-tasks (stage 07); формат транскрипції — прапорець у `target_languages` | Viacheslav Melnichenko |
 | OQ-9: чи обмежувати редактора мовами, які він здатен верифікувати (ризик схвалення незнайомої мови) | Open question | Resolve before implement-tasks (stage 07); рішення Security Lead на review PRD §6.1 | Security Lead |
 | OQ-4: розв'язання конкурентних змін активної мови з різних вкладок (паралельні session різних мов) | Open question | Resolve before implement-tasks (stage 07); схиляємося до наявної `xmin`-конкурентності + ідемпотентного перемикання (§8), потребує підтвердження | Tech Lead |
-| `feature_size` формально не класифіковано (`sdlc:classify-size` не запускали) — риси M прийнято як робочий дефолт | Open question | Resolve before implement-tasks (stage 07): запустити `sdlc:classify-size multi-target-languages` | Viacheslav Melnichenko |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
 - Польсько-іменовані колонки `entry_versions.LemmaPl`/`ExamplePl` стають семантично «лема/приклад активної мови» — не перейменовуються в цій фічі (перейменування колонки = окремий 3-крок dual-write per конвенції міграцій).

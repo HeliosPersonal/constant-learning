@@ -3,7 +3,7 @@ status: Draft
 owner: "Viacheslav Melnichenko"
 reviewers: ["Tech Lead", "Security Lead"]
 updated_at: "2026-11-04"
-feature_size: ""
+feature_size: M
 stage: "03"
 ticket: "TBD"
 ---
