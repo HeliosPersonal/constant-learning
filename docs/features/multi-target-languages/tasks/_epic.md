@@ -38,7 +38,7 @@ ticket: "TBD"
 - **Contract-фаза** 3-кроку: DROP старих колонок `learners.current_day_*` і старих не-мово-свідомих індексів — окремий PR/deploy після переходу застосунку ([data-model.md §Борг](../data-model.md)).
 - Нові source languages / переклад UI іншими мовами; міжмовні підказки; перенесення прогресу між мовами ([PRD §3](../PRD.md#3-non-goals)).
 - Перейменування `lemma_pl`/`example_pl` → мово-нейтральні імена — борг [SAD §11](../sad.md), окремий 3-крок PR.
-- Увімкнення en/de/nl адміном (`is_enabled=true`) — потребує approved-контенту; `available=true` настає з наявністю контенту (OQ-7 spike у T07). `normalization_profile` для en/de/nl уже заведено (OQ-5 закрито 2026-11-04, правила кодуються в T07).
+- Увімкнення en/de/nl адміном (`is_enabled=true`) — потребує approved-контенту; `available=true` настає з наявністю контенту (OQ-7 — spike [T07s](./T07s-spike-language-sources.md)). `normalization_profile` для en/de/nl заводиться в T07s (OQ-5 закрито 2026-11-04, правила кодуються в T07a/T07b).
 
 ## Карта задач (граф залежностей)
 
@@ -50,7 +50,10 @@ flowchart TD
     T03 --> T04[T04 per-language day-state service]
     T01 --> T06[T06 base course + availability]
     T05 --> T06
-    T05 --> T07[T07 generalize forms/normalization]
+    T01 --> T07s[T07s spike language sources OQ-7]
+    T05 --> T07a[T07a generalize forms pl/en]
+    T07s --> T07a
+    T07a --> T07b[T07b full rules de/nl]
     T05 --> T08[T08 migrate learner_words+answer_events]
     T05 --> T09[T09 migrate sessions+reports]
     T08 --> T09
@@ -80,7 +83,7 @@ flowchart TD
 
 1. **Фундамент** — конфіг мов + тестова оснастка (T01, T02).
 2. **Identity** — міграції день-стану + per-language day-state service (T03, T04).
-3. **Content** — міграції словника + base course / доступність / узагальнення форм (T05, T06, T07).
+3. **Content** — міграції словника + base course / доступність + узагальнення форм (T05, T06, T07s→T07a→T07b).
 4. **Learning** — міграції дискримінаторів прогресу + ізоляція обліку (T08, T09, T10).
 5. **API** — читальні операції + старт мови + перемикання + черга редактора (T11, T12, T13, T14).
 6. **UI** — перемикач мови / порожній стан / черга за мовою (T15, T16).
@@ -96,7 +99,9 @@ flowchart TD
 | [T04](./T04-per-language-day-state.md) | Per-language стан доби learner (`ILearnerDayStateService`) | domain | T03 | L | блокування рядка `(learner_id, target_language)`; unit+integration зелені |
 | [T05](./T05-migrate-content-entries.md) | Міграції `dictionary_entries.target_language` + своп індексів | migration | T01 | M | ADD+backfill+SET NOT NULL; `CONCURRENTLY` своп unique/course_position; down реверсує |
 | [T06](./T06-base-course-availability.md) | Base course на мову + перевірка доступності мови | domain | T01, T05 | M | добір лем лише зі свого base course у його порядку; `available` = enabled ∧ є approved-контент |
-| [T07](./T07-generalize-forms-normalization.md) | Узагальнення пошуку форм і нормалізації (зняти хардкод `"pl"`) | domain | T05 | L | `SearchFormsProjection`/морф-імпортер конфігуровані на мову; нормалізація за профілем мови |
+| [T07s](./T07s-spike-language-sources.md) | Spike: джерела й ліцензії для en/de/nl + заведення профілів нормалізації (OQ-7) | research | T01 | S | джерела/ліцензії en/de/nl задокументовані; профілі `en`/`de`/`nl` заведені в seed (не NULL); OQ-7 зафіксовано |
+| [T07a](./T07a-generalize-forms-pl-en.md) | Узагальнення пошуку форм і нормалізації (зняти хардкод `"pl"`) + профіль en | domain | T05, T07s | M | `SearchFormsProjection`/морф-імпортер конфігуровані на мову; профіль en; регресія pl зелена |
+| [T07b](./T07b-full-rules-de-nl.md) | Повні правила нормалізації/форм для de/nl | domain | T07a | M | правила de (рід/капіталізація/складені) + nl (`de/het`/капіталізація/складені) під unit-тестами |
 | [T08](./T08-migrate-learner-words-answer-events.md) | Міграції дискримінатора `learner_words` + `answer_events` | migration | T05 | M | ADD+backfill через `entry_id`+SET NOT NULL; мово-свідомі індекси `CONCURRENTLY`; down реверсує |
 | [T09](./T09-migrate-sessions-reports.md) | Міграції дискримінатора `learning_sessions` + `content_reports` | migration | T05, T08 | M | ADD+backfill `'pl'`+SET NOT NULL; індекси `CONCURRENTLY`; down реверсує |
 | [T10](./T10-progress-isolation.md) | Ізоляція обліку прогресу за `(learner, мова)` | domain | T04, T08, T09 | L | word status/повторення/ліміт/«Вже знаю» рахуються окремо на мову; ізоляційні тести зелені |
@@ -110,12 +115,12 @@ flowchart TD
 
 ## Разом
 
-17 задач. S = 0, M = 10 (≈5 людино-днів), L = 7 (≈7 людино-днів) → **≈12 людино-днів**.
+19 задач. S = 1 (≈0.25 людино-дня), M = 12 (≈6 людино-днів), L = 6 (≈6 людино-днів) → **≈12.25 людино-дня**.
 Оцінка: S = 2 год, M = пів дня, L = день.
 
 ## Паралелізація
 
-- Після **T01**: гілки Identity (T03→T04) і Content (T05→{T06,T07,T08→T09}) ідуть паралельно.
+- Після **T01**: гілки Identity (T03→T04) і Content (T05→{T06,T07a→T07b,T08→T09}) ідуть паралельно. **T07s** (spike) паралельна після T01 і розблоковує T07a.
 - **T02** (фікстури) паралельна всім міграціям після T01.
 - Серіалізація записів: спільні `files_hint` (міграції/EF-модель) синхронізуються вручну за графом залежностей вище (окремого `tasks.json` scheduling не згенеровано).
 
@@ -133,12 +138,12 @@ flowchart TD
   курсорна пагінація черги; `TelegramInitData` (reference ADR-0005), не BearerAuth.
 - **Відкриті питання — закрито (2026-11-04):** OQ-4 (конкурентність) → оптимістична `xmin`,
   `409 language.concurrent_update`, клієнт повторює (T12). OQ-5 (нормалізація de/nl) → повні правила
-  одразу, `normalization_profile` `'de'`/`'nl'` заведено, правила кодуються в T07. OQ-9 (scoping
+  одразу, `normalization_profile` `'de'`/`'nl'` заводиться в T07s, правила кодуються в T07a/T07b. OQ-9 (scoping
   редактора за мовою) → єдина роль content editor для всіх мов, без per-language authz й 403-гілки (T14).
   OQ-2 (UI перемикання/додавання) → усе в налаштуваннях (T15). OQ-1а → незалежний ліміт нових слів на
   мову. OQ-8 → єдина наближена (не-IPA) транскрипція для всіх мов, без per-language колонки. Лишається
   борг SAD §11 (перейменування `lemma_pl`/`example_pl`) та OQ-7 (увімкнення en/de/nl gated на наявність
-  контенту — spike у T07). Деталі: [tracker.md](./tracker.md), [PRD §8](../PRD.md#8-open-questions).
+  контенту — spike [T07s](./T07s-spike-language-sources.md)). Деталі: [tracker.md](./tracker.md), [PRD §8](../PRD.md#8-open-questions).
 
 ## Трасування AC → задачі
 
@@ -153,7 +158,7 @@ flowchart TD
 | AC-05 (окремий ліміт/облік) | T02, T03, T04, T08, T10, T17 |
 | AC-06 (base course на мову) | T05, T06 |
 | AC-07 (порожній стан) | T03, T04, T13, T15 |
-| AC-08 (вимова/форми/нормалізація) | T05, T07 |
+| AC-08 (вимова/форми/нормалізація) | T05, T07s, T07a, T07b |
 | AC-09 (report активної мови) | T09, T14 |
 | AC-10 (крос-learner ізоляція) | T02, T08, T10, T11, T17 |
 | AC-11 (черга редактора за мовою) | T09, T14, T16, T17 |

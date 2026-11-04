@@ -35,7 +35,7 @@ status: "todo"
 - Репозиторій/читач каталогу: список мов `ORDER BY sort_order`.
 - Seed `pl` (`is_enabled=true`, `normalization_profile='pl'`), `en`/`de`/`nl`
   (`is_enabled=false`, `normalization_profile='en'`/`'de'`/`'nl'` — профілі заведено одразу,
-  правила кодуються в T07 після spike OQ-7; OQ-5 закрито) — `ON CONFLICT (code) DO NOTHING`.
+  правила кодуються в T07a/T07b після spike OQ-7 ([T07s](./T07s-spike-language-sources.md)); OQ-5 закрито) — `ON CONFLICT (code) DO NOTHING`.
 - Фабрика `TargetLanguageFixtures.NewEnabledLanguage(code, normalizationProfile)`
   у `ConstantLearning.Tests/Fixtures/` ([data-model.md §Test fixtures](../data-model.md)).
 

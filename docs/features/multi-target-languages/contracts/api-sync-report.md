@@ -78,7 +78,7 @@
 
 ## Open items that touch the contract — закрито (2026-11-04)
 
-- **OQ-5 RESOLVED:** `normalization_profile` для de/nl заводиться одразу (`'de'`/`'nl'`), правила кодуються в T07. Контракт профіль **не експонує** (внутрішнє рішення коду) — рішення на поверхню API не впливає; `available=true` для de/nl настане з наявністю контенту (OQ-7 spike у T07).
+- **OQ-5 RESOLVED:** `normalization_profile` для de/nl заводиться в spike-задачі T07s (`'de'`/`'nl'`), правила кодуються в T07a/T07b. Контракт профіль **не експонує** (внутрішнє рішення коду) — рішення на поверхню API не впливає; `available=true` для de/nl настане з наявністю контенту (OQ-7 spike T07s).
 - **OQ-4 RESOLVED:** конкурентність — **оптимістична через `xmin`** `(learner_id, target_language)`; `409 language.concurrent_update` = клієнт повторює (без server-side retry). Контракт уже має цей код — змін не потребує.
 - **OQ-9 RESOLVED:** роль content editor **єдина для всіх мов** — `listEditorQueueByLanguage` **без per-language authz** (жодної перевірки «редактор саме цієї мови»). Загальний `403 editor.role_required` за роллю **лишається** в контракті — його успадковано від reference EditorQueue й він перевіряє наявність ролі, а не мову.
 - **Лишається — борг SAD §11:** перейменування `lemma_pl` → `lemma`. Контракт уже вживає мово-нейтральне `lemma` в `EditorQueueItem`; злиття з reference вимагатиме узгодження імені поля.

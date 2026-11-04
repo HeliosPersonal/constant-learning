@@ -22,7 +22,9 @@ updated_at: "2026-11-04"
 | [T04](./T04-per-language-day-state.md) | Per-language стан доби learner (`ILearnerDayStateService`) | domain | Viacheslav Melnichenko | L | [T03](./T03-migrate-identity-day-state.md) | todo |
 | [T05](./T05-migrate-content-entries.md) | Міграції `dictionary_entries.target_language` + своп індексів | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | todo |
 | [T06](./T06-base-course-availability.md) | Base course на мову + перевірка доступності мови | domain | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md), [T05](./T05-migrate-content-entries.md) | todo |
-| [T07](./T07-generalize-forms-normalization.md) | Узагальнення пошуку форм і нормалізації (зняти хардкод `"pl"`) + правила de/nl | domain | Viacheslav Melnichenko | L | [T05](./T05-migrate-content-entries.md) | todo |
+| [T07s](./T07s-spike-language-sources.md) | Spike: джерела й ліцензії для en/de/nl + заведення профілів нормалізації (OQ-7) | research | Viacheslav Melnichenko | S | [T01](./T01-config-target-languages.md) | todo |
+| [T07a](./T07a-generalize-forms-pl-en.md) | Узагальнення пошуку форм і нормалізації (зняти хардкод `"pl"`) + профіль en | domain | Viacheslav Melnichenko | M | [T05](./T05-migrate-content-entries.md), [T07s](./T07s-spike-language-sources.md) | todo |
+| [T07b](./T07b-full-rules-de-nl.md) | Повні правила нормалізації/форм для de/nl | domain | Viacheslav Melnichenko | M | [T07a](./T07a-generalize-forms-pl-en.md) | todo |
 | [T08](./T08-migrate-learner-words-answer-events.md) | Міграції дискримінатора `learner_words` + `answer_events` | migration | Viacheslav Melnichenko | M | [T05](./T05-migrate-content-entries.md) | todo |
 | [T09](./T09-migrate-sessions-reports.md) | Міграції дискримінатора `learning_sessions` + `content_reports` | migration | Viacheslav Melnichenko | M | [T05](./T05-migrate-content-entries.md), [T08](./T08-migrate-learner-words-answer-events.md) | todo |
 | [T10](./T10-progress-isolation.md) | Ізоляція обліку прогресу за `(learner, мова)` | domain | Viacheslav Melnichenko | L | [T04](./T04-per-language-day-state.md), [T08](./T08-migrate-learner-words-answer-events.md), [T09](./T09-migrate-sessions-reports.md) | todo |
@@ -36,10 +38,10 @@ updated_at: "2026-11-04"
 
 ## Відкриті питання — закрито (2026-11-04), крім OQ-7
 
-Усі OQ, крім OQ-7, закрито в інтерв'ю ([PRD §8](../PRD.md#8-open-questions)); T07/T12/T14 розблоковано.
-**OQ-7** — відкрите: spike джерел на старті T07, рішення ще не зафіксовано ([SAD §11](../sad.md), [_epic.md](./_epic.md)).
+Усі OQ, крім OQ-7, закрито в інтерв'ю ([PRD §8](../PRD.md#8-open-questions)); T07s/T07a/T07b/T12/T14 розблоковано.
+**OQ-7** — відкрите: вирішується окремою spike-задачею [T07s](./T07s-spike-language-sources.md), рішення ще не зафіксовано ([SAD §11](../sad.md), [_epic.md](./_epic.md)).
 
-- **T07** — **OQ-5** = повні правила de/nl одразу; **OQ-7** (відкрите) = spike джерел першим кроком T07. Профілі `de`/`nl` не NULL; задача розширюється (spike + повні правила) — якщо PR >500 LOC, розбити на T07a (узагальнення pl/en) + T07b (правила de/nl).
+- **T07s/T07a/T07b** — узагальнення форм/нормалізації розбито заздалегідь на три задачі: **T07s** (spike OQ-7: джерела/ліцензії en/de/nl + заведення профілів `de`/`nl` не NULL), **T07a** (**OQ-5** узагальнення pl/en, зняття хардкоду `"pl"`), **T07b** (повні правила de/nl). Кожна ≤1 дня / ≤500 LOC, без умовності.
 - **T12** — **OQ-4** = оптимістична `xmin` `(learner_id, target_language)`; конфлікт → `409 language.concurrent_update`, клієнт повторює. Без server-side retry.
 - **T14** — **OQ-9** = єдина роль редактора для всіх мов; без per-language authz й без 403-гілки.
 

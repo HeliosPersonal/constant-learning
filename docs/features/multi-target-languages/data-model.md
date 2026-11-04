@@ -114,7 +114,7 @@ erDiagram
 | `display_name_uk` | VARCHAR(64) | NOT NULL | укр. назва мови для списку вибору (US-01) |
 | `is_enabled` | BOOLEAN | NOT NULL | адмін-перемикач: чи може learner почати мову; значення задає seed/застосунок, без DB-DEFAULT |
 | `sort_order` | SMALLINT | NOT NULL | порядок у списку мов UI |
-| `normalization_profile` | VARCHAR(32) | NULL | посилання на per-language каркас нормалізації/форм; **OQ-5 RESOLVED** — `pl`/`en`/`de`/`nl` кодуються одразу (T07), AC-08 застосовна до всіх; NULL лише для ще-не-заведеної мови |
+| `normalization_profile` | VARCHAR(32) | NULL | посилання на per-language каркас нормалізації/форм; **OQ-5 RESOLVED** — `pl`/`en`/`de`/`nl` кодуються одразу (T07a/T07b), AC-08 застосовна до всіх; NULL лише для ще-не-заведеної мови |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
 **Aggregate root:** root (lookup). **PK-деві­ація:** природний ключ `code` замість UUID v7 — дискримінатор посилається всюди як `VARCHAR(2)`; UUID-сурогат змусив би денормалізувати `code` окремо. Прецедент природного ключа — `reminder_schedules(learner_id)` PK у reference. **Seed:** lookup-міграція `ON CONFLICT DO NOTHING` (нижче). **Увімкнення мови** (ADR-0004): `is_enabled=true` **і** наявний approved-контент (AC-02, перевіряє застосунок) **і** підтверджений `normalization_profile` для повної AC-08.
@@ -257,7 +257,7 @@ PII guard: `Test User`, Telegram id `900000000+`, без реальних кон
 
 ## Відкриті питання — закрито (2026-11-04)
 
-- **OQ-5 RESOLVED** — `target_languages.normalization_profile` для `en`/`de`/`nl` заводиться одразу (`'en'`/`'de'`/`'nl'`); повні правила de/nl (рід, артиклі, капіталізація, складені слова) кодуються в [T07](tasks/T07-generalize-forms-normalization.md). AC-08 застосовна до всіх чотирьох мов. (OQ-7: джерела відбирає spike-крок T07.)
+- **OQ-5 RESOLVED** — `target_languages.normalization_profile` для `en`/`de`/`nl` заводиться в spike-задачі [T07s](tasks/T07s-spike-language-sources.md) (`'en'`/`'de'`/`'nl'`); узагальнення pl/en — [T07a](tasks/T07a-generalize-forms-pl-en.md), повні правила de/nl (рід, артиклі, капіталізація, складені слова) — [T07b](tasks/T07b-full-rules-de-nl.md). AC-08 застосовна до всіх чотирьох мов. (OQ-7: джерела відбирає spike-задача T07s.)
 - **OQ-8 RESOLVED** — єдина наближена (не-IPA) транскрипція для всіх мов; `pronunciation_uk` зберігає формат для pl/en/de/nl, **per-language колонки транскрипції не додаємо** — схема не змінюється.
 - **OQ-1а RESOLVED** — незалежний per-language `daily_new_words_limit` (колонка вже в `learner_language_states`).
 
