@@ -205,25 +205,92 @@ C4Container
 <!--           ендпоінт-рівневі sequence-діаграми зʼявляться у stage 06 (define-api).      -->
 <!-- 📌 Приклад: «methodist → web-app: складає чорновик → web-app → content-api: зберегти». -->
 
-**Critical flow 1: <flow name>**
+Учасники — з §5: `spa`, `identity`, `content`, `learning`, `db`. Повідомлення семантичні; ендпоінт-рівневі діаграми з'являться у stage 06.
+
+**Critical flow 1: Перемикання активної мови й відкриття «Сьогодні» (AC-03, AC-07)**
 
 ```mermaid
 sequenceDiagram
-    actor User
-    participant API
-    participant Service
-    participant DB
-    User->>API: <request>
-    API->>Service: <call>
-    Service->>DB: <write tx>
-    DB-->>Service: ok
-    Service-->>API: result
-    API-->>User: 201
+    actor learner
+    participant spa as Mini App SPA
+    participant identity as Identity
+    participant learning as Learning
+    participant db as PostgreSQL
+    learner->>spa: Перемикає активну мову на EN
+    spa->>identity: Встановити активну мову = EN
+    identity->>db: Записати active_target_language (lock рядка learner)
+    identity->>db: Прочитати/ініціалізувати день-стан (learner, EN)
+    db-->>identity: день-стан EN (новий, якщо першого разу)
+    identity-->>spa: Активна мова EN + стан доби
+    spa->>learning: Стан «Сьогодні» активної мови
+    learning->>db: Читати прогрес WHERE (learner, EN)
+    db-->>learning: word status лише EN (порожньо, якщо нова)
+    learning-->>spa: «Сьогодні» EN (без лічильників інших мов)
+    spa-->>learner: Екран EN
 ```
 
-<!-- For XS/S: 1 flow above is enough. For M+: add 2-4 more (e.g. failure-mode flow, async flow). -->
+**Critical flow 2: Видача нових слів у межах per-language доби (AC-05, AC-06)**
 
-**Critical flow 2: <e.g. async event propagation>** — <if applicable, otherwise N/A>.
+```mermaid
+sequenceDiagram
+    actor learner
+    participant spa as Mini App SPA
+    participant learning as Learning
+    participant identity as Identity
+    participant content as Content
+    participant db as PostgreSQL
+    learner->>spa: Почати заняття активної мови (EN)
+    spa->>learning: Старт session EN
+    learning->>identity: День-стан (learner, EN) під lock рядка
+    identity->>db: Lock (learner, EN); ліміт і видані нові EN
+    db-->>identity: Залишок daily new words limit EN
+    identity-->>learning: Квота нових слів EN (незалежна від PL)
+    learning->>content: Леми base course EN у власному порядку
+    content->>db: Читати dictionary_entries WHERE EN ORDER BY CoursePosition
+    db-->>content: Наступні леми EN
+    content-->>learning: Нові слова EN
+    learning->>db: Створити session_items/answer_events з target_language=EN
+    learning-->>spa: Заняття EN
+```
+
+**Critical flow 3 (failure): Вибір мови без схваленого контенту (AC-02)**
+
+```mermaid
+sequenceDiagram
+    actor learner
+    participant spa as Mini App SPA
+    participant identity as Identity
+    participant content as Content
+    participant db as PostgreSQL
+    learner->>spa: Обирає мову NL
+    spa->>identity: Підтвердити вибір NL
+    identity->>content: Чи є схвалені слова для NL?
+    content->>db: Рахувати approved dictionary_entries WHERE NL
+    db-->>content: 0
+    content-->>identity: Немає схваленого контенту NL
+    identity-->>spa: Відмова: мова недоступна (активна мова без змін)
+    spa-->>learner: «Мова поки недоступна»
+```
+
+**Critical flow 4 (concurrency): Ідемпотентний повторний вибір / паралельні вкладки (AC-12, OQ-4)**
+
+```mermaid
+sequenceDiagram
+    actor learner
+    participant spa as Mini App SPA (2 вкладки)
+    participant identity as Identity
+    participant db as PostgreSQL
+    learner->>spa: Повторно обирає EN (друга вкладка / застаріле посилання)
+    spa->>identity: Почати вести EN
+    identity->>db: Lock (learner, EN); читати xmin
+    alt EN уже ведеться
+        identity-->>spa: Ідемпотентно: наявні word status EN без змін
+    else конкурентний запис із іншої вкладки
+        db-->>identity: Конфлікт xmin (оптимістична конкурентність)
+        identity-->>spa: Повтор на свіжому стані; жодного подвійного обліку
+    end
+    spa-->>learner: Стан EN без дублювання історії
+```
 
 ## 7. Deployment view
 
