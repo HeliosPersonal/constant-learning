@@ -9,7 +9,7 @@ files_hint:
   - "ConstantLearning/Features/Learning/Data/"
 owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "todo"
+status: "done"
 ---
 
 # T08 — Міграції дискримінатора `learner_words` + `answer_events`
@@ -37,8 +37,20 @@ status: "todo"
 
 ## Definition of Done
 
-- [ ] Усі 9 кроків застосовано на testcontainer; кожен `CONCURRENTLY` — один statement (`suppressTransaction: true`).
-- [ ] Backfill виводить `target_language` з `entry_id`; `SET NOT NULL` проходить; `.down` реверсує.
-- [ ] Кожен FK має індекс (self-check FK зелений); мово-свідомі композитні індекси присутні.
-- [ ] Немає `CHECK`/`TRIGGER`/бізнес-`DEFAULT`.
-- [ ] PR ≤500 LOC.
+- [x] Усі 9 кроків застосовано на testcontainer; кожен `CONCURRENTLY` — один statement (`suppressTransaction: true`).
+- [x] Backfill виводить `target_language` з `entry_id`; `SET NOT NULL` проходить; `.down` реверсує.
+- [x] Кожен FK має індекс (self-check FK зелений); мово-свідомі композитні індекси присутні.
+- [x] Немає `CHECK`/`TRIGGER`/бізнес-`DEFAULT`.
+- [x] PR ≤500 LOC.
+
+## Нотатки реалізації
+
+- Одна EF-міграція `20261104205156_MigrateLearnerProgressTargetLanguage` покриває обидві таблиці
+  (прецедент `PersistSessionResultView` — транзакційні + `CONCURRENTLY` statement-и в одному файлі).
+- FK додано як `ADD CONSTRAINT ... NOT VALID` + `VALIDATE CONSTRAINT` (не inline), щоб не тримати
+  `ACCESS EXCLUSIVE` під час перевірки наявних рядків — прецедент
+  [T03 `AddActiveTargetLanguageToLearners`](../../../../ConstantLearning/Migrations/20261104201539_AddActiveTargetLanguageToLearners.cs).
+- Інтеримний C#-дефолт `TargetLanguage = "pl"` у `LearnerWord`/`AnswerEvent` з `TODO(T10)`: місця
+  створення почнуть писати мову з активного контексту в [T10](./T10-progress-isolation.md).
+- Міграційний тест `LearnerProgressTargetLanguageMigrationTests` ([DockerFact]) вставляє запис
+  мовою `en` і доводить, що беклфіл виводить мову з `entry_id`, а не зашиває `'pl'`.

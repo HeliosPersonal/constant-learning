@@ -7,6 +7,10 @@ public sealed class LearnerWord
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid LearnerId { get; set; }
     public Guid EntryId { get; set; }
+
+    // Денормалізований дискримінатор мови (ADR-0001): дорівнює target_language свого entry.
+    // TODO(T10): зняти інтеримний дефолт 'pl', коли ізоляція прогресу писатиме мову з активного контексту.
+    public string TargetLanguage { get; set; } = "pl";
     public required string Status { get; set; }
     public short ConsecutiveScheduledCorrect { get; set; }
     public LocalDate? FirstShownDay { get; set; }

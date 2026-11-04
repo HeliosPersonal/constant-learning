@@ -7,6 +7,10 @@ public sealed class AnswerEvent
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid LearnerId { get; set; }
     public Guid EntryId { get; set; }
+
+    // Денормалізований дискримінатор мови (ADR-0001): дорівнює target_language свого entry.
+    // TODO(T10): зняти інтеримний дефолт 'pl', коли ізоляція прогресу писатиме мову з активного контексту.
+    public string TargetLanguage { get; set; } = "pl";
     public Guid VersionId { get; set; }
     public Guid? SessionItemId { get; set; }
     public required string ExerciseKind { get; set; }

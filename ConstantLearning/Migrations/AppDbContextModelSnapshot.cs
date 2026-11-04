@@ -1258,6 +1258,12 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("state_before");
 
+                    b.Property<string>("TargetLanguage")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("target_language");
+
                     b.Property<string>("TimeZone")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -1278,6 +1284,9 @@ namespace ConstantLearning.Migrations
                         .IsUnique()
                         .HasDatabaseName("ux_answer_events_session_item");
 
+                    b.HasIndex("TargetLanguage")
+                        .HasDatabaseName("ix_answer_events_target_language");
+
                     b.HasIndex("VersionId")
                         .HasDatabaseName("ix_answer_events_version_id");
 
@@ -1286,6 +1295,9 @@ namespace ConstantLearning.Migrations
 
                     b.HasIndex("LearnerId", "LearnerDay", "Outcome")
                         .HasDatabaseName("ix_answer_events_learner_day_outcome");
+
+                    b.HasIndex("LearnerId", "TargetLanguage", "LearnerDay", "Outcome")
+                        .HasDatabaseName("ix_answer_events_learner_lang_day_outcome");
 
                     b.ToTable("answer_events", (string)null);
                 });
@@ -1388,6 +1400,12 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("status");
 
+                    b.Property<string>("TargetLanguage")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("target_language");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1400,6 +1418,9 @@ namespace ConstantLearning.Migrations
                     b.HasIndex("EntryId")
                         .HasDatabaseName("ix_learner_words_entry_id");
 
+                    b.HasIndex("TargetLanguage")
+                        .HasDatabaseName("ix_learner_words_target_language");
+
                     b.HasIndex("LearnerId", "DueOn")
                         .HasDatabaseName("ix_learner_words_learner_due");
 
@@ -1409,6 +1430,12 @@ namespace ConstantLearning.Migrations
 
                     b.HasIndex("LearnerId", "Status")
                         .HasDatabaseName("ix_learner_words_learner_status");
+
+                    b.HasIndex("LearnerId", "TargetLanguage", "DueOn")
+                        .HasDatabaseName("ix_learner_words_learner_lang_due");
+
+                    b.HasIndex("LearnerId", "TargetLanguage", "Status")
+                        .HasDatabaseName("ix_learner_words_learner_lang_status");
 
                     b.ToTable("learner_words", (string)null);
                 });
@@ -1870,6 +1897,13 @@ namespace ConstantLearning.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("answer_events_session_item_id_fkey");
 
+                    b.HasOne("ConstantLearning.Features.Identity.Data.TargetLanguage", null)
+                        .WithMany()
+                        .HasForeignKey("TargetLanguage")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("answer_events_target_language_fkey");
+
                     b.HasOne("ConstantLearning.Features.Content.Data.EntryVersion", null)
                         .WithMany()
                         .HasForeignKey("VersionId")
@@ -1912,6 +1946,13 @@ namespace ConstantLearning.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("learner_words_learner_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Identity.Data.TargetLanguage", null)
+                        .WithMany()
+                        .HasForeignKey("TargetLanguage")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("learner_words_target_language_fkey");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Learning.Data.LearningSession", b =>
