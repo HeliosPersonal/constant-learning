@@ -47,10 +47,10 @@ ticket: "TBD"
 
 **Neutral**
 - Перехід до моделі learner+мова пізніше можливий, але потребує розщеплення рядків і бекфілу.
-- Форма day-state на мову вирішується окремо — див. [[0002-scope-day-state-per-target-language]].
+- Форма day-state на мову вирішується окремо — див. [0002](0002-scope-day-state-per-target-language.md).
 
 ## Links
 
-- PRD: [[../PRD.md]] (US-03, AC-03/05/10, OQ-3)
-- SAD: [[../sad.md]] §4, §5
-- Related ADR: [[0002-scope-day-state-per-target-language]], [[0003-place-target-language-on-dictionary-entry]]
+- PRD: [PRD.md](../PRD.md) (US-03, AC-03/05/10, OQ-3)
+- SAD: [sad.md](../sad.md) §4, §5
+- Related ADR: [0002](0002-scope-day-state-per-target-language.md), [0003](0003-place-target-language-on-dictionary-entry.md)

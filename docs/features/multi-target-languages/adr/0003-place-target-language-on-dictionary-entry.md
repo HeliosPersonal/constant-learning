@@ -47,10 +47,10 @@ ticket: "TBD"
 
 **Neutral**
 - Українські `PronunciationUk`/`ExampleUk` лишаються source-мовними; формат транскрипції на мову — окреме відкрите питання (OQ-8).
-- Мово-свідомий субстрат пошуку (`search_forms.Lang`) уже сумісний — див. [[0004-model-supported-languages-as-config-table]].
+- Мово-свідомий субстрат пошуку (`search_forms.Lang`) уже сумісний — див. [0004](0004-model-supported-languages-as-config-table.md).
 
 ## Links
 
-- PRD: [[../PRD.md]] (US-05/US-07, AC-06, AC-08)
-- SAD: [[../sad.md]] §4, §5, §11
-- Related ADR: [[0001-use-single-learner-with-target-language-column]], [[0004-model-supported-languages-as-config-table]]
+- PRD: [PRD.md](../PRD.md) (US-05/US-07, AC-06, AC-08)
+- SAD: [sad.md](../sad.md) §4, §5, §11
+- Related ADR: [0001](0001-use-single-learner-with-target-language-column.md), [0004](0004-model-supported-languages-as-config-table.md)

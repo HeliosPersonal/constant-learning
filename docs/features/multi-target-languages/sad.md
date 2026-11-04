@@ -292,6 +292,91 @@ sequenceDiagram
     spa-->>learner: Стан EN без дублювання історії
 ```
 
+**Critical flow 5: Вправа з вимовою, формами й нормалізацією відповіді активної мови (US-05, AC-08)**
+
+```mermaid
+sequenceDiagram
+    actor learner
+    participant spa as Mini App SPA
+    participant learning as Learning
+    participant content as Content
+    participant db as PostgreSQL
+    Note over learner, spa: Передумова: активна мова EN; каркас нормалізації/форм EN підтверджено (OQ-5)
+    learner->>spa: Відкриває картку/вправу слова активної мови
+    spa->>learning: Картка вправи активної мови
+    learning->>content: Вимова, приклади, форми для entry активної мови
+    content->>db: Читати entry_versions + search_forms WHERE target_language=EN
+    db-->>content: Лема/вимова/приклад/форми EN
+    content-->>learning: Підказки EN (не польські)
+    learning-->>spa: Картка EN
+    spa-->>learner: Вимова, приклад і форми EN
+    learner->>spa: Надсилає відповідь
+    spa->>learning: Оцінити відповідь (активна мова)
+    learning->>content: Нормалізувати за правилами EN; пошук за формами EN
+    content->>db: Пошук morph_forms/search_forms WHERE Lang=EN
+    db-->>content: Збіг за формою EN
+    content-->>learning: Нормалізований результат EN
+    Note over learning, content: p95 оцінки відповіді ≤ 500 ms; пошуку за формами ≤ 300 ms (§10)
+    learning->>db: answer_events з target_language=EN
+    learning-->>spa: Результат відповіді EN
+    spa-->>learner: Зараховано лише в облік EN
+    alt каркас нормалізації/форм мови не підтверджено (OQ-5)
+        content-->>learning: Правила форм мови відсутні
+        learning-->>spa: Базова звірка без повного AC-08 (мово-специфічні форми недоступні)
+    end
+```
+
+**Critical flow 6: Content report до слова активної мови (US-06, AC-09)**
+
+```mermaid
+sequenceDiagram
+    actor learner
+    participant spa as Mini App SPA
+    participant content as Content
+    participant db as PostgreSQL
+    Note over learner, spa: Передумова: learner вивчає кілька мов; активна мова EN
+    learner->>spa: Надсилає content report до слова активної мови
+    spa->>content: Створити повідомлення для entry активної мови
+    content->>db: Читати target_language entry (прив'язка до мови EN)
+    db-->>content: entry_id належить EN
+    alt у межах добового ліміту повідомлень learner (reference AC-46)
+        content->>db: Записати content report з target_language=EN у чергу EN
+        db-->>content: Повідомлення в черзі EN
+        content-->>spa: Прийнято; контент інших мов без змін
+        spa-->>learner: Повідомлення додано до черги EN
+    else добовий ліміт повідомлень learner вичерпано
+        content-->>spa: Відмова: ліміт повідомлень на добу вичерпано
+        spa-->>learner: «Спробуйте пізніше»
+    end
+```
+
+**Critical flow 7: Редактор розглядає чергу з розмежуванням за мовою (US-07, AC-11)**
+
+```mermaid
+sequenceDiagram
+    actor editor as Content editor
+    participant spa as Mini App SPA
+    participant content as Content
+    participant db as PostgreSQL
+    Note over editor, spa: Передумова: у черзі є повідомлення різними мовами (EN/DE/NL/PL)
+    editor->>spa: Відкриває чергу content reports
+    spa->>content: Отримати чергу з розмежуванням за мовою
+    content->>db: Читати content reports GROUP BY target_language
+    db-->>content: Повідомлення, згруповані за мовою
+    content-->>spa: Черга, відокремлена за мовою
+    spa-->>editor: Повідомлення кожної мови окремо
+    editor->>spa: Схвалює/відкочує зміну повідомлення мови DE
+    spa->>content: Застосувати рішення до повідомлення DE
+    content->>db: Оновити dictionary_entries WHERE target_language=DE (лише словник DE)
+    db-->>content: Змінено лише словник DE
+    content-->>spa: Застосовано до словника DE; інші мови без змін
+    spa-->>editor: Рішення застосовано лише до DE
+    alt повідомлення стосується іншої мови
+        content->>db: Зміна маршрутизується на словник мови повідомлення, не активної
+        db-->>content: Коректна мовна маршрутизація
+    end
+```
+
 ## 7. Deployment view
 
 <!-- 🎯 Навіщо: ТОПОЛОГІЯ, яку DevOps має знати без читання Helm-чартів — скільки реплік,  -->

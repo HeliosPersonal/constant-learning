@@ -51,6 +51,6 @@ ticket: "TBD"
 
 ## Links
 
-- PRD: [[../PRD.md]] (US-05, AC-02/AC-08, OQ-5/OQ-6/OQ-7/OQ-8)
-- SAD: [[../sad.md]] §4, §5, §8
-- Related ADR: [[0003-place-target-language-on-dictionary-entry]]
+- PRD: [PRD.md](../PRD.md) (US-05, AC-02/AC-08, OQ-5/OQ-6/OQ-7/OQ-8)
+- SAD: [sad.md](../sad.md) §4, §5, §8
+- Related ADR: [0003](0003-place-target-language-on-dictionary-entry.md)

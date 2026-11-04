@@ -50,6 +50,6 @@ ticket: "TBD"
 
 ## Links
 
-- PRD: [[../PRD.md]] (US-03, AC-04/05/07, OQ-1)
-- SAD: [[../sad.md]] §4, §5, §11
-- Related ADR: [[0001-use-single-learner-with-target-language-column]]
+- PRD: [PRD.md](../PRD.md) (US-03, AC-04/05/07, OQ-1)
+- SAD: [sad.md](../sad.md) §4, §5, §11
+- Related ADR: [0001](0001-use-single-learner-with-target-language-column.md)
