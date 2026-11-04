@@ -22,4 +22,5 @@
 .settings-days label:has(input:checked) { background: var(--cl-accent); color: var(--cl-onAccent); }
 .settings-message:empty { display: none; }
 .settings-message { margin-bottom: 16px; border-radius: 12px; }
+.settings-danger { margin-top: 32px; }
 @media (min-width: 500px) { .settings-days { grid-template-columns: repeat(7, minmax(44px, 1fr)); } }
