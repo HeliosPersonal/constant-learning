@@ -51,7 +51,7 @@ ticket: "TBD"
 - Persistence: **EF Core 10.0.14** + Npgsql.EntityFrameworkCore.PostgreSQL 10.0.3 (+NodaTime), NodaTime 3.3.7, **PostgreSQL**. Оптимістична конкурентність через `xmin` (`uint Version`).
 - Інтеграції: Telegram.Bot 22.10.3.3, Quartz 4.7.0 (фонові завдання), Microsoft.AspNetCore.OpenApi 10.0.14.
 - Frontend: React 18.3.1 SPA, Vite 7, TypeScript 5.9, TanStack Query 5, `@telegram-apps/telegram-ui` + `@tma.js/sdk`; типи API генеруються з OpenApi-контракту.
-- Архітектура: **feature-module monoліт** (модулі `Identity`, `Learning`, `Content`, `Notifications`, `Bot` — ADR-0003), прямі in-process DI-виклики, **без шини подій / черг / HTTP між модулями**. Scheduling за портом (`Memorize`, ADR-0009). Нотифікації через таблицю `notification_dispatches`, яку опитує воркер (ADR-0007). Фронт роздається бекендом із `wwwroot` (ADR-0002).
+- Архітектура: **feature-module monoліт** (модулі `Identity`, `Learning`, `Content`, `Notifications`, `Bot` — personal-trainer-mvp ADR-0003), прямі in-process DI-виклики, **без шини подій / черг / HTTP між модулями**. Scheduling за портом (`Memorize`, personal-trainer-mvp ADR-0009). Нотифікації через таблицю `notification_dispatches`, яку опитує воркер (personal-trainer-mvp ADR-0007). Фронт роздається бекендом із `wwwroot` (personal-trainer-mvp ADR-0002). *(Номери ADR тут — reference-фічі; власні ADR цієї фічі див. §9.)*
 
 **Organisational.**
 - Час релізу: **одразу після польського пілоту** ([idea-brief §4](./idea-brief.md)), поки інтерес свіжий.
@@ -127,7 +127,7 @@ C4Context
 
 4. **Набір підтримуваних мов та їхні правила — дані/конфіг, не код** — таблиця `target_languages` + per-language конфіг (чи застосовні local-equivalents — OQ-6, формат транскрипції — OQ-8, правила нормалізації відповіді/словоформ — OQ-5). Наявний мово-свідомий субстрат пошуку (`search_forms.Lang`/`morph_forms.Lang`) перевикористовується; хардкод `"pl"` у `SearchFormsProjection`/морфологічному імпортері узагальнюється до конфігурованого на мову. Нова мова = рядок конфігу + контент, без зміни коду тренера (стовп розширюваності). → **ADR-0004**.
 
-**Активна мова й конкурентність (OQ-4).** Активна мова — серверний стан на `learner`; перемикання ідемпотентне (AC-12), а конкурентні зміни з різних вкладок розв'язуються наявною оптимістичною конкурентністю `xmin` із ключем прогресу `(learner_id, target_language)` — деталі в §8. Окремого ADR не потребує (перевикористання наявного механізму).
+**Активна мова й конкурентність.** Активна мова — серверний стан на `learner`, перемикання ідемпотентне (AC-12). Розв'язання конкурентних змін із різних вкладок (OQ-4) **схиляється** до перевикористання наявної оптимістичної конкурентності `xmin` із ключем `(learner_id, target_language)` (§8), але лишається **відкритим пунктом** до глибшого аналізу — §11.
 
 Each tactical decision in later sections is traceable to one of these strategic seeds. Tactical decisions that *contradict* a strategic choice are red flags — surfaced in §11 Risks.
 
@@ -324,7 +324,8 @@ sequenceDiagram
 |---|---|---|
 | Ізоляція за мовою (наскрізний інваріант) | Кожен запит/запис прогресу фільтрує за складеним ключем `(learner_id, target_language)`; пропуск = витік між мовами. Перевіряється інтеграційним тестом ізоляції + щоденною звіркою (QG-1) | тут; ADR-0001 |
 | Активна мова | Серверний стан `active_target_language` на `learner`; запити резолвляться на активну мову learner, не на клієнтський параметр без перевірки | тут; §4 |
-| Конкурентність (OQ-4) | Оптимістична конкурентність `xmin` (`uint Version`) + блокування рядка день-стану `(learner_id, target_language)`; повторний вибір мови ідемпотентний (AC-12) | тут; ADR-0002 |
+| Продовження session тієї ж доби (AC-04) | session лишається доступною для продовження в межах вікна доби **своєї мови**; за повного per-language day-state «та сама доба learner» для продовження = вікно доби мови цієї session (жодна картка не переноситься між мовами) | тут; ADR-0002 |
+| Конкурентність (OQ-4 — відкрито, §11) | Схиляємося до оптимістичної конкурентності `xmin` (`uint Version`) + блокування рядка день-стану `(learner_id, target_language)`; повторний вибір мови ідемпотентний (AC-12). Фінальне рішення — після аналізу OQ-4 | тут; §11 |
 | Маршрутизація content report за мовою | Повідомлення й схвалення/відкат прив'язані до `target_language` запису; черга редактора відокремлює за мовою (AC-09, AC-11) | тут; ADR-0003 |
 | Error handling | Конверт `{code, message, details?}`, `code = module.error_name`; нові коди напр. `language.not_available` (AC-02). Один код = одне визначення в реєстрі помилок | `.claude/rules/openapi.md` |
 | ID strategy | UUID v7, app-side; `created_at` only | `.claude/rules/migrations.md` |
@@ -396,6 +397,7 @@ Each top-3 goal from §1 expanded into a full scenario:
 | OQ-7: наявність/ліцензійність per-language джерел (частотність, морфологія, довідка звірки) для EN/DE/NL | Open question | Resolve before implement-tasks (stage 07); без джерела мова не вмикається (AC-02) | Viacheslav Melnichenko |
 | OQ-8: перенос української наближеної транскрипції на EN/DE/NL орфографію/фонетику | Open question | Resolve before implement-tasks (stage 07); формат транскрипції — прапорець у `target_languages` | Viacheslav Melnichenko |
 | OQ-9: чи обмежувати редактора мовами, які він здатен верифікувати (ризик схвалення незнайомої мови) | Open question | Resolve before implement-tasks (stage 07); рішення Security Lead на review PRD §6.1 | Security Lead |
+| OQ-4: розв'язання конкурентних змін активної мови з різних вкладок (паралельні session різних мов) | Open question | Resolve before implement-tasks (stage 07); схиляємося до наявної `xmin`-конкурентності + ідемпотентного перемикання (§8), потребує підтвердження | Tech Lead |
 | `feature_size` формально не класифіковано (`sdlc:classify-size` не запускали) — риси M прийнято як робочий дефолт | Open question | Resolve before implement-tasks (stage 07): запустити `sdlc:classify-size multi-target-languages` | Viacheslav Melnichenko |
 
 **Accepted debt (acceptable in v1, plan to fix later):**
