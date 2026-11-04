@@ -300,18 +300,16 @@ sequenceDiagram
 <!-- 📌 Приклад: «500 IC → партиціонування за кварталом» (не «при зростанні подумаємо»).    -->
 <!-- 🎯 Можна N/A для XS/S функцій, що переюзають існуюче розгортання без змін.            -->
 
-<Topology in 2-3 sentences. Where it runs (k8s / VM / serverless), replicas, scaling thresholds.>
+Фіча **перевикористовує наявну одиницю розгортання** без структурних змін: один процес ASP.NET Core (.NET 10), що роздає Mini App SPA зі `wwwroot` (ADR-0002 reference) і тримає Quartz-воркер та воркер `notification_dispatches` in-process; єдиний PostgreSQL. Нових контейнерів, черг чи сервісів не додається — вводиться лише вимір `target_language` у наявні таблиці. Масштаб визначається пілотом (5–10 учнів), тож поточні ресурси з запасом покривають кілька мов на learner.
 
 **Monitoring:**
-- <Metrics — e.g. Prometheus `<metric_name>`>
-- <Alerts — e.g. "outbox lag > 10 min → page on-call">
-- <Tracing — e.g. OpenTelemetry HTTP spans>
+- Метрика ізоляції (QG-1): щоденна звірка журналу відповідей — 0 `answer_events`, зарахованих не до своєї `target_language` (PRD §6).
+- Клієнтська телеметрія латентності «Сьогодні»/перемикання (PRD §6) з розрізом за мовою.
+- Наявні трасування/логи зберігаються; доповнюються полем `target_language` у записах прогресу.
 
 **Scaling thresholds:**
-- <e.g. 500 IC × 5 goals × 26 checkpoints/Q = 65k rows/year — comfortable in one table>
-- <e.g. partitioning by quarter at >500k rows/year>
-
-<!-- For XS/S that doesn't change deployment: <!-- N/A: feature reuses existing deployment unit -->. -->
+- Множник даних — число активних мов на learner (1–4). При 5–10 учнів × ≤4 мови × base course — одиниці тисяч рядків прогресу; комфортно в одній таблиці.
+- Партиціонування/шардинг за межами фічі (конвенція міграцій: multi-DB/партиції — окремий ADR за потреби); перегляд лише при виході за пілотний масштаб.
 
 ## 8. Crosscutting concepts
 
@@ -324,13 +322,15 @@ sequenceDiagram
 
 | Concept | Convention | Where defined |
 |---|---|---|
-| Logging | <e.g. structured slog, fields `module=<name>`> | <CLAUDE.md §X or here> |
-| Authentication | <e.g. JWT via session middleware> | <CLAUDE.md §X> |
-| Error handling | <e.g. domain sentinel → ports/errors.go → apperr JSON> | <CLAUDE.md §X> |
-| ID strategy | <e.g. UUID v7 in app layer> | <CLAUDE.md §X> |
-| Internationalisation | <e.g. N/A, English only> | — |
-| Observability | <e.g. OpenTelemetry on HTTP boundaries> | — |
-| Outbox / events | <module-specific patterns, if any> | <here> |
+| Ізоляція за мовою (наскрізний інваріант) | Кожен запит/запис прогресу фільтрує за складеним ключем `(learner_id, target_language)`; пропуск = витік між мовами. Перевіряється інтеграційним тестом ізоляції + щоденною звіркою (QG-1) | тут; ADR-0001 |
+| Активна мова | Серверний стан `active_target_language` на `learner`; запити резолвляться на активну мову learner, не на клієнтський параметр без перевірки | тут; §4 |
+| Конкурентність (OQ-4) | Оптимістична конкурентність `xmin` (`uint Version`) + блокування рядка день-стану `(learner_id, target_language)`; повторний вибір мови ідемпотентний (AC-12) | тут; ADR-0002 |
+| Маршрутизація content report за мовою | Повідомлення й схвалення/відкат прив'язані до `target_language` запису; черга редактора відокремлює за мовою (AC-09, AC-11) | тут; ADR-0003 |
+| Error handling | Конверт `{code, message, details?}`, `code = module.error_name`; нові коди напр. `language.not_available` (AC-02). Один код = одне визначення в реєстрі помилок | `.claude/rules/openapi.md` |
+| ID strategy | UUID v7, app-side; `created_at` only | `.claude/rules/migrations.md` |
+| Міграції / backfill | Зеро-даунтайм: наявні рядки бекфіляться `target_language='pl'` (add nullable → backfill → SET NOT NULL); складені унікальні/FK-індекси з `target_language` | `.claude/rules/migrations.md`; ADR-0001/0003 |
+| Конфіг мов | Набір підтримуваних мов і їхні правила — дані (`target_languages`), не enum; бізнес-прапорці в коді, не в DB-DEFAULT | ADR-0004 |
+| Authentication | Перевірена Telegram-ідентичність (initData); нових authz-меж між мовами нема (OQ-9) | §2; PRD §6.1 |
 
 ## 9. Architecture decisions
 
