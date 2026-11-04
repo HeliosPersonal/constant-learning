@@ -25,7 +25,7 @@ function mountSettings() {
   render(<QueryClientProvider client={client}><ThemeProvider><Settings learner={learner} onBack={back} onStart={start} /></ThemeProvider></QueryClientProvider>);
   return { back, start, client };
 }
-function openResetDialog() { fireEvent.click(screen.getByRole('button', { name: 'Скинути прогрес' })); return screen.getByRole('dialog'); }
+function openResetDialog() { fireEvent.click(screen.getByRole('button', { name: 'Скинути прогрес…' })); return screen.getByRole('dialog'); }
 afterEach(() => { clients.forEach(client => client.clear()); clients.length = 0; vi.unstubAllGlobals(); vi.restoreAllMocks(); window.history.replaceState(null, '', '/'); });
 
 describe('AC-02: діалог підтвердження скидання', () => {
@@ -52,7 +52,7 @@ describe('AC-03: відмова від скидання', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: 'Скасувати' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(fetcher).not.toHaveBeenCalled(); expect(back).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Зберегти зміни' })).toBeVisible();
+    expect(screen.getByRole('form', { name: 'Налаштування профілю' })).toBeVisible();
   });
 });
 

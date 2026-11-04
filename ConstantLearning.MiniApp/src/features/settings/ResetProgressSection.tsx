@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Card, Dialog, Result } from '../../components/ui';
+import { Button, Dialog, Result } from '../../components/ui';
 import { learnerQueryKey } from '../onboarding/api';
 import { todayQueryKey } from '../today/api';
 import { ProgressResetApiError, resetProgress } from './reset';
@@ -34,12 +34,11 @@ export function ResetProgressSection({ onDone }: { onDone: (notice: string) => v
 
   function close() { if (!mutation.isPending) { setOpen(false); setError(undefined); } }
 
-  return <Card className="card settings-danger" aria-labelledby="settings-reset-title">
-    <span className="card-index">НЕБЕЗПЕЧНА ЗОНА</span>
-    <h2 id="settings-reset-title">Почати з чистого аркуша</h2>
-    <p className="caption">Скидання назавжди стирає стан усіх слів, заняття й відповіді. Налаштування й профіль лишаються.</p>
-    <Button size="l" mode="outline" stretched onClick={() => { setError(undefined); setOpen(true); }}>Скинути прогрес</Button>
-    {error && !open && <Result tone="error">{error}</Result>}
+  return <section className="settings-danger" aria-labelledby="settings-reset-title">
+    <h2 id="settings-reset-title" className="sr-only">Скидання прогресу</h2>
+    <div className="ios-group"><button type="button" className="ios-row ios-plain ios-danger" onClick={() => { setError(undefined); setOpen(true); }}>Скинути прогрес…</button></div>
+    <p className="ios-footnote">Стирає стан слів, заняття й відповіді. Профіль і налаштування лишаються.</p>
+    {error && !open && <p className="ios-footnote ios-footnote--error" role="alert">{error}</p>}
     <Dialog open={open} onClose={close} title="Стерти весь прогрес?" actions={
       <div className="settings-reset-actions">
         <Button size="l" mode="plain" stretched disabled={mutation.isPending} onClick={close}>Скасувати</Button>
@@ -61,5 +60,5 @@ export function ResetProgressSection({ onDone }: { onDone: (notice: string) => v
       <p className="caption settings-reset-warning">Цю дію не можна скасувати.</p>
       {error && <Result tone="error">{error}</Result>}
     </Dialog>
-  </Card>;
+  </section>;
 }

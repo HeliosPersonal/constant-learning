@@ -1,41 +1,46 @@
-import { LimitSlider } from '../../components/LimitSlider';
+import { DAILY_LIMIT_MAX, DAILY_LIMIT_MIN, newWordsLabel } from '../../components/LimitSlider';
 import { BackButton } from '../../components/BackButton';
-import { useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Switch } from '@telegram-apps/telegram-ui';
-import { Button, Card, Dialog, Result } from '../../components/ui';
+import { Button } from '../../components/ui';
 import { learnerQueryKey } from '../onboarding/api';
 import { timeZoneOptions } from '../onboarding/timeZone';
 import { SettingsApiError, updateSettings } from './api';
-import { draftFromLearner, limitLabel, settingsChanges, validateSettings, weekDays, type Learner, type SettingsErrors } from './model';
+import { draftFromLearner, limitLabel, settingsChanges, validateSettings, weekDays, type Learner, type SettingsDraft, type SettingsErrors } from './model';
 import { ThemeChoices } from './ThemeChoices';
 import { ResetProgressSection } from './ResetProgressSection';
 import './settings.css';
 
+const SAVED_VISIBLE_MS = 2000;
+
 export default function Settings({ learner, onBack, onStart }: { learner: Learner; onBack: (notice?: string) => void; onStart: () => void }) {
   const [saved, setSaved] = useState(learner);
   const [draft, setDraft] = useState(() => draftFromLearner(learner));
-  const [errors, setErrors] = useState<SettingsErrors>({});
-  const [success, setSuccess] = useState(false);
+  const [touched, setTouched] = useState(false);
+  const [serverErrors, setServerErrors] = useState<SettingsErrors>({});
+  const [phase, setPhase] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [failed, setFailed] = useState<string>();
   const [blocked, setBlocked] = useState<'auth' | 'onboarding' | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const submitting = useRef(false);
-  const messageRef = useRef<HTMLDivElement>(null);
+  const delay = useRef(0);
+  const sent = useRef<string>();
   const queryClient = useQueryClient();
   const changes = settingsChanges(draft, saved);
-  const dirty = Object.keys(changes).length > 0 || draft.zone !== saved.time_zone;
+  const key = JSON.stringify(changes);
+  const validation = touched ? validateSettings(draft, saved) : {};
+  const errors: SettingsErrors = { ...validation, ...serverErrors };
+  const invalid = Object.keys(validation).length > 0;
   const mutation = useMutation({
     mutationFn: updateSettings, retry: false,
     onSuccess(updated) {
-      setSaved(updated); setDraft(draftFromLearner(updated)); setErrors({}); setSuccess(true);
+      setSaved(updated); setServerErrors({}); setFailed(undefined); setPhase('saved');
       queryClient.setQueryData(learnerQueryKey, updated);
     },
-    onError(error) {
-      setSuccess(false);
+    onError(error, variables) {
+      setPhase('idle'); setFailed(JSON.stringify(variables));
       if (error instanceof SettingsApiError && error.status === 401) {
-        setBlocked('auth'); setErrors({ general: 'Відкрийте тренер знову в Telegram, щоб продовжити.' });
+        setBlocked('auth'); setServerErrors({ general: 'Відкрийте тренер знову в Telegram, щоб продовжити.' });
       } else if (error instanceof SettingsApiError && error.status === 404 && error.body?.code === 'learner.not_onboarded') {
-        setBlocked('onboarding'); setErrors({ general: 'Спершу налаштуйте тренер.' });
+        setBlocked('onboarding'); setServerErrors({ general: 'Спершу налаштуйте тренер.' });
       } else if (error instanceof SettingsApiError && error.status === 400) {
         const messages: Record<string, SettingsErrors> = {
           'settings.invalid_limit': { limit: 'Доступно від 1 до 10 нових слів на день.' },
@@ -46,63 +51,90 @@ export default function Settings({ learner, onBack, onStart }: { learner: Learne
         };
         const next = messages[error.body?.code ?? ''] ?? { general: 'Не вдалося зберегти налаштування. Перевірте введені значення.' };
         if (next.days || next.time) setDraft(value => ({ ...value, reminder: true }));
-        setErrors(next);
-      } else setErrors({ general: 'Не вдалося зберегти налаштування. Ваші зміни залишилися на екрані — спробуйте ще раз.' });
-      requestAnimationFrame(() => messageRef.current?.focus());
+        setServerErrors(next);
+      } else setServerErrors({ general: 'Не вдалося зберегти налаштування. Ваші зміни залишилися на екрані.' });
     },
-    onSettled() { submitting.current = false; },
   });
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (submitting.current || mutation.isPending || blocked) return;
-    const next = validateSettings(draft, saved);
-    setErrors(next); setSuccess(false);
-    if (Object.keys(next).length) { requestAnimationFrame(() => messageRef.current?.focus()); return; }
-    if (!Object.keys(changes).length) return;
-    submitting.current = true; mutation.mutate(changes);
+  // Автозбереження: зміни йдуть на сервер після короткої паузи (миттєво для перемикачів). Невдалі зміни
+  // автоматично не повторюються — лише за явним «Повторити». Однаковий запит двічі поспіль не надсилається.
+  useEffect(() => {
+    if (!touched || blocked || mutation.isPending || invalid || !Object.keys(changes).length || key === failed || key === sent.current) return;
+    const timer = setTimeout(() => { sent.current = key; setPhase('saving'); mutation.mutate(changes); }, delay.current);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, touched, blocked, mutation.isPending, invalid, failed]);
+  useEffect(() => {
+    if (phase !== 'saved') return;
+    const timer = setTimeout(() => setPhase('idle'), SAVED_VISIBLE_MS);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  function change(patch: Partial<SettingsDraft>, wait = 0) {
+    delay.current = wait; sent.current = undefined; setTouched(true); setServerErrors({}); setPhase('idle');
+    setDraft(value => ({ ...value, ...patch }));
   }
+  const setLimit = (limit: number) => change({ limit: Math.min(DAILY_LIMIT_MAX, Math.max(DAILY_LIMIT_MIN, limit)) }, 600);
+  const retry = () => { delay.current = 0; sent.current = undefined; setServerErrors({}); setFailed(undefined); };
+  const pendingLimit = saved.pending_daily_new_words_limit;
+  const showCurrent = pendingLimit != null || draft.limit !== saved.daily_new_words_limit;
 
   return <>
     <BackButton className="settings-navigation" navLabel="Навігація налаштувань" onBack={() => onBack()}>← До «Сьогодні»</BackButton>
-    <div className="intro"><p className="eyebrow">ВАШ ПРОСТІР</p><h1>Налаштування</h1><p>Знайдіть зручний ритм і вигляд для щоденної польської.</p></div>
-    <Card aria-labelledby="settings-theme-title"><span className="card-index">ВИГЛЯД</span><h2 id="settings-theme-title">Світла чи темна?</h2>
-      <ThemeChoices /><p className="caption">Тема змінюється одразу й зберігається на цьому пристрої.</p><Button size="l" mode="outline" stretched onClick={() => setDialogOpen(true)}>Про оформлення</Button>
-    </Card>
-    <form onSubmit={submit} noValidate aria-label="Налаштування профілю" aria-busy={mutation.isPending}>
-      <fieldset className="settings-fields" disabled={mutation.isPending || !!blocked}>
-        <Card aria-labelledby="settings-limit-title"><span className="card-index">01 / ТЕМП</span><h2 id="settings-limit-title">Нові слова на день</h2>
-          <p className="caption settings-current">Сьогодні: <strong>{limitLabel(saved.daily_new_words_limit)}</strong>.</p>
-          {saved.pending_daily_new_words_limit != null && <p className="caption settings-pending">З наступної доби: <strong>{limitLabel(saved.pending_daily_new_words_limit)}</strong>.</p>}
-          <fieldset className="settings-limit-options" aria-describedby="settings-limit-hint"><legend className="sr-only">Денний ліміт нових слів</legend><LimitSlider value={draft.limit} describedBy="settings-limit-hint" onChange={value => { setDraft(current => ({ ...current, limit: value })); setSuccess(false); }} /></fieldset>
-          <p className="caption settings-hint" id="settings-limit-hint">Новий ліміт діятиме з наступної навчальної доби у вибраному часовому поясі.</p>
-          {saved.pending_daily_new_words_limit != null && draft.limit === saved.daily_new_words_limit && <p className="caption">Повернення до чинного темпу скасує відкладену зміну.</p>}
-          {errors.limit && <Result tone="error">{errors.limit}</Result>}
-        </Card>
-        <Card aria-labelledby="settings-zone-title"><span className="card-index">02 / МІСЦЕВИЙ ЧАС</span><h2 id="settings-zone-title">Час вашого дня</h2>
-          <label className="settings-label" htmlFor="settings-zone">Часовий пояс</label><select id="settings-zone" value={draft.zone} aria-invalid={!!errors.zone} aria-describedby={errors.zone ? 'settings-zone-error' : 'settings-zone-hint'} onChange={event => { setDraft(value => ({ ...value, zone: event.target.value, zoneConfirmed: event.target.value === saved.time_zone && saved.time_zone_confirmed })); setErrors(value => ({ ...value, zone: undefined })); setSuccess(false); }}>
-            {timeZoneOptions(saved.time_zone).map(zone => <option key={zone} value={zone}>{zone}</option>)}
-          </select>
-          <p className="caption settings-hint" id="settings-zone-hint">{draft.zoneConfirmed ? 'Навчальний день і нагадування враховують цей пояс.' : 'Підтвердьте часовий пояс, щоб нагадування приходили у ваш місцевий час.'}</p>
-          {!draft.zoneConfirmed && <Button size="l" stretched mode="outline" onClick={() => { setDraft(value => ({ ...value, zoneConfirmed: true })); setErrors(value => ({ ...value, zone: undefined })); setSuccess(false); }}>Підтвердити часовий пояс</Button>}
-          {errors.zone && <div id="settings-zone-error"><Result tone="error">{errors.zone}</Result></div>}
-        </Card>
-        <Card aria-labelledby="settings-reminder-title"><span className="card-index">03 / НАГАДУВАННЯ</span><div className="settings-reminder-heading"><h2 id="settings-reminder-title">Трохи підтримки</h2><Switch aria-label="Нагадувати про заняття" checked={draft.reminder} onChange={event => { setDraft(value => ({ ...value, reminder: event.target.checked })); setErrors({}); setSuccess(false); }} /></div>
-          <p className="caption">Бот нагадає про заняття у вибрані дні за вашим місцевим часом.</p>
-          {draft.reminder ? <>
-            <label className="settings-label" htmlFor="settings-time">Час нагадування</label><input id="settings-time" type="time" value={draft.time} aria-invalid={!!errors.time} aria-describedby={errors.time ? 'settings-time-error' : undefined} onChange={event => { setDraft(value => ({ ...value, time: event.target.value })); setSuccess(false); }} />
-            {errors.time && <div id="settings-time-error"><Result tone="error">{errors.time}</Result></div>}
-            <fieldset className="settings-days" aria-invalid={!!errors.days} aria-describedby={errors.days ? 'settings-days-error' : undefined}><legend>Дні тижня</legend>
-              {weekDays.map(day => <label key={day.value}><input type="checkbox" aria-label={day.full} checked={draft.days.includes(day.value)} onChange={event => { setDraft(value => ({ ...value, days: event.target.checked ? [...value.days, day.value] : value.days.filter(item => item !== day.value) })); setSuccess(false); }} /><span>{draft.days.includes(day.value) ? '✓ ' : ''}{day.label}</span></label>)}
-            </fieldset>{errors.days && <div id="settings-days-error"><Result tone="error">{errors.days}</Result></div>}
-          </> : <p className="caption settings-hint">Нагадування вимкнені.</p>}
-        </Card>
+    <h1 className="ios-title">Налаштування</h1>
+    <div className="ios-status" role="status" aria-live="polite">
+      {phase === 'saving' && 'Зберігаємо…'}
+      {phase === 'saved' && 'Збережено ✓'}
+      {errors.general && <><span className="ios-danger">{errors.general}</span>{!blocked && <button type="button" className="ios-plain" onClick={retry}>Повторити</button>}</>}
+    </div>
+    {blocked === 'onboarding' && <Button size="l" mode="outline" stretched onClick={() => { queryClient.setQueryData(learnerQueryKey, null); onStart(); }}>До початку</Button>}
+
+    <form onSubmit={event => event.preventDefault()} noValidate aria-label="Налаштування профілю" aria-busy={mutation.isPending}>
+      <fieldset className="settings-fields" disabled={!!blocked}>
+        <div className="ios-caption settings-first">Вигляд</div>
+        <div className="ios-group"><div className="ios-row"><span>Тема</span><ThemeChoices /></div></div>
+
+        <div className="ios-caption">Навчання</div>
+        <div className="ios-group"><div className="ios-row"><span id="settings-limit-label">Нових слів на день</span>
+          <div className="ios-stepper" role="group" aria-labelledby="settings-limit-label" aria-describedby="settings-limit-hint">
+            <button type="button" className="ios-plain" aria-label="Менше" disabled={draft.limit <= DAILY_LIMIT_MIN} onClick={() => setLimit(draft.limit - 1)}>−</button>
+            <output aria-live="polite">{draft.limit}<span className="sr-only"> {newWordsLabel(draft.limit)}</span></output>
+            <button type="button" className="ios-plain" aria-label="Більше" disabled={draft.limit >= DAILY_LIMIT_MAX} onClick={() => setLimit(draft.limit + 1)}>+</button>
+          </div></div></div>
+        <div className="ios-footnote" id="settings-limit-hint">
+          <p>Зміна діятиме з наступної навчальної доби.</p>
+          {showCurrent && <p>Сьогодні: <strong>{limitLabel(saved.daily_new_words_limit)}</strong>.</p>}
+          {pendingLimit != null && <p className="ios-accent">З наступної доби: <strong>{limitLabel(pendingLimit)}</strong>.</p>}
+          {pendingLimit != null && draft.limit === saved.daily_new_words_limit && <p>Повернення до чинного темпу скасує відкладену зміну.</p>}
+        </div>
+        {errors.limit && <p className="ios-footnote ios-footnote--error" role="alert">{errors.limit}</p>}
+
+        <div className="ios-caption">Нагадування</div>
+        <div className="ios-group">
+          <label className="ios-row"><span>Нагадувати про заняття</span><input type="checkbox" role="switch" className="ios-switch" checked={draft.reminder} onChange={event => change({ reminder: event.target.checked })} /></label>
+          {draft.reminder && <>
+            <div className="ios-row"><span>Час</span><input type="time" className="ios-time" aria-label="Час нагадування" value={draft.time} aria-invalid={!!errors.time} onChange={event => change({ time: event.target.value }, 600)} /></div>
+            <fieldset className="ios-days" aria-invalid={!!errors.days}><legend className="sr-only">Дні тижня</legend>
+              {weekDays.map(day => <label key={day.value} className={`ios-day${draft.days.includes(day.value) ? ' ios-day--on' : ''}`}><input type="checkbox" aria-label={day.full} checked={draft.days.includes(day.value)} onChange={event => change({ days: event.target.checked ? [...draft.days, day.value] : draft.days.filter(item => item !== day.value) }, 600)} /><span aria-hidden="true">{day.label}</span></label>)}
+            </fieldset>
+          </>}
+        </div>
+        {!draft.reminder && <p className="ios-footnote">Нагадування вимкнені.</p>}
+        {errors.time && <p className="ios-footnote ios-footnote--error" role="alert">{errors.time}</p>}
+        {errors.days && <p className="ios-footnote ios-footnote--error" role="alert">{errors.days}</p>}
+
+        <div className="ios-caption">Місцевий час</div>
+        <div className="ios-group">
+          <div className="ios-row ios-row--select"><span>Часовий пояс</span><span className="ios-value">{draft.zone}<span className="ios-chevron" aria-hidden="true">›</span></span>
+            <select aria-label="Часовий пояс" value={draft.zone} aria-invalid={!!errors.zone} onChange={event => change({ zone: event.target.value, zoneConfirmed: true })}>
+              {timeZoneOptions(saved.time_zone).map(zone => <option key={zone} value={zone}>{zone}</option>)}
+            </select></div>
+          {!draft.zoneConfirmed && <button type="button" className="ios-row ios-plain ios-accent" onClick={() => change({ zoneConfirmed: true })}>Підтвердити часовий пояс</button>}
+        </div>
+        <p className="ios-footnote">{draft.zoneConfirmed ? 'Навчальний день і нагадування враховують цей пояс.' : 'Підтвердьте часовий пояс, щоб нагадування приходили у ваш місцевий час.'}</p>
+        {errors.zone && <p className="ios-footnote ios-footnote--error" role="alert">{errors.zone}</p>}
       </fieldset>
-      <div ref={messageRef} tabIndex={-1} className="settings-message" aria-live="polite">{success && <Result tone="success">Налаштування збережено.</Result>}{errors.general && <Result tone="error">{errors.general}</Result>}{Object.entries(errors).some(([key, value]) => key !== 'general' && value) && <p className="caption">Перевірте позначені поля вище.</p>}</div>
-      {blocked === 'onboarding' && <Button size="l" mode="outline" stretched onClick={() => { queryClient.setQueryData(learnerQueryKey, null); onStart(); }}>До початку</Button>}
-      <Button type="submit" size="l" stretched loading={mutation.isPending} disabled={!dirty || mutation.isPending || !!blocked}>{mutation.isPending ? 'Зберігаємо зміни…' : 'Зберегти зміни'}</Button>
     </form>
     {!blocked && <ResetProgressSection onDone={onBack} />}
-    <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}><p>Приглушені теми Everforest допомагають зосередитися на словах.</p><ThemeChoices group="settings-dialog-theme" /><p className="caption">Вигляд змінюється лише на цьому пристрої. Ваші відповіді та незбережені налаштування залишаться на місці.</p></Dialog>
   </>;
 }
