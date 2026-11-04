@@ -20,7 +20,7 @@ updated_at: "2026-11-04"
 | [T02](./T02-test-fixtures.md) | Per-language фікстури й оснастка ізоляційних тестів | tests | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | todo |
 | [T03](./T03-migrate-identity-day-state.md) | Міграції `learner_language_states` + `learners.active_target_language` | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | done |
 | [T04](./T04-per-language-day-state.md) | Per-language стан доби learner (`ILearnerDayStateService`) | domain | Viacheslav Melnichenko | L | [T03](./T03-migrate-identity-day-state.md) | todo |
-| [T05](./T05-migrate-content-entries.md) | Міграції `dictionary_entries.target_language` + своп індексів | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | todo |
+| [T05](./T05-migrate-content-entries.md) | Міграції `dictionary_entries.target_language` + своп індексів | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | done |
 | [T06](./T06-base-course-availability.md) | Base course на мову + перевірка доступності мови | domain | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md), [T05](./T05-migrate-content-entries.md) | todo |
 | [T07s](./T07s-spike-language-sources.md) | Spike: джерела й ліцензії для en/de/nl + заведення профілів нормалізації (OQ-7) | research | Viacheslav Melnichenko | S | [T01](./T01-config-target-languages.md) | todo |
 | [T07a](./T07a-generalize-forms-pl-en.md) | Узагальнення пошуку форм і нормалізації (зняти хардкод `"pl"`) + профіль en | domain | Viacheslav Melnichenko | M | [T05](./T05-migrate-content-entries.md), [T07s](./T07s-spike-language-sources.md) | todo |

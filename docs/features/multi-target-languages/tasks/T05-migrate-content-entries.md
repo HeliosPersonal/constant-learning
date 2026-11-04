@@ -9,7 +9,7 @@ files_hint:
   - "ConstantLearning/Features/Content/Data/"
 owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "todo"
+status: "done"
 ---
 
 # T05 — Міграції `dictionary_entries.target_language` + своп індексів
@@ -36,8 +36,13 @@ status: "todo"
 
 ## Definition of Done
 
-- [ ] Усі 6 кроків застосовано на testcontainer у вказаному порядку; кожен `CONCURRENTLY` — один statement (`suppressTransaction: true`).
-- [ ] Своп індексів не лишає вікна без унікальності/впорядкування; `.down` відновлює глобальні індекси.
-- [ ] Backfill → `'pl'` усім наявним записам; `SET NOT NULL` проходить.
-- [ ] FK `target_language` покрито провідною колонкою unique/partial індексів (self-check FK зелений).
-- [ ] PR ≤500 LOC.
+- [x] Усі 6 кроків застосовано на testcontainer у вказаному порядку; кожен `CONCURRENTLY` — один statement (`suppressTransaction: true`).
+- [x] Своп індексів не лишає вікна без унікальності/впорядкування; `.down` відновлює глобальні індекси.
+- [x] Backfill → `'pl'` усім наявним записам; `SET NOT NULL` проходить.
+- [x] FK `target_language` покрито провідною колонкою unique/partial індексів (self-check FK зелений).
+- [x] PR ≤500 LOC.
+
+> Реалізовано однією EF-міграцією `20261104203304_MigrateDictionaryEntriesTargetLanguage`
+> (життєвий цикл однієї колонки на одній таблиці; прецедент `PersistSessionResultView` —
+> транзакційні кроки + `CONCURRENTLY` в одній міграції). Крок-свопи записано впорядкованими
+> `migrationBuilder.Sql(...)`; схемний тест — `DictionaryEntryTargetLanguageMigrationTests`.

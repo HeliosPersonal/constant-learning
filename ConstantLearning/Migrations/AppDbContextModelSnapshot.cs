@@ -327,6 +327,12 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("published_version_id");
 
+                    b.Property<string>("TargetLanguage")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("target_language");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -336,17 +342,17 @@ namespace ConstantLearning.Migrations
                     b.HasKey("Id")
                         .HasName("dictionary_entries_pkey");
 
-                    b.HasIndex("CoursePosition")
-                        .HasDatabaseName("ix_dictionary_entries_course_position")
-                        .HasFilter("published_version_id IS NOT NULL");
-
-                    b.HasIndex("ExternalId")
-                        .IsUnique()
-                        .HasDatabaseName("ux_dictionary_entries_external_id");
-
                     b.HasIndex("PublishedVersionId")
                         .IsUnique()
                         .HasDatabaseName("ix_dictionary_entries_published_version_id");
+
+                    b.HasIndex("TargetLanguage", "CoursePosition")
+                        .HasDatabaseName("ix_dictionary_entries_lang_course_position")
+                        .HasFilter("published_version_id IS NOT NULL");
+
+                    b.HasIndex("TargetLanguage", "ExternalId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_dictionary_entries_lang_external_id");
 
                     b.ToTable("dictionary_entries", (string)null);
                 });
@@ -1687,6 +1693,13 @@ namespace ConstantLearning.Migrations
                         .HasForeignKey("PublishedVersionId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .HasConstraintName("fk_dictionary_entries_published_version");
+
+                    b.HasOne("ConstantLearning.Features.Identity.Data.TargetLanguage", null)
+                        .WithMany()
+                        .HasForeignKey("TargetLanguage")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("dictionary_entries_target_language_fkey");
 
                     b.Navigation("PublishedVersion");
                 });

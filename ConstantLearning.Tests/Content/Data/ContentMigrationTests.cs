@@ -140,7 +140,7 @@ public sealed class ContentMigrationTests(PostgresFixture postgres) : PostgresIn
         var (entry, _) = await SaveVersionAsync();
         Db.DictionaryEntries.Add(new DictionaryEntry { ExternalId = entry.ExternalId, Domain = "everyday" });
 
-        await AssertUniqueViolationAsync("ux_dictionary_entries_external_id");
+        await AssertUniqueViolationAsync("ux_dictionary_entries_lang_external_id");
     }
 
     [DockerFact]
