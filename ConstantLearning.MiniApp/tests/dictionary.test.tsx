@@ -99,8 +99,8 @@ describe('AC-30: пошук і картка', () => {
   });
   it('наступна й попередня сторінки передають серверні курсори, новий запит скидає їх', async () => {
     const requests: Request[] = []; mockFetch(request => { requests.push(request); const params = new URL(request.url).searchParams; return json(params.has('after') ? { ...page, items: [{ ...item, entry_id: secondId, lemma_pl: 'urządzać' }], has_prev: true } : { ...page, has_next: true, next_cursor: firstId }); }); mount(); query('ur');
-    fireEvent.click(await screen.findByRole('button', { name: 'Наступні →' })); await screen.findByRole('button', { name: /urządzać/ }); expect(new URL(requests[1].url).searchParams.get('after')).toBe(firstId); expect(screen.getByRole('button', { name: 'Наступні →' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: '← Попередні' })); await screen.findByRole('button', { name: /^urząd / }); expect(new URL(requests[2].url).searchParams.get('before')).toBe(secondId);
+    fireEvent.click(await screen.findByRole('button', { name: 'Наступні ›' })); await screen.findByRole('button', { name: /urządzać/ }); expect(new URL(requests[1].url).searchParams.get('after')).toBe(firstId); expect(screen.getByRole('button', { name: 'Наступні ›' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: '‹ Попередні' })); await screen.findByRole('button', { name: /^urząd / }); expect(new URL(requests[2].url).searchParams.get('before')).toBe(secondId);
     query('u'); await waitFor(() => expect(requests).toHaveLength(4)); expect(new URL(requests[3].url).searchParams.has('before')).toBe(false); expect(new URL(requests[3].url).searchParams.has('after')).toBe(false);
   });
 });
@@ -130,7 +130,7 @@ describe('AC-31 та стани помилок', () => {
   });
   it('ручна тема зберігає запит і картку без нових API-запитів', async () => {
     const fetcher = mockFetch(request => json(request.url.includes('/entries/') ? card : page)); mount(); query('ur'); fireEvent.click(await screen.findByRole('button', { name: /urząd/ })); await screen.findByRole('heading', { name: 'urząd' });
-    act(() => themeStore.setTheme('dark')); expect(screen.getByRole('searchbox')).toHaveValue('ur'); expect(screen.getByRole('heading', { name: 'urząd' })).toBeVisible(); expect(document.documentElement).toHaveAttribute('data-theme', 'dark'); expect(fetcher).toHaveBeenCalledTimes(2);
+    act(() => themeStore.setTheme('dark')); expect(screen.getByRole('heading', { name: 'urząd' })).toBeVisible(); expect(document.documentElement).toHaveAttribute('data-theme', 'dark'); expect(fetcher).toHaveBeenCalledTimes(2); fireEvent.click(screen.getByRole('button', { name: '← До результатів' })); expect(screen.getByRole('searchbox')).toHaveValue('ur');
   });
 });
 

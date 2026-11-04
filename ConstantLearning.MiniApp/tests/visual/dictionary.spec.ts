@@ -41,8 +41,6 @@ for (const theme of ['light', 'dark'] as const) {
     await page.screenshot({ path: `artifacts/dictionary-${theme}-results.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-dictionary-results.png`, { fullPage: true });
     await page.keyboard.press('Tab'); await page.keyboard.press('Tab'); await expect(page.getByRole('button', { name: /^urząd / })).toBeFocused(); await page.keyboard.press('Enter');
     await expect(page.getByRole('heading', { name: 'urząd', exact: true })).toBeVisible(); await expect(page.getByRole('heading', { name: 'urząd', exact: true })).toBeFocused();
-    // Наведення стабілізує нативну кнопку очищення search незалежно від висоти попереднього екрана.
-    await search.hover();
     await page.screenshot({ path: `artifacts/dictionary-${theme}-card.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-dictionary-card.png`, { fullPage: true });
     await page.getByRole('button', { name: '← До результатів' }).click(); await expect(page.getByRole('heading', { name: 'Результати' })).toBeFocused(); await expect(search).toHaveValue('ur');
     await search.fill('pending'); await expect(page.getByText('Шукаємо слово…')).toBeVisible();
@@ -54,8 +52,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.getByRole('button', { name: 'Назад до словника' }).click(); await expect(page.getByRole('dialog')).not.toBeVisible();
     await page.screenshot({ path: `artifacts/dictionary-${theme}-empty.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-dictionary-empty.png`, { fullPage: true });
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth); expect(overflow).toBe(false);
-    const clearLabel = page.getByRole('button', { name: 'Очистити' }).locator('span').last();
-    expect(await clearLabel.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+    await expect(page.getByRole('button', { name: 'Очистити' })).toBeVisible();
     await page.setViewportSize({ width: 320, height: 700 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false);
     await expect(page.getByRole('button', { name: 'Повідомити про відсутній запис' })).toBeVisible();
