@@ -31,10 +31,11 @@ status: "todo"
   [`20261104090100_seed_target_languages`](../migrations) перенести в EF Core міграцію
   (`migrationBuilder.Sql`, нова позначка часу; порядок — як у [data-model.md §Міграційний план](../data-model.md) кроки 1–2).
 - Сутність `TargetLanguage` в `Identity/Data/` (`code` PK VARCHAR(2), `display_name_uk`,
-  `is_enabled`, `sort_order`, `normalization_profile` NULL, `created_at`) + EF-конфіг.
+  `is_enabled`, `sort_order`, `normalization_profile`, `created_at`) + EF-конфіг.
 - Репозиторій/читач каталогу: список мов `ORDER BY sort_order`.
 - Seed `pl` (`is_enabled=true`, `normalization_profile='pl'`), `en`/`de`/`nl`
-  (`is_enabled=false`, профіль NULL) — `ON CONFLICT (code) DO NOTHING`.
+  (`is_enabled=false`, `normalization_profile='en'`/`'de'`/`'nl'` — профілі заведено одразу,
+  правила кодуються в T07 після spike OQ-7; OQ-5 закрито) — `ON CONFLICT (code) DO NOTHING`.
 - Фабрика `TargetLanguageFixtures.NewEnabledLanguage(code, normalizationProfile)`
   у `ConstantLearning.Tests/Fixtures/` ([data-model.md §Test fixtures](../data-model.md)).
 

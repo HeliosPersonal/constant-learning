@@ -18,9 +18,9 @@ reference-фіча ([personal-trainer-mvp](../personal-trainer-mvp/test-plan.md)
 [openapi.yaml](contracts/openapi.yaml); гілки помилок узято з alt/else критичних flow
 [SAD §6](sad.md#6-runtime-view).
 
-> **Колонка «Task».** Задачі ще не нарізано — це робить наступний стейдж `sdlc:break-tasks`.
-> До того колонка містить `TBD`; break-tasks замінить її посиланнями на `tasks/tasks.json`
-> (той самий патерн, що в reference test-plan), де `implement-tasks` пише червоний тест.
+> **Колонка «Task».** Задачі нарізано — див. [tasks/_epic.md](tasks/_epic.md) і
+> [tasks/tracker.md](tasks/tracker.md). Колонка посилається на T-задачі за узгодженою матрицею
+> трасування AC → задачі ([_epic.md §Трасування](tasks/_epic.md)).
 
 ## Levels
 
@@ -43,18 +43,18 @@ reference-фіча ([personal-trainer-mvp](../personal-trainer-mvp/test-plan.md)
 
 | AC ([PRD §5](PRD.md#5-acceptance-criteria)) | Test name (intent-based) | Level | Task | Expected outcome |
 |---|---|---|---|---|
-| AC-01 обрати мову (happy) | старт англійської починає її окремо й показує «Сьогодні» EN із першим заняттям | integration + contract + e2e-through-UI | TBD | створено `learner_language_states(learner, en)`, `active_target_language=en`, «Сьогодні» EN із першими новими словами в межах ліміту |
-| AC-02 мова без контенту (error) | вибір мови без жодного approved-слова не починає навчання й лишає активну мову | integration + contract | TBD | мову не почато, пояснення «недоступна», `active_target_language` без змін |
-| AC-03 перемкнути активну (happy) | перемикання на EN показує стан EN, облік PL лишається цілим після зворотного перемикання | integration + contract + e2e-through-UI | TBD | «Сьогодні»/заняття/словник/налаштування показують EN; стан PL незмінний і доступний назад |
-| AC-04 незавершена session при перемиканні (cross-context) | перемикання мови не чіпає незавершену session першої мови; картка не переходить між мовами | integration | TBD | session PL лишається активною в межах своєї доби; відповіді кожної мови — лише у свій облік; 0 перенесених карток |
-| AC-05 окремий ліміт на мову (domain invariant) | вичерпаний ліміт однієї мови не впливає на нові слова другої | unit + integration | TBD | друга мова видає нові слова за власним лімітом; статуси/графік/облік «Вже знаю» незалежні |
-| AC-06 base course на мову (domain invariant) | нові слова беруться лише з base course активної мови в її порядку | unit + integration | TBD | леми лише цієї мови за її `course_position`; завершення курсу однієї мови не впливає на іншу |
-| AC-07 порожній стан нової мови (happy) | щойно почата мова показує зрозумілий початок без чужомовних лічильників | integration + component + e2e-through-UI | TBD | початковий стан + перші нові слова в межах ліміту; лічильників інших мов не видно |
-| AC-08 вимова/форми/нормалізація активної мови (domain invariant) | картка й оцінка використовують підказки, форми й правила нормалізації активної мови | unit + integration | TBD | підказка/приклад/прийняті варіанти/пошук за формами — активної мови; нормалізація за її правилами (фікстура з підтвердженим профілем, OQ-5) |
-| AC-09 report до активної мови (cross-context) | content report прив'язується до запису активної мови й лягає в чергу цієї мови | integration + contract | TBD | report із `target_language` активної мови в її черзі; контент інших мов без змін |
-| AC-10 чужий прогрес (authorization) | другий learner тієї ж мови не бачить чужих word status і результатів | integration | TBD | видно лише власний облік; дані іншого learner (у будь-якій мові) приховані як неіснуючі |
-| AC-11 черга редактора за мовою (cross-context) | черга відокремлює повідомлення за мовою; рішення застосовується лише до словника тієї мови | integration + contract | TBD | фільтр/розмежування за мовою; схвалення/відкат змінює лише словник мови повідомлення |
-| AC-12 повторний вибір мови (domain invariant) | повторний старт уже активної мови повертає наявний стан без подвійного обліку | integration + contract | TBD | мову не почато вдруге; word status, історія й облік нових слів без змін |
+| AC-01 обрати мову (happy) | старт англійської починає її окремо й показує «Сьогодні» EN із першим заняттям | integration + contract + e2e-through-UI | T01, T06, T11, T12, T15 | створено `learner_language_states(learner, en)`, `active_target_language=en`, «Сьогодні» EN із першими новими словами в межах ліміту |
+| AC-02 мова без контенту (error) | вибір мови без жодного approved-слова не починає навчання й лишає активну мову | integration + contract | T01, T06, T12 | мову не почато, пояснення «недоступна», `active_target_language` без змін |
+| AC-03 перемкнути активну (happy) | перемикання на EN показує стан EN, облік PL лишається цілим після зворотного перемикання | integration + contract + e2e-through-UI | T13, T15 | «Сьогодні»/заняття/словник/налаштування показують EN; стан PL незмінний і доступний назад |
+| AC-04 незавершена session при перемиканні (cross-context) | перемикання мови не чіпає незавершену session першої мови; картка не переходить між мовами | integration | T02, T04, T08, T09, T10, T13, T17 | session PL лишається активною в межах своєї доби; відповіді кожної мови — лише у свій облік; 0 перенесених карток |
+| AC-05 окремий ліміт на мову (domain invariant) | вичерпаний ліміт однієї мови не впливає на нові слова другої | unit + integration | T02, T03, T04, T08, T10, T17 | друга мова видає нові слова за власним лімітом; статуси/графік/облік «Вже знаю» незалежні |
+| AC-06 base course на мову (domain invariant) | нові слова беруться лише з base course активної мови в її порядку | unit + integration | T05, T06 | леми лише цієї мови за її `course_position`; завершення курсу однієї мови не впливає на іншу |
+| AC-07 порожній стан нової мови (happy) | щойно почата мова показує зрозумілий початок без чужомовних лічильників | integration + component + e2e-through-UI | T03, T04, T13, T15 | початковий стан + перші нові слова в межах ліміту; лічильників інших мов не видно |
+| AC-08 вимова/форми/нормалізація активної мови (domain invariant) | картка й оцінка використовують підказки, форми й правила нормалізації активної мови | unit + integration | T05, T07 | підказка/приклад/прийняті варіанти/пошук за формами — активної мови; нормалізація за її правилами (фікстура з підтвердженим профілем, OQ-5) |
+| AC-09 report до активної мови (cross-context) | content report прив'язується до запису активної мови й лягає в чергу цієї мови | integration + contract | T09, T14 | report із `target_language` активної мови в її черзі; контент інших мов без змін |
+| AC-10 чужий прогрес (authorization) | другий learner тієї ж мови не бачить чужих word status і результатів | integration | T02, T08, T10, T11, T17 | видно лише власний облік; дані іншого learner (у будь-якій мові) приховані як неіснуючі |
+| AC-11 черга редактора за мовою (cross-context) | черга відокремлює повідомлення за мовою; рішення застосовується лише до словника тієї мови | integration + contract | T09, T14, T16, T17 | фільтр/розмежування за мовою; схвалення/відкат змінює лише словник мови повідомлення |
+| AC-12 повторний вибір мови (domain invariant) | повторний старт уже активної мови повертає наявний стан без подвійного обліку | integration + contract | T12, T17 | мову не почато вдруге; word status, історія й облік нових слів без змін |
 
 ## Edge cases / error paths
 
@@ -67,6 +67,7 @@ reference-фіча ([personal-trainer-mvp](../personal-trainer-mvp/test-plan.md)
 - **`language.not_studying` → 409** — `setActiveLanguage` на мову, яку learner ще не почав (AC-03); активна мова без змін (integration + contract).
 - **`language.concurrent_update` → 409** — дві паралельні вкладки стартують/перемикають ту саму мову; конфлікт `xmin` відхиляє один запис, **без подвійного обліку** (AC-12/OQ-4, flow 4) (integration + contract).
 - **Ідемпотентність старту → 200** — повторний `startLearnerLanguage` уже веденої мови повертає наявний рядок без змін (AC-12, flow 4, alt «EN уже ведеться») (integration + contract).
+- **Ідемпотентність перемикання → 200** — `setActiveLanguage` на мову, яка **вже активна**, повертає той самий стан без запису й без зміни `xmin` (AC-03/AC-12); жодного побічного ефекту на облік доби/ліміту (integration + contract).
 - **`learner.not_onboarded` → 404** — `listLearnerLanguages` / `setActiveLanguage` до завершення онбордингу (integration + contract).
 - **`auth.invalid_init_data` → 401** — відсутні/підроблені/старші за 24 год `initData` на будь-якій операції; дані не читаються, `initData` не потрапляє в логи (integration + contract).
 - **`editor.role_required` → 403** — `listEditorQueueByLanguage` від learner без ролі content editor (integration + contract).
@@ -81,7 +82,7 @@ reference-фіча ([personal-trainer-mvp](../personal-trainer-mvp/test-plan.md)
 - Лічильники «Сьогодні» активної мови не включають слів/сесій інших мов (AC-07) (integration + component).
 - `content_reports`/черга редактора мови A ніколи не містять елементів мови B (AC-11) (integration).
 - Запит прогресу/словника з ідентичністю іншого learner не бачить чужих даних у жодній мові (AC-10) (integration).
-- **Інваріант денормалізації:** `target_language` рядка `learner_words`/`answer_events`/`learning_sessions`/`content_reports` завжди дорівнює `target_language` його `entry` (де є `entry_id`) — перевіряється app-інваріантом + тестом (не DB-CHECK) ([data-model.md](data-model.md#altered-entities-alter)) (integration).
+- **Інваріант денормалізації:** `target_language` рядка `learner_words`/`answer_events`/`content_reports` завжди дорівнює `target_language` його `entry` — перевіряється app-інваріантом + тестом (не DB-CHECK) ([data-model.md](data-model.md#altered-entities)). `learning_sessions` не має `entry_id` (джерело істини для сесії — сам рядок); узгодженість сесії перевіряється окремо: усі `answer_events` під сесією мають ту саму `target_language`, що й сесія (integration).
 
 ## Contract tests
 
@@ -133,4 +134,4 @@ learner, що ведуть кілька мов, із непорожнім обл
 
 - **OQ-4 RESOLVED** — конкурентність: оптимістична `xmin`, конфлікт → `409 language.concurrent_update`, **клієнт повторює без server-side retry**. Тест flow 4 закріплює «без подвійного обліку» + гілку 409 на двох паралельних стартах/перемиканнях тієї самої мови.
 - **OQ-5 RESOLVED** — каркас нормалізації de/nl кодується одразу (повні правила: рід, артиклі, капіталізація, складені слова). AC-08 тестується на всіх чотирьох мовах із заведеним `normalization_profile`; фікстури de/nl додаються в T07. (OQ-7: джерела відбирає spike-крок T07 — до того en/de/nl лишаються `is_enabled=false`.)
-- **OQ-9 RESOLVED** — роль редактора єдина для всіх мов → `listEditorQueueByLanguage` **без per-language authz й без тесту 403-гілки**; покривається лише коректність маршрутизації черги/схвалення за мовою (AC-11).
+- **OQ-9 RESOLVED** — роль редактора єдина для всіх мов → `listEditorQueueByLanguage` **без per-language authz** (загальний `403 editor.role_required` за роллю лишається й тестується — див. edge cases); додатково покривається коректність маршрутизації черги/схвалення за мовою (AC-11).

@@ -14,10 +14,10 @@
 # Автентифікація, конверт помилки, курсорна пагінація успадковані від reference (ADR-0005
 # personal-trainer-mvp: TelegramInitData замість BearerAuth з дефолтів курсу).
 # CHANGELOG:
-#   0.1.0 — перший контракт фічі: GET /languages (listTargetLanguages),
-#           GET|POST /learners/me/languages (listLearnerLanguages, startLearnerLanguage),
-#           PUT /learners/me/active-language (setActiveLanguage),
-#           GET /editor/content-reports з фільтром target_language (listEditorQueueByLanguage).
+#   0.1.0 — перший контракт фічі: GET /api/v1/languages (listTargetLanguages),
+#           GET|POST /api/v1/learners/me/languages (listLearnerLanguages, startLearnerLanguage),
+#           PUT /api/v1/learners/me/active-language (setActiveLanguage),
+#           GET /api/v1/editor/content-reports з фільтром target_language (listEditorQueueByLanguage).
 openapi: 3.1.0
 
 info:
@@ -71,7 +71,7 @@ paths:
               example:
                 items:
                   - { code: pl, display_name_uk: Польська, is_enabled: true, sort_order: 1, available: true }
-                  - { code: en, display_name_uk: Англійська, is_enabled: true, sort_order: 2, available: true }
+                  - { code: en, display_name_uk: Англійська, is_enabled: false, sort_order: 2, available: false }
                   - { code: de, display_name_uk: Німецька, is_enabled: false, sort_order: 3, available: false }
                   - { code: nl, display_name_uk: Нідерландська, is_enabled: false, sort_order: 4, available: false }
         "401": { $ref: "#/components/responses/Unauthorized" }

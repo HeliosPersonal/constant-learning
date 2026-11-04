@@ -34,11 +34,12 @@ updated_at: "2026-11-04"
 | [T16](./T16-ui-editor-queue-by-language.md) | SPA: черга content reports редактора за мовою | ui | Viacheslav Melnichenko | M | [T14](./T14-editor-queue-by-language.md) | todo |
 | [T17](./T17-isolation-contract-e2e-load.md) | Наскрізна ізоляція / контракт / e2e / навантаження | tests | Viacheslav Melnichenko | L | [T02](./T02-test-fixtures.md), [T13](./T13-set-active-scope-existing.md), [T14](./T14-editor-queue-by-language.md), [T15](./T15-ui-language-switcher.md), [T16](./T16-ui-editor-queue-by-language.md) | todo |
 
-## Відкриті питання — закрито (2026-11-04)
+## Відкриті питання — закрито (2026-11-04), крім OQ-7
 
-Усі OQ закрито в інтерв'ю ([PRD §8](../PRD.md#8-open-questions)); T07/T12/T14 розблоковано.
+Усі OQ, крім OQ-7, закрито в інтерв'ю ([PRD §8](../PRD.md#8-open-questions)); T07/T12/T14 розблоковано.
+**OQ-7** — відкрите: spike джерел на старті T07, рішення ще не зафіксовано ([SAD §11](../sad.md), [_epic.md](./_epic.md)).
 
-- **T07** — **OQ-5** = повні правила de/nl одразу, **OQ-7** = spike джерел першим кроком T07. Профілі `de`/`nl` не NULL; задача розширюється (spike + повні правила) — якщо PR >500 LOC, розбити на T07a (узагальнення pl/en) + T07b (правила de/nl).
+- **T07** — **OQ-5** = повні правила de/nl одразу; **OQ-7** (відкрите) = spike джерел першим кроком T07. Профілі `de`/`nl` не NULL; задача розширюється (spike + повні правила) — якщо PR >500 LOC, розбити на T07a (узагальнення pl/en) + T07b (правила de/nl).
 - **T12** — **OQ-4** = оптимістична `xmin` `(learner_id, target_language)`; конфлікт → `409 language.concurrent_update`, клієнт повторює. Без server-side retry.
 - **T14** — **OQ-9** = єдина роль редактора для всіх мов; без per-language authz й без 403-гілки.
 

@@ -28,7 +28,9 @@ learner, тіло не змінюється.
 ## What
 
 - `PUT`/`POST` `setActiveLanguage` з `target_language`: UPDATE `learners.active_target_language`;
-  409 `language.not_studying`, якщо learner не вивчає цю мову; 404 `language.unknown`.
+  409 `language.not_studying`, якщо learner не вивчає цю мову (невідомий код теж → 409
+  `language.not_studying`, existence-hiding; 404 `language.unknown` є лише на `startLearnerLanguage` —
+  див. [openapi.yaml](../contracts/openapi.yaml)).
 - Серверне scoping наявних ендпоінтів (today / session / dictionary / settings) за
   `active_target_language`: усі читання/мутації йдуть у вимірі активної мови (AC-03).
 - Незавершена session попередньої мови лишається доступною тієї ж доби (AC-04).
@@ -36,7 +38,7 @@ learner, тіло не змінюється.
 
 ## Definition of Done
 
-- [ ] `setActiveLanguage` перемикає активну мову; 409 `language.not_studying` для невивченої; 404 для невідомої.
+- [ ] `setActiveLanguage` перемикає активну мову; 409 `language.not_studying` для невивченої (і для невідомого коду — existence-hiding, без 404).
 - [ ] Integration: після перемикання today/session/dictionary віддають стан нової мови; облік старої незмінний і доступний назад (AC-03).
 - [ ] Тест: незавершена session старої мови продовжується тієї ж доби learner (AC-04).
 - [ ] Тест: щойно обрана мова показує порожній початковий стан без лічильників інших мов (AC-07).

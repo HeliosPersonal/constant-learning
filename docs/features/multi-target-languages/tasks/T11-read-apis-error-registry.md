@@ -29,7 +29,7 @@ US-01 потребує списку мов для вибору; екрани п�
 - `GET` `listLearnerLanguages` — мови learner-а з `started_at`/`is_active` + `active_target_language`.
 - Завести в реєстрі помилок константи: `language.unknown` (404), `language.not_available` (409),
   `language.not_studying` (409), `language.concurrent_update` (409) — рядок = контракт.
-- Відповіді лише власнику-learner (AC-10); `TelegramInitData` (ADR-0005).
+- Відповіді лише власнику-learner (AC-10); `TelegramInitData` (reference ADR-0005).
 
 ## Definition of Done
 

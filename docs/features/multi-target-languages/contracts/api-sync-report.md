@@ -37,6 +37,7 @@
 | `TargetLanguage.sort_order` | `target_languages.sort_order` SMALLINT → integer 0..32767 | high |
 | `TargetLanguage.available` | обчислюване: `is_enabled` ∧ наявний approved-контент (AC-02, flow 3) | high (derived) |
 | `LearnerLanguage.target_language` | `learner_language_states.target_language` FK → `target_languages.code` | high |
+| `LearnerLanguage.display_name_uk` | `target_languages.display_name_uk` VARCHAR(64) (join за `target_language`) | high |
 | `LearnerLanguage.started_at` | `learner_language_states.created_at` TIMESTAMPTZ | high |
 | `LearnerLanguage.is_active` | `learners.active_target_language` = рядок (ADR-0001) | high (derived) |
 | `LearnerLanguages.active_target_language` | `learners.active_target_language` VARCHAR(2) NULL | high |
@@ -67,6 +68,7 @@
    - flow 4 (AC-12/OQ-4) → `startLearnerLanguage` 200 (ідемпотентно) / 409 `language.concurrent_update`.
    - flow 7 (AC-11) → `listEditorQueueByLanguage` з `target_language`, елементи несуть мову.
    - **Крос-файлова дельта (зливається в reference-контракт на інтеграції, не редагується тут — invariant «Never edit sources»):** `Learner.active_target_language` (additive, nullable), `TodaySummary.target_language` (additive), прив'язка `createContentReport` до мови запису (сервер виводить `target_language` з `entry_id`, тіло запиту не змінюється). Версію reference-контракту підняти при злитті.
+   - **Узгодження черги редактора при злитті:** `listEditorQueueByLanguage` тут — надмножина reference-операції `listEditorQueue` (додано query-параметр `target_language` + поле `EditorQueueItem.target_language`, а `lemma_pl` подано як мово-нейтральне `lemma`). На інтеграції це **не друга операція**, а розширення наявної: reference `listEditorQueue` оновлюється до цієї форми (той самий `operationId`/шлях), а не дублюється. Перейменування колонки `lemma_pl → lemma` — борг SAD §11 (нижче).
 
 **Core checks (1, 2, 3): усі ✅.** Supporting checks (4, 5): ✅ з задокументованими крос-файловими дельтами.
 
@@ -78,7 +80,7 @@
 
 - **OQ-5 RESOLVED:** `normalization_profile` для de/nl заводиться одразу (`'de'`/`'nl'`), правила кодуються в T07. Контракт профіль **не експонує** (внутрішнє рішення коду) — рішення на поверхню API не впливає; `available=true` для de/nl настане з наявністю контенту (OQ-7 spike у T07).
 - **OQ-4 RESOLVED:** конкурентність — **оптимістична через `xmin`** `(learner_id, target_language)`; `409 language.concurrent_update` = клієнт повторює (без server-side retry). Контракт уже має цей код — змін не потребує.
-- **OQ-9 RESOLVED:** роль content editor **єдина для всіх мов** — `listEditorQueueByLanguage` **без per-language authz й без 403-гілки**. Контракт лишається як є (без `403`).
+- **OQ-9 RESOLVED:** роль content editor **єдина для всіх мов** — `listEditorQueueByLanguage` **без per-language authz** (жодної перевірки «редактор саме цієї мови»). Загальний `403 editor.role_required` за роллю **лишається** в контракті — його успадковано від reference EditorQueue й він перевіряє наявність ролі, а не мову.
 - **Лишається — борг SAD §11:** перейменування `lemma_pl` → `lemma`. Контракт уже вживає мово-нейтральне `lemma` в `EditorQueueItem`; злиття з reference вимагатиме узгодження імені поля.
 
 ## Lint / mock

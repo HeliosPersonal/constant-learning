@@ -66,9 +66,13 @@ erDiagram
         varchar target_language PK_FK
         smallint daily_new_words_limit
         smallint pending_daily_new_words_limit
+        timestamptz pending_limit_effective_from
         timestamptz new_words_available_from
         date current_day_date
+        timestamptz current_day_starts_at
         timestamptz current_day_ends_at
+        timestamptz current_day_original_ends_at
+        varchar current_day_time_zone_at_start
         timestamptz course_completed_at
         timestamptz created_at
     }
@@ -154,7 +158,7 @@ erDiagram
 - `ux_dictionary_entries_external_id` (глобальний UNIQUE) → **`ux_dictionary_entries_lang_external_id` UNIQUE (`target_language`, `external_id`)**: одне слово = один запис **у межах мови** (ідемпотентний імпорт per-language).
 - `ix_dictionary_entries_course_position` → **`ix_dictionary_entries_lang_course_position` (`target_language`, `course_position`) WHERE `published_version_id IS NOT NULL`**: добір нових лем у власному порядку мови (AC-06).
 
-`entry_versions` **не змінюється**: `lemma_pl`/`example_pl` семантично стають «лема/приклад активної мови», `pronunciation_uk`/`example_uk` лишаються source-мовними. Перейменування польсько-іменованих колонок — **борг** ([SAD §11](sad.md#11-ризики-і-технічний-борг)). Формат транскрипції — **OQ-8 RESOLVED**: єдина наближена (не-IPA) транскрипція для всіх мов, `pronunciation_uk` зберігає той самий формат для pl/en/de/nl — **без per-language колонки транскрипції**. Мова версії досяжна через `entry_id → dictionary_entries.target_language`.
+`entry_versions` **не змінюється**: `lemma_pl`/`example_pl` семантично стають «лема/приклад активної мови», `pronunciation_uk`/`example_uk` лишаються source-мовними. Перейменування польсько-іменованих колонок — **борг** ([SAD §11](sad.md#11-risks-and-technical-debt)). Формат транскрипції — **OQ-8 RESOLVED**: єдина наближена (не-IPA) транскрипція для всіх мов, `pronunciation_uk` зберігає той самий формат для pl/en/de/nl — **без per-language колонки транскрипції**. Мова версії досяжна через `entry_id → dictionary_entries.target_language`.
 
 ### `learner_words`, `answer_events`, `learning_sessions`, `content_reports` — дискримінатор прогресу/черги
 
@@ -258,4 +262,4 @@ PII guard: `Test User`, Telegram id `900000000+`, без реальних кон
 
 ### Лишається борг (не в цій фічі)
 
-- Перейменування `lemma_pl`/`example_pl` → мово-нейтральні імена — борг [SAD §11](sad.md#11-ризики-і-технічний-борг), 3-крок, окремий PR.
+- Перейменування `lemma_pl`/`example_pl` → мово-нейтральні імена — борг [SAD §11](sad.md#11-risks-and-technical-debt), 3-крок, окремий PR.
