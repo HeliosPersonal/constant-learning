@@ -136,7 +136,10 @@ def prepare(directory, image, host, sha, run_number):
 def health(host, attempts=12):
     for attempt in range(attempts):
         try:
-            request = urllib.request.Request(f"https://{host}/api/telegram/health", headers={"Cache-Control": "no-cache"})
+            # Cloudflare блокує типовий User-Agent Python-urllib (403), тому задаємо власний.
+            request = urllib.request.Request(f"https://{host}/api/telegram/health",
+                                             headers={"Cache-Control": "no-cache",
+                                                      "User-Agent": "constant-learning-deploy/1.0"})
             with urllib.request.urlopen(request, timeout=10) as response:
                 if (response.status == 200 and response.geturl() == request.full_url
                         and json.load(response).get("status") == "healthy"):
