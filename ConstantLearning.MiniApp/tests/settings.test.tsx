@@ -15,7 +15,7 @@ const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_nam
 const notOnboarded: ApiErrorBody = { code: 'learner.not_onboarded', message: 'Спершу налаштуйте тренер.' };
 const SAVED = 'Збережено ✓';
 const clients: ReturnType<typeof createQueryClient>[] = [];
-function json(body: Learner | ApiErrorBody | typeof todaySummary, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
+function json(body: Learner | ApiErrorBody | typeof todaySummary | { content_editor: boolean }, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
 function mockFetch(handler: (request: Request) => Response | Promise<Response>) {
   const fetcher = vi.fn<typeof fetch>().mockImplementation(request => Promise.resolve(handler(request as Request)));
   vi.stubGlobal('fetch', fetcher); return fetcher;
@@ -197,5 +197,26 @@ describe('Маршрут і завантаження профілю', () => {
     window.history.replaceState(null, '', '/settings'); const fetcher = mockFetch(() => json(notOnboarded, 404)); mount(<App privacyContact={parsePrivacyContact('mailto:privacy@example.test')} />);
     await screen.findByText('Спершу налаштуйте тренер.'); expect(screen.queryByRole('form')).not.toBeInTheDocument(); expect(window.location.pathname).toBe('/settings');
     fireEvent.click(screen.getByRole('button', { name: 'До початку' })); await screen.findByRole('form', { name: 'Налаштування навчання' }); expect(fetcher).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Вхід до редактора словника', () => {
+  const settingsApp = (access: () => Response) => {
+    window.history.replaceState(null, '', '/settings');
+    const fetcher = mockFetch(request => request.url.endsWith('/learners/me/access') ? access() : json(learner)); mount(<App />); return fetcher;
+  };
+  it('редактору показує рядок «Редактор словника», тап відкриває /editor', async () => {
+    settingsApp(() => json({ content_editor: true }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Редактор словника' }));
+    await waitFor(() => expect(window.location.pathname).toBe('/editor'));
+  });
+  it.each([
+    ['не редактору', () => json({ content_editor: false })],
+    ['при помилці перевірки ролі', () => json({ code: 'server.unavailable', message: 'Недоступно' }, 503)],
+  ])('%s рядок прихований', async (_name, access) => {
+    const fetcher = settingsApp(access);
+    await screen.findByRole('heading', { name: 'Налаштування' });
+    await waitFor(() => expect(fetcher.mock.calls.some(call => (call[0] as Request).url.endsWith('/learners/me/access'))).toBe(true));
+    await settle(); expect(screen.queryByRole('button', { name: 'Редактор словника' })).not.toBeInTheDocument();
   });
 });

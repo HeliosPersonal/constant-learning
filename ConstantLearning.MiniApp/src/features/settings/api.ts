@@ -11,3 +11,9 @@ export async function updateSettings(body: SettingsUpdate): Promise<Learner> {
   if (result.response.status !== 200 || !result.data?.onboarded_at) throw new SettingsApiError(result.response.status, result.error);
   return result.data;
 }
+
+export async function getLearnerAccess(signal?: AbortSignal): Promise<components['schemas']['LearnerAccess']> {
+  const result = await api.GET('/api/v1/learners/me/access', { signal });
+  if (result.response.status !== 200 || !result.data) throw new SettingsApiError(result.response.status, result.error);
+  return result.data;
+}

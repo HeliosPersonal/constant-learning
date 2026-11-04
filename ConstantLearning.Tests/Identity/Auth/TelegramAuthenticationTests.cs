@@ -155,6 +155,26 @@ public sealed class TelegramAuthenticationTests(PostgresFixture postgres) : Post
     }
 
     [DockerFact]
+    public async Task LearnerAccess_ReportsEditorRoleOnlyForConfiguredIdentityAndRequiresAuthentication()
+    {
+        var ordinary = await CreateLearnerAsync();
+        var editor = await CreateLearnerAsync();
+        await using var app = await AuthTestApplication.StartAsync(_postgres.ConnectionString, Clock, editor.TelegramUserId);
+
+        await AssertErrorAsync(await app.Client.GetAsync("/api/v1/learners/me/access"), HttpStatusCode.Unauthorized,
+            "auth.invalid_init_data", "getLearnerAccess");
+        foreach (var (learner, expected) in new[] { (ordinary, false), (editor, true) })
+        {
+            app.Client.DefaultRequestHeaders.Authorization = new TelegramInitDataSigner().Authorization(learner, Clock);
+            var response = await app.Client.GetAsync("/api/v1/learners/me/access");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await ContractAssert.ResponseAsync("getLearnerAccess", response);
+            using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Equal(expected, body.RootElement.GetProperty("content_editor").GetBoolean());
+        }
+    }
+
+    [DockerFact]
     public async Task Telemetry_UsesRealAuthenticationAndLogsNeverContainCredentialsOrTelegramPersonalData()
     {
         var learner = await CreateLearnerAsync();

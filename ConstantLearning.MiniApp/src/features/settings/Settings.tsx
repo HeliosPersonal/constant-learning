@@ -13,7 +13,7 @@ import './settings.css';
 
 const SAVED_VISIBLE_MS = 2000;
 
-export default function Settings({ learner, onBack, onStart }: { learner: Learner; onBack: (notice?: string) => void; onStart: () => void }) {
+export default function Settings({ learner, onBack, onStart, onOpenEditor }: { learner: Learner; onBack: (notice?: string) => void; onStart: () => void; onOpenEditor?: () => void }) {
   const [saved, setSaved] = useState(learner);
   const [draft, setDraft] = useState(() => draftFromLearner(learner));
   const [touched, setTouched] = useState(false);
@@ -135,6 +135,10 @@ export default function Settings({ learner, onBack, onStart }: { learner: Learne
         {errors.zone && <p className="ios-footnote ios-footnote--error" role="alert">{errors.zone}</p>}
       </fieldset>
     </form>
+    {onOpenEditor && !blocked && <>
+      <div className="ios-caption">Редактор</div>
+      <div className="ios-group"><button type="button" className="ios-row ios-plain" onClick={onOpenEditor}>Редактор словника<span className="ios-value ios-chevron" aria-hidden="true">›</span></button></div>
+    </>}
     {!blocked && <ResetProgressSection onDone={onBack} />}
   </>;
 }

@@ -15,6 +15,7 @@ for (const theme of ['light', 'dark'] as const) {
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
     await page.route('https://telegram.org/**', route => route.fulfill({ contentType: 'text/javascript', body: `const callbacks=new Set();window.Telegram={WebApp:{initData:"fixture=settings",colorScheme:"${theme}",version:"6.0",onEvent:(_,callback)=>callbacks.add(callback),offEvent:(_,callback)=>callbacks.delete(callback)}};window.emitFixtureTheme=(value)=>{window.Telegram.WebApp.colorScheme=value;callbacks.forEach(callback=>callback())};` }));
     await page.route('**/api/v1/learners/me', route => route.fulfill({ json: profile }));
+    await page.route('**/api/v1/learners/me/access', route => route.fulfill({ json: { content_editor: true } }));
     await page.route('**/api/v1/today', route => route.fulfill({ json: todaySummary }));
     await page.route('**/api/v1/telemetry/client-timings', route => route.fulfill({ status: 204 }));
     let release!: () => void;
@@ -30,6 +31,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.goto('/settings');
     await expect(page.getByRole('heading', { name: 'Налаштування', exact: true })).toBeVisible();
     await expect(page).toHaveURL(/\/settings$/);
+    await expect(page.getByRole('button', { name: 'Редактор словника' })).toBeVisible();
     await page.screenshot({ path: `artifacts/settings-${theme}-default.png`, fullPage: true });
     await expect(page).toHaveScreenshot(`${theme}-settings.png`, { fullPage: true });
     const other = theme === 'light' ? 'dark' : 'light';

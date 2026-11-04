@@ -8,7 +8,7 @@ import type { PrivacyContact } from './features/onboarding/privacy';
 import type { MissingWordReportRequest } from './features/dictionary/search/api';
 
 const ComponentPreview = lazy(() => import('./components/ComponentPreview').then(module => ({ default: module.ComponentPreview })));
-const Settings = lazy(() => import('./features/settings/Settings'));
+const SettingsScreen = lazy(() => import('./features/settings/SettingsScreen'));
 const Dictionary = lazy(() => import('./features/dictionary/search/Dictionary'));
 const Stats = lazy(() => import('./features/stats/Stats'));
 const SessionRoute = lazy(() => import('./features/session/shell/SessionRoute'));
@@ -34,7 +34,7 @@ export function App({ onNavigateToToday, privacyContact, onReportMissing, onOpen
         : route === '/stats'
         ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо ваші слова…</div>}><Stats onBack={() => go('/today')} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} /></Suspense>
         : route === '/settings'
-        ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо налаштування…</div>}><Settings learner={learner} onBack={notice => { setTodayNotice(notice); go('/today'); }} onStart={() => go('/')} /></Suspense>
+        ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо налаштування…</div>}><SettingsScreen learner={learner} onBack={notice => { setTodayNotice(notice); go('/today'); }} onStart={() => go('/')} onOpenEditor={() => go('/editor')} /></Suspense>
         : <><Today learner={learner} notice={todayNotice} onNoticeShown={() => setTodayNotice(undefined)} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} onStart={() => go('/')} /><nav className="ios-group" aria-label="Основна навігація">{navigation.map(([path, label]) => <button key={path} type="button" className="ios-row ios-plain" onClick={() => go(path)}>{label}<span className="ios-value ios-chevron" aria-hidden="true">›</span></button>)}</nav></>} />}
   </main>;
 }

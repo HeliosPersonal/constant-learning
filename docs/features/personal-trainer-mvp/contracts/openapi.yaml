@@ -17,11 +17,14 @@
 #           LearnedWordCard, LearnedWordsPage, LearnedWordsSummary. Лише читання наявних таблиць
 #           (learner_words, answer_events, answer_neutralizations) — нових таблиць немає. Зворотно
 #           сумісне доповнення (лише нові шляхи й схеми).
+#   0.5.0 — додано GET /api/v1/learners/me/access (getLearnerAccess) зі схемою LearnerAccess:
+#           чи має поточний користувач роль content editor (Mini App показує вхід до редактора лише
+#           редакторам). Нових таблиць немає, зворотно сумісне доповнення.
 openapi: 3.1.0
 
 info:
   title: personal-trainer-mvp API
-  version: 0.4.0
+  version: 0.5.0
   description: |
     API персонального тренера польських слів для україномовних learner. Mini App у Telegram
     використовує його для онбордингу, щоденних session з вправами пригадування, екрана «Сьогодні»,
@@ -140,6 +143,22 @@ paths:
               example:
                 code: learner.not_onboarded
                 message: Спершу налаштуйте тренер.
+
+  /api/v1/learners/me/access:
+    get:
+      tags: [learner]
+      summary: Ролі поточного користувача
+      description: Не потребує завершеного онбордингу. Лише повідомляє, чи є користувач content editor; сам доступ до редакторських ендпоінтів перевіряє сервер.
+      operationId: getLearnerAccess
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerAccess" }
+              example:
+                content_editor: false
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
   /api/v1/learners/me/settings:
     patch:
@@ -1423,6 +1442,13 @@ components:
             - $ref: "#/components/schemas/ReminderSchedule"
             - type: "null"
         onboarded_at: { type: [string, "null"], format: date-time }
+
+    LearnerAccess:
+      type: object
+      required: [content_editor]
+      additionalProperties: false
+      properties:
+        content_editor: { type: boolean, description: "true, якщо Telegram id користувача є в списку редакторів контенту" }
 
     WordStatus:
       type: string

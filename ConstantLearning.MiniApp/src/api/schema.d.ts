@@ -43,6 +43,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/learners/me/access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ролі поточного користувача
+         * @description Не потребує завершеного онбордингу. Лише повідомляє, чи є користувач content editor; сам доступ до редакторських ендпоінтів перевіряє сервер.
+         */
+        get: operations["getLearnerAccess"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/learners/me/settings": {
         parameters: {
             query?: never;
@@ -62,28 +82,6 @@ export interface paths {
          *     нагадування. Не більше одного нагадування на календарну дату, навіть після зміни поясу.
          */
         patch: operations["updateLearnerSettings"];
-        trace?: never;
-    };
-    "/api/v1/learners/me/progress/reset": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Скинути весь навчальний прогрес (US-01, US-02, US-04)
-         * @description Атомарно стирає прогрес поточного learner за одну транзакцію (ADR-0001). Тіло порожнє:
-         *     підтвердження зі списком наслідків виконує клієнт (AC-02, AC-03). Повторний виклик на
-         *     порожньому прогресі повертає успіх без змін (AC-09), тож повтор безпечний за станом.
-         */
-        post: operations["resetLearnerProgress"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/api/v1/today": {
@@ -348,10 +346,12 @@ export interface paths {
         };
         /**
          * Список вивчених слів з особистою статистикою (learned-words-stats US-01)
-         * @description Повертає лише слова, які learner уже бачив. Фільтр `tab`: all — усі побачені; recalled —
-         *     status = recalled; review — status = review. `sort`: recent — за датою останнього повторення;
-         *     alpha — за лемою; weakest — спершу найслабші. Необов'язковий `q` звужує за лемою або перекладом.
-         *     Пагінація курсором за entry_id.
+         * @description Повертає лише слова, які learner уже бачив (мають learner_word; вкладка «Усі» ніколи не розкриває
+         *     порядок непоказаних слів курсу). Фільтр `tab`: all — усі побачені; recalled — status = recalled;
+         *     review — status = review. `sort`: recent — за датою останнього повторення; alpha — за лемою;
+         *     weakest — спершу найслабші. Необов'язковий `q` звужує за лемою або перекладом. Пагінація курсором
+         *     за entry_id. Усі лічильники сервер рахує наживо з answer_events (за винятком успішно оскаржених
+         *     помилок — answer_neutralizations); статус — з learner_words.
          */
         get: operations["listLearnedWords"];
         put?: never;
@@ -392,7 +392,8 @@ export interface paths {
         };
         /**
          * Зведення для шапки екрана «Мої слова» (learned-words-stats US-01)
-         * @description Лічильники вкладок рахуються з learner_words.status. weak_count — скільки слів позначено is_weak.
+         * @description Лічильники вкладок рахуються з learner_words.status — те саме джерело, що й «Сьогодні».
+         *     weak_count — скільки слів позначено is_weak.
          */
         get: operations["getLearnedWordsSummary"];
         put?: never;
@@ -555,6 +556,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/learners/me/progress/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Скинути весь навчальний прогрес (reset-progress US-01, US-02, US-04)
+         * @description Атомарно стирає прогрес поточного learner за одну транзакцію (reset-progress ADR-0001): стан
+         *     слів, усі session будь-якого виду з картками, відповіді та нейтралізації оскаржень. Профіль,
+         *     налаштування й content reports лишаються. Тіло порожнє; ідентичність — лише з initData (AC-05).
+         *     Повторний виклик на порожньому прогресі повертає успіх без змін (AC-09), тож Idempotency-Key
+         *     не потрібен — повтор безпечний за станом.
+         */
+        post: operations["resetLearnerProgress"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -565,6 +590,11 @@ export interface components {
             message: string;
             /** @description необов'язковий структурований контекст (поля з помилками тощо) */
             details?: Record<string, never>;
+        };
+        /** @description Результат скидання прогресу (reset-progress). */
+        ProgressResetResult: {
+            /** @description true — були дані навчання й їх стерто; false — прогрес уже був порожнім, нічого не змінено */
+            erased: boolean;
         };
         /** @description learners.daily_new_words_limit (SMALLINT); від 1 до 10 нових слів на день (AC-45) */
         DailyNewWordsLimit: number;
@@ -591,10 +621,6 @@ export interface components {
             time_zone?: components["schemas"]["TimeZone"];
             reminder?: components["schemas"]["ReminderSchedule"] | null;
         };
-        ProgressResetResult: {
-            /** @description true — були дані навчання й їх стерто; false — прогрес уже був порожнім, нічого не змінено */
-            erased: boolean;
-        };
         Learner: {
             /** Format: uuid */
             id: string;
@@ -607,6 +633,10 @@ export interface components {
             /** Format: date-time */
             onboarded_at: string | null;
         };
+        LearnerAccess: {
+            /** @description true, якщо Telegram id користувача є в списку редакторів контенту */
+            content_editor: boolean;
+        };
         /**
          * @description learner_words.status; «Ще не вчив» / «На повторення» / «Вже пригадую»
          * @enum {string}
@@ -617,6 +647,7 @@ export interface components {
             learner_day: string;
             due_review_count: number;
             recalled_words_count: number;
+            /** @description лише заняття kind = plan (unlimited-learning): extra-заняття не рахуються */
             completed_sessions_last_7_days: number;
             has_active_session: boolean;
             /** @enum {string} */
@@ -626,26 +657,6 @@ export interface components {
             /** @description false, якщо денний ліміт нових слів вичерпано або нових слів поки немає; повторення від цього не залежать */
             new_words_available_today: boolean;
             extra_actions: components["schemas"]["ExtraActions"];
-        };
-        /**
-         * @description Тип заняття (unlimited-learning, ADR-0001): plan — планове заняття дня; extra_word — додаткове нове слово понад план; extra_practice — додаткова практика вивчених слів.
-         * @enum {string}
-         */
-        SessionKind: "plan" | "extra_word" | "extra_practice";
-        ExtraActionAvailability: {
-            available: boolean;
-            /**
-             * @description Чому дія недоступна; null, якщо available = true.
-             * @enum {string|null}
-             */
-            reason: "plan_not_done" | "course_completed" | "no_eligible_words" | null;
-        };
-        /** @description Доступність додаткових дій екрана «Сьогодні» (unlimited-learning). Лише сервер вирішує доступність (AC-16, AC-17). */
-        ExtraActions: {
-            /** @description true, якщо слів до повторення немає, активної session немає і нових слів на сьогодні немає (ліміт вичерпано або base course завершено). */
-            plan_done: boolean;
-            extra_new_word: components["schemas"]["ExtraActionAvailability"];
-            extra_practice: components["schemas"]["ExtraActionAvailability"];
         };
         /** @enum {string} */
         SessionNotice: "new_words_limit_reached" | "course_completed" | "course_replenished";
@@ -662,7 +673,10 @@ export interface components {
             id: string;
             /** @description Ключ порядку фізичних карток; може мати пропуски й не є номером серед total_items. */
             position: number;
-            /** @enum {string} */
+            /**
+             * @description extra_new_word_check і extra_practice — картки extra-занять (unlimited-learning); new_word_card використовується й для extra_word
+             * @enum {string}
+             */
             kind: "review" | "new_word_card" | "new_word_check" | "control_repetition" | "extra_new_word_check" | "extra_practice";
             /** @description українська підказка для вправи */
             prompt_uk: string;
@@ -689,6 +703,26 @@ export interface components {
             current_item: components["schemas"]["SessionItem"] | null;
             /** @description Відкритий результат; перед показом наступної картки викличте continueSession. */
             last_result: components["schemas"]["LastResult"] | null;
+        };
+        /**
+         * @description Тип заняття (unlimited-learning, ADR-0001): plan — планове заняття дня; extra_word — додаткове нове слово понад план; extra_practice — додаткова практика вивчених слів.
+         * @enum {string}
+         */
+        SessionKind: "plan" | "extra_word" | "extra_practice";
+        ExtraActionAvailability: {
+            available: boolean;
+            /**
+             * @description Чому дія недоступна; null, якщо available = true.
+             * @enum {string|null}
+             */
+            reason: "plan_not_done" | "course_completed" | "no_eligible_words" | null;
+        };
+        /** @description Доступність додаткових дій екрана «Сьогодні» (unlimited-learning). Лише сервер вирішує доступність (AC-16, AC-17). */
+        ExtraActions: {
+            /** @description true, якщо слів до повторення немає, активної session немає і нових слів на сьогодні немає (ліміт вичерпано або base course завершено). */
+            plan_done: boolean;
+            extra_new_word: components["schemas"]["ExtraActionAvailability"];
+            extra_practice: components["schemas"]["ExtraActionAvailability"];
         };
         LastResult: {
             /** Format: uuid */
@@ -783,11 +817,13 @@ export interface components {
         };
         /**
          * @description Вкладка фільтра за learner_words.status; all — усі побачені слова (learned-words-stats).
+         * @default all
          * @enum {string}
          */
         StatsTab: "all" | "recalled" | "review";
         /**
          * @description recent — за останнім повторенням; alpha — за лемою; weakest — спершу найслабші.
+         * @default recent
          * @enum {string}
          */
         StatsSort: "recent" | "alpha" | "weakest";
@@ -825,7 +861,32 @@ export interface components {
             /** @description status != recalled і (forgotten_count > 0 або incorrect_count > 0) */
             is_weak: boolean;
         };
-        LearnedWordCard: components["schemas"]["LearnedWordStat"] & {
+        LearnedWordCard: {
+            /** Format: uuid */
+            entry_id: string;
+            lemma_pl: string;
+            /** @description вимова українською; null, якщо запис втратив публікацію */
+            transcription_uk: string | null;
+            /** @description канонічний переклад (перший серед translations_uk) */
+            translation_uk: string;
+            status: components["schemas"]["WordStatus"];
+            /** @description показ — кількість зарахованих спроб (review / control_repetition / extra_practice) */
+            shown_count: number;
+            correct_count: number;
+            /** @description помилки за винятком успішно оскаржених */
+            incorrect_count: number;
+            /** @description learner_words.consecutive_scheduled_correct */
+            streak: number;
+            /** @description learner_words.lapses — скільки разів забув */
+            forgotten_count: number;
+            /** Format: date */
+            first_shown_day: string | null;
+            /** Format: date */
+            last_review_day: string | null;
+            /** Format: date */
+            due_on: string | null;
+            /** @description status != recalled і (forgotten_count > 0 або incorrect_count > 0) */
+            is_weak: boolean;
             translations_uk: components["schemas"]["Translation"][];
             mistake_breakdown: components["schemas"]["MistakeBreakdown"];
         };
@@ -1198,6 +1259,32 @@ export interface operations {
             };
         };
     };
+    getLearnerAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "content_editor": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LearnerAccess"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
     updateLearnerSettings: {
         parameters: {
             query?: never;
@@ -1254,40 +1341,6 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             404: components["responses"]["LearnerNotOnboarded"];
-        };
-    };
-    resetLearnerProgress: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Прогрес скинуто (або вже порожній) */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    /** @example {
-                     *       "erased": true
-                     *     } */
-                    "application/json": components["schemas"]["ProgressResetResult"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            404: components["responses"]["LearnerNotOnboarded"];
-            /** @description Скидання не завершено, транзакцію відкочено — прогрес лишився без змін (AC-04) */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
         };
     };
     getToday: {
@@ -1999,6 +2052,31 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "entry_id": "0192f0a0-0000-7000-8000-0000000000e1",
+                     *           "lemma_pl": "chata",
+                     *           "transcription_uk": "хата",
+                     *           "translation_uk": "хата",
+                     *           "status": "review",
+                     *           "shown_count": 7,
+                     *           "correct_count": 4,
+                     *           "incorrect_count": 3,
+                     *           "streak": 1,
+                     *           "forgotten_count": 2,
+                     *           "first_shown_day": "2026-10-20",
+                     *           "last_review_day": "2026-10-31",
+                     *           "due_on": "2026-11-02",
+                     *           "is_weak": true
+                     *         }
+                     *       ],
+                     *       "has_next": false,
+                     *       "has_prev": false,
+                     *       "next_cursor": null
+                     *     }
+                     */
                     "application/json": components["schemas"]["LearnedWordsPage"];
                 };
             };
@@ -2008,6 +2086,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "code": "stats.invalid_request",
+                     *       "message": "Невалідні параметри запиту."
+                     *     }
+                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -2032,6 +2116,35 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "entry_id": "0192f0a0-0000-7000-8000-0000000000e1",
+                     *       "lemma_pl": "chata",
+                     *       "transcription_uk": "хата",
+                     *       "translation_uk": "хата",
+                     *       "status": "review",
+                     *       "shown_count": 7,
+                     *       "correct_count": 4,
+                     *       "incorrect_count": 3,
+                     *       "streak": 1,
+                     *       "forgotten_count": 2,
+                     *       "first_shown_day": "2026-10-20",
+                     *       "last_review_day": "2026-10-31",
+                     *       "due_on": "2026-11-02",
+                     *       "is_weak": true,
+                     *       "translations_uk": [
+                     *         {
+                     *           "kind": "canonical",
+                     *           "text_uk": "хата"
+                     *         }
+                     *       ],
+                     *       "mistake_breakdown": {
+                     *         "typo": 1,
+                     *         "diacritic": 1,
+                     *         "dont_know": 1
+                     *       }
+                     *     }
+                     */
                     "application/json": components["schemas"]["LearnedWordCard"];
                 };
             };
@@ -2042,6 +2155,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "code": "stats.word_not_found",
+                     *       "message": "Слово ще не вивчалося."
+                     *     }
+                     */
                     "application/json": components["schemas"]["Error"];
                 };
             };
@@ -2062,6 +2181,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "seen_count": 42,
+                     *       "recalled_count": 18,
+                     *       "review_count": 24,
+                     *       "weak_count": 6
+                     *     }
+                     */
                     "application/json": components["schemas"]["LearnedWordsSummary"];
                 };
             };
@@ -2529,6 +2656,43 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    resetLearnerProgress: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Прогрес скинуто (або вже порожній) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgressResetResult"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["LearnerNotOnboarded"];
+            /** @description Скидання не завершено, транзакцію відкочено — прогрес лишився без змін (AC-04) */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "progress_reset.failed",
+                     *       "message": "Не вдалося скинути прогрес. Нічого не змінено — спробуйте ще раз."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
 }

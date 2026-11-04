@@ -2,7 +2,7 @@
 
 Фактичний прогін для [T17](../tasks/T17-answer-item.md), [PRD §6](../PRD.md#6-non-functional-requirements) та [ADR-0008](../adr/0008-keep-the-learning-session-server-side-with-per-card-idempotency.md).
 
-- Час UTC: 2026-11-02T14:45:53.7674238+00:00.
+- Час UTC: 2026-11-04T09:13:02.6120231+00:00.
 - ОС: Microsoft Windows 10.0.26200; архітектура: X64; runtime: .NET 10.0.4; Release.
 - Логічні CPU: 20; доступна .NET GC пам’ять: 32429 MiB.
 - PostgreSQL у локальному Docker: PostgreSQL 16.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit.
@@ -12,7 +12,7 @@
 
 | Запити | p50 сервера, ms | p95 сервера, ms | Максимум сервера, ms | p95 клієнта, ms |
 | ---: | ---: | ---: | ---: | ---: |
-| 200 | 49.446 | 68.099 | 103.303 | 68.344 |
+| 200 | 29.961 | 39.507 | 52.683 | 39.712 |
 
 Умова p95 сервера ≤ 500 ms: виконана. [Сирі вимірювання](session-answer-samples.csv).
 

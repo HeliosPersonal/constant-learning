@@ -20,6 +20,7 @@
 | `disputeAnswer`: поза денним лімітом reports; гілка перевірки нового слова | AC-47, AC-55 |
 | `createContentReport`: ліміт без dispute; ідентичний повтор незакритого report повертає 202 з наявним `id`; новий текст 429 | AC-46, AC-47, AC-51 |
 | Нові `listAppliedChanges` і `rollbackAppliedChange` + схеми `AppliedChange`, `AppliedChangePage`, `RollbackResult`; коди `editor.change_not_found`, `editor.rollback_not_current` | US-12, AC-48–AC-50 |
+| Нова `getLearnerAccess` (`GET /api/v1/learners/me/access`) + схема `LearnerAccess`, `info.version` 0.5.0 | Допоміжний ендпоінт UI: Mini App показує вхід до редактора лише користувачам із роллю редактора ([US-12](../PRD.md)); окремого AC немає, сервер і далі сам перевіряє роль на редакторських ендпоінтах |
 | `events.md`: відкладене нагадування; підсумок «з моменту попереднього» через `summary_dispatch_id` | AC-26, AC-37, AC-44 |
 
 ## Відхилення від дефолтів
