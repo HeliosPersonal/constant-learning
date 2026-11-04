@@ -12,9 +12,10 @@ async function prepare(page: Page, theme: string) {
 }
 async function applied(page: Page) {
   await page.route('**/api/v1/editor/content-reports?*', route => route.fulfill({ json: queuePage }));
-  await page.goto('/editor'); await page.getByRole('button', { name: 'Застосовані зміни', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Відкотити зміну' })).toBeVisible();
+  await page.goto('/editor'); await page.getByRole('tab', { name: 'Застосовані', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Відкотити', exact: true })).toBeVisible();
 }
+const noOverflow = (page: Page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
 
 for (const theme of ['light', 'dark'] as const) {
   test(`${theme}: черга, рішення, чернетка, помилка й очікування`, async ({ page }) => {
@@ -28,24 +29,23 @@ for (const theme of ['light', 'dark'] as const) {
       if (posts === 1) await route.fulfill({ status: 503, json: { code: 'server.unavailable' } });
       else { await pending; accepted = true; await route.fulfill({ json: closedReport(report.id) }); }
     });
-    await page.goto('/editor'); const inspect = page.getByRole('button', { name: 'Розглянути' }).first(); await expect(inspect).toBeVisible();
+    await page.goto('/editor'); const inspect = page.getByRole('list').getByRole('button').first(); await expect(inspect).toBeVisible();
     await page.screenshot({ path: `artifacts/editor-${theme}-queue.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-editor-queue.png`, { fullPage: true });
-    await inspect.focus(); await page.keyboard.press('Enter'); const dialog = page.getByRole('dialog');
-    await expect(dialog.getByRole('heading', { level: 2 })).toBeFocused(); expect(await dialog.evaluate(element => element.parentElement === document.body)).toBe(true);
-    await expect(page).toHaveScreenshot(`${theme}-editor-decision.png`);
-    await dialog.getByRole('button', { name: 'Повернутися до черги' }).focus(); await page.keyboard.press('Tab'); await expect(dialog.getByRole('button', { name: 'Закрити' })).toBeFocused();
-    const corrected = dialog.getByLabel(/Остаточне значення/); await corrected.fill('державний орган');
-    await page.setViewportSize({ width: 320, height: 740 }); expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true); await page.setViewportSize({ width: 390, height: 844 });
-    await dialog.getByRole('button', { name: 'Повернутися до черги' }).click(); await expect(inspect).toBeFocused(); await page.keyboard.press('Enter'); await expect(corrected).toHaveValue('державний орган');
-    await dialog.getByRole('button', { name: 'Схвалити зміну' }).click(); await expect(dialog.getByRole('alert')).toContainText('Ваш вибір залишився на екрані'); await expect(dialog.locator('.editor-message')).toBeFocused();
-    await expect(page).toHaveScreenshot(`${theme}-editor-decision-error.png`);
-    await dialog.getByRole('button', { name: 'Схвалити зміну' }).click(); await expect(dialog.getByRole('button', { name: 'Зберігаємо рішення…' })).toBeDisabled(); await expect(dialog.getByRole('button', { name: 'Закрити' })).toBeDisabled(); await page.keyboard.press('Escape'); await expect(dialog).toBeVisible();
-    await expect(page).toHaveScreenshot(`${theme}-editor-decision-pending.png`);
-    release(); await expect(page.getByText('Зміну застосовано. Вона доступна в списку застосованих змін.')).toBeVisible(); await expect(dialog).toHaveCount(0); expect(posts).toBe(2);
-    await page.getByRole('region', { name: 'Повідомлення: відсутнє слово' }).getByRole('button', { name: 'Розглянути' }).click(); await expect(dialog.getByRole('heading', { level: 2 })).toHaveText('Розглянути відсутнє слово'); await expect(dialog.getByRole('option', { name: 'Схвалити зміну' })).toHaveCount(0);
-    await dialog.getByLabel('Рішення', { exact: true }).selectOption('reject'); await dialog.getByLabel('Причина відхилення').selectOption('phrase_not_lemma');
-    await expect(page).toHaveScreenshot(`${theme}-editor-missing.png`);
-    await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0);
+    await inspect.focus(); await page.keyboard.press('Enter');
+    await expect(page.getByRole('heading', { level: 1, name: 'Розглянути повідомлення' })).toBeFocused();
+    await expect(page).toHaveScreenshot(`${theme}-editor-decision.png`, { fullPage: true });
+    const corrected = page.getByLabel(/Остаточне значення/); await corrected.fill('державний орган');
+    await page.setViewportSize({ width: 320, height: 740 }); expect(await noOverflow(page)).toBe(true); await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('button', { name: '← До черги' }).click(); await expect(inspect).toBeFocused(); await page.keyboard.press('Enter'); await expect(corrected).toHaveValue('державний орган');
+    await page.getByRole('button', { name: 'Схвалити зміну' }).click(); await expect(page.getByRole('alert')).toContainText('Ваш вибір залишився на екрані'); await expect(page.locator('.editor-message')).toBeFocused();
+    await expect(page).toHaveScreenshot(`${theme}-editor-decision-error.png`, { fullPage: true });
+    await page.getByRole('button', { name: 'Схвалити зміну' }).click(); await expect(page.getByRole('button', { name: 'Зберігаємо рішення…' })).toBeDisabled(); await expect(page.getByRole('button', { name: '← До черги' })).toBeDisabled();
+    await expect(page).toHaveScreenshot(`${theme}-editor-decision-pending.png`, { fullPage: true });
+    release(); await expect(page.getByText('Зміну застосовано. Вона доступна в списку застосованих змін.')).toBeVisible(); await expect(page.getByRole('region', { name: /Розглянути/ })).toHaveCount(0); expect(posts).toBe(2);
+    await page.getByRole('region', { name: 'Повідомлення: відсутнє слово' }).getByRole('button').click(); await expect(page.getByRole('heading', { level: 1 })).toHaveText('Розглянути відсутнє слово'); await expect(page.getByRole('radio', { name: 'Схвалити' })).toHaveCount(0);
+    await page.getByRole('radio', { name: 'Відхилити' }).check(); await page.getByLabel('Причина відхилення').selectOption('phrase_not_lemma');
+    await expect(page).toHaveScreenshot(`${theme}-editor-missing.png`, { fullPage: true });
+    await page.getByRole('button', { name: '← До черги' }).click(); await expect(page.getByRole('region', { name: /Розглянути/ })).toHaveCount(0);
     expect(profileRequests).toEqual([]); expect(errors).toEqual([]);
   });
 
@@ -60,22 +60,22 @@ for (const theme of ['light', 'dark'] as const) {
     });
     await applied(page); await expect(page.getByText('Прийнятий варіант відповіді')).toBeVisible(); await expect(page.getByText('Варіанта ще не було')).toBeVisible();
     await page.screenshot({ path: `artifacts/editor-${theme}-applied.png`, fullPage: true }); await expect(page).toHaveScreenshot(`${theme}-editor-applied.png`, { fullPage: true });
-    const trigger = page.getByRole('button', { name: 'Відкотити зміну' }); await trigger.click(); const dialog = page.getByRole('dialog'); await expect(dialog.getByRole('heading', { level: 2 })).toBeFocused(); expect(posts).toBe(0);
-    await expect(page).toHaveScreenshot(`${theme}-editor-rollback-confirm.png`);
-    await dialog.getByRole('button', { name: 'Залишити без змін' }).click(); await expect(trigger).toBeFocused(); expect(posts).toBe(0); await page.keyboard.press('Enter');
-    await dialog.getByRole('button', { name: 'Підтвердити відкат' }).click(); await expect(dialog.getByRole('alert')).toContainText('Нічого не підтверджено');
-    await expect(page).toHaveScreenshot(`${theme}-editor-rollback-error.png`);
-    await dialog.getByRole('button', { name: 'Підтвердити відкат' }).click(); await expect(dialog.getByRole('button', { name: 'Відновлюємо версію…' })).toBeDisabled(); await page.keyboard.press('Escape'); await expect(dialog).toBeVisible();
-    await expect(page).toHaveScreenshot(`${theme}-editor-rollback-pending.png`);
-    release(); await expect(page.getByText(/Попередню версію відновлено/)).toBeVisible(); await expect(page.getByRole('button', { name: 'Відкотити зміну' })).toHaveCount(0); expect(posts).toBe(2); expect(errors).toEqual([]);
+    const trigger = page.getByRole('button', { name: 'Відкотити', exact: true }); await trigger.click(); await expect(page.getByRole('heading', { level: 1, name: 'Відкотити зміну?' })).toBeFocused(); expect(posts).toBe(0);
+    await expect(page).toHaveScreenshot(`${theme}-editor-rollback-confirm.png`, { fullPage: true });
+    await page.getByRole('button', { name: 'Залишити без змін' }).click(); await expect(trigger).toBeFocused(); expect(posts).toBe(0); await page.keyboard.press('Enter');
+    await page.getByRole('button', { name: 'Підтвердити відкат' }).click(); await expect(page.getByRole('alert')).toContainText('Нічого не підтверджено');
+    await expect(page).toHaveScreenshot(`${theme}-editor-rollback-error.png`, { fullPage: true });
+    await page.getByRole('button', { name: 'Підтвердити відкат' }).click(); await expect(page.getByRole('button', { name: 'Відновлюємо версію…' })).toBeDisabled(); await expect(page.getByRole('button', { name: '← До змін' })).toBeDisabled();
+    await expect(page).toHaveScreenshot(`${theme}-editor-rollback-pending.png`, { fullPage: true });
+    release(); await expect(page.getByText(/Попередню версію відновлено/)).toBeVisible(); await expect(page.getByRole('button', { name: 'Відкотити', exact: true })).toHaveCount(0); expect(posts).toBe(2); expect(errors).toEqual([]);
   });
 
   test(`${theme}: застарілий відкат перечитує серверний список`, async ({ page }) => {
     await prepare(page, theme); let stale = false;
     await page.route('**/api/v1/editor/applied-changes?*', route => route.fulfill({ json: { ...appliedPage, items: [{ ...change, rollback_allowed: !stale }] } }));
     await page.route(`**/api/v1/editor/applied-changes/${change.id}/rollback`, async route => { stale = true; await route.fulfill({ status: 409, json: { code: 'editor.rollback_not_current' } }); });
-    await applied(page); await page.getByRole('button', { name: 'Відкотити зміну' }).click(); await page.getByRole('button', { name: 'Підтвердити відкат' }).click();
-    await expect(page.getByRole('dialog')).toHaveCount(0); await expect(page.getByText(/Відкотити можна лише поточну версію запису. Список оновлено/)).toBeVisible(); await expect(page.getByRole('button', { name: 'Відкат недоступний' })).toBeDisabled();
+    await applied(page); await page.getByRole('button', { name: 'Відкотити', exact: true }).click(); await page.getByRole('button', { name: 'Підтвердити відкат' }).click();
+    await expect(page.getByRole('region', { name: 'Відкотити зміну?' })).toHaveCount(0); await expect(page.getByText(/Відкотити можна лише поточну версію запису. Список оновлено/)).toBeVisible(); await expect(page.getByRole('button', { name: 'Лише поточна' })).toBeDisabled();
     await expect(page).toHaveScreenshot(`${theme}-editor-rollback-stale.png`, { fullPage: true });
   });
 
@@ -94,7 +94,7 @@ for (const theme of ['light', 'dark'] as const) {
     const { profileRequests } = await prepare(page, theme); let reads = 0;
     await page.route('**/api/v1/editor/content-reports?*', async route => { reads++; await route.fulfill({ status: 403, json: { code: 'editor.role_required' } }); });
     await page.goto('/editor'); await expect(page.getByRole('heading', { name: 'Потрібен доступ редактора' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Розглянути' })).toHaveCount(0); await expect(page.getByRole('button', { name: 'Застосовані зміни' })).toHaveCount(0); expect(profileRequests).toEqual([]); expect(reads).toBe(1);
+    await expect(page.getByRole('list')).toHaveCount(0); await expect(page.getByRole('tab')).toHaveCount(0); expect(profileRequests).toEqual([]); expect(reads).toBe(1);
     await expect(page).toHaveScreenshot(`${theme}-editor-forbidden.png`, { fullPage: true });
   });
 }
