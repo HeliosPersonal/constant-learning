@@ -6,6 +6,10 @@ public sealed class ContentReport
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid LearnerId { get; set; }
+
+    // Денормалізований дискримінатор мови (ADR-0001): розмежування черги редактора за мовою (AC-09/AC-11).
+    // TODO(T14): зняти інтеримний дефолт 'pl', коли прив'язка report до мови писатиме мову з контексту.
+    public string TargetLanguage { get; set; } = "pl";
     public Guid? EntryId { get; set; }
     public Guid? VersionId { get; set; }
     public Guid? AnswerEventId { get; set; }

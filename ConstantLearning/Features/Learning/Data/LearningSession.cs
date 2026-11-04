@@ -7,6 +7,11 @@ public sealed class LearningSession
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid? ResultItemId { get; set; }
     public Guid LearnerId { get; set; }
+
+    // Денормалізований дискримінатор мови (ADR-0001): session належить одній мові й не досяжна
+    // через entry (session не посилається на entry).
+    // TODO(T13): зняти інтеримний дефолт 'pl', коли scoping ендпоінтів писатиме мову з активного контексту.
+    public string TargetLanguage { get; set; } = "pl";
     public LocalDate LearnerDay { get; set; }
     public Instant EndsAt { get; set; }
     public required string Status { get; set; }

@@ -1,3 +1,4 @@
+using ConstantLearning.Features.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,6 +11,7 @@ internal sealed class ContentReportConfiguration : IEntityTypeConfiguration<Cont
         builder.ToTable("content_reports");
         builder.HasKey(report => report.Id).HasName("content_reports_pkey");
         builder.Property(report => report.Id).ValueGeneratedNever();
+        builder.Property(report => report.TargetLanguage).HasMaxLength(2).IsRequired();
         builder.Property(report => report.Origin).HasMaxLength(24).IsRequired();
         builder.Property(report => report.Field).HasMaxLength(32);
         builder.Property(report => report.ProposedValue).HasMaxLength(500);
@@ -31,6 +33,11 @@ internal sealed class ContentReportConfiguration : IEntityTypeConfiguration<Cont
             .HasDatabaseName("ux_content_reports_open_dedup");
         builder.HasIndex(report => new { report.Status, report.CreatedAt })
             .HasDatabaseName("ix_content_reports_status_created");
+        // Черга редактора з розмежуванням за мовою (AC-11, flow 7); доповнює ix_content_reports_status_created.
+        builder.HasIndex(report => new { report.TargetLanguage, report.Status, report.CreatedAt })
+            .HasDatabaseName("ix_content_reports_lang_status_created");
+        // FK target_language покрито власним індексом.
+        builder.HasIndex(report => report.TargetLanguage).HasDatabaseName("ix_content_reports_target_language");
         builder.HasIndex(report => report.EntryId).HasDatabaseName("ix_content_reports_entry_id");
         builder.HasIndex(report => report.VersionId).HasDatabaseName("ix_content_reports_version_id");
         builder.HasIndex(report => report.AnswerEventId).IsUnique()
@@ -50,6 +57,11 @@ internal sealed class ContentReportConfiguration : IEntityTypeConfiguration<Cont
         builder.HasOne<EntryVersion>().WithMany()
             .HasForeignKey(report => report.ResultingVersionId)
             .HasConstraintName("content_reports_resulting_version_id_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne<TargetLanguage>().WithMany()
+            .HasForeignKey(report => report.TargetLanguage)
+            .HasPrincipalKey(language => language.Code)
+            .HasConstraintName("content_reports_target_language_fkey")
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

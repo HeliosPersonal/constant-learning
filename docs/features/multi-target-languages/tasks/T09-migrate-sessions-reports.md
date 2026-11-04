@@ -10,7 +10,7 @@ files_hint:
   - "ConstantLearning/Features/Content/Data/"
 owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "todo"
+status: "done"
 ---
 
 # T09 — Міграції дискримінатора `learning_sessions` + `content_reports`
@@ -36,8 +36,32 @@ Session належить одній мові й не досяжна через `
 
 ## Definition of Done
 
-- [ ] Усі 8 кроків застосовано на testcontainer; кожен `CONCURRENTLY` — один statement.
-- [ ] Backfill → `'pl'`; `SET NOT NULL` проходить; `.down` реверсує всі кроки.
-- [ ] FK-індекси + мово-свідомі композитні/partial індекси присутні (self-check FK зелений).
-- [ ] `index_content_reports_lang_status_created` обслуговує чергу редактора за мовою (flow 7).
-- [ ] PR ≤500 LOC.
+- [x] Усі кроки застосовано на testcontainer; кожен `CONCURRENTLY` — один statement.
+- [x] Backfill → `'pl'`; `SET NOT NULL` проходить; `.down` реверсує всі кроки.
+- [x] FK-індекси + мово-свідомі композитні/partial індекси присутні (self-check FK зелений).
+- [x] `ix_content_reports_lang_status_created` обслуговує чергу редактора за мовою (flow 7).
+- [x] PR ≤500 LOC.
+
+## Нотатки реалізації
+
+- Одна EF-міграція `20261104210214_MigrateSessionsReportsTargetLanguage` накриває обидві таблиці.
+  Для обох: `ADD COLUMN ... NULL` → `UPDATE ... SET 'pl'` → FK через `NOT VALID` + `VALIDATE`
+  (без ACCESS EXCLUSIVE на весь час) → `SET NOT NULL`. Інтеримний C#-дефолт `TargetLanguage = "pl"`
+  на `LearningSession`/`ContentReport` з якорями `TODO(T13)`/`TODO(T14)` знімається там, де місця
+  створення писатимуть мову з контексту. Backfill `'pl'` вибрано тому, що session/report не досяжні
+  через `entry` — мову не вивести з даних (на відміну від T08, де backfill брався з `entry_id`).
+- **Своп UNIQUE однієї активної session (крок 25→26, критично для AC-04):** глобальний
+  `ux_learning_sessions_one_active` (`learner_id WHERE status='active'` — одна активна session на
+  learner у всіх мовах) замінено на мово-свідомий `ux_learning_sessions_one_active_lang`
+  (`learner_id, target_language WHERE status='active'` — одна активна session НА МОВУ). Своп —
+  `CREATE UNIQUE INDEX CONCURRENTLY` нового → `DROP INDEX CONCURRENTLY` старого (обидва
+  `suppressTransaction: true`), без вікна без обмеження. EF-конфіг `LearningSessionConfiguration`
+  замінює індекс, тож snapshot лишається узгодженим. `.down` відновлює глобальний UNIQUE —
+  можливо лише якщо немає >1 активної session на learner у різних мовах (інакше спершу закрити зайві).
+- Міграційний тест `SessionsReportsTargetLanguageMigrationTests` (`[DockerFact]`, у CI): мігрує до
+  pre-T09 стану, вставляє активну session + open report, мігрує до T09 — перевіряє `varchar(2) NOT NULL`,
+  backfill `pl:pl`, присутність мово-свідомого UNIQUE й відсутність глобального, FK; відкат повертає
+  `False:False:True:False` (глобальний UNIQUE відновлено, мовний зник, колонок немає).
+- `LearningMigrationTests.Sessions_AllowCompletedHistoryButRejectSecondActiveSession` оновлено на нову
+  назву індексу `ux_learning_sessions_one_active_lang`. `LearningSchemaAssertions` не чіпали — це
+  point-in-time знімок стану `CreateAnswerEvents` (задовго до T09).

@@ -143,7 +143,7 @@ public sealed class LearningMigrationTests(PostgresFixture postgres) : PostgresI
         (await Db.LearningSessions.CountAsync()).Should().Be(3);
         Db.LearningSessions.Add(NewSession(scenario.Learner.Id));
 
-        await AssertUniqueViolationAsync("ux_learning_sessions_one_active");
+        await AssertUniqueViolationAsync("ux_learning_sessions_one_active_lang");
     }
 
     [DockerFact]
