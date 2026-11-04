@@ -22,21 +22,22 @@ ticket: "TBD"
 <!-- 📋 Що писати: 1 абзац intent + 3 рядки топ-3 якості + таблиця stakeholders.        -->
 <!-- 📌 Приклад: «QG-1: швидкість редагування блоку p95 ≤500 мс»                         -->
 
-**Intent.** <One paragraph from PRD §Goals — what we're building and for whom.>
+**Intent.** Узагальнити персональний тренер з однієї мови (польська) до кількох target languages — польська, англійська, німецька, нідерландська — за перевикористовним каркасом на кожну мову: власний контент, вимова, приклади, форми й прийняті відповіді; окремий облік прогресу на кожну мову; спільна source language — українська. Нові мови додаються тим самим шляхом, що й три перші, без перебудови тренера (Approach C «Many Languages, One Trainer», [PRD §1-§2](./PRD.md)).
 
 **Top-3 quality goals (1-liners; full scenarios in §10):**
 
-1. <e.g. "Availability under partial failure of downstream module">
-2. <e.g. "Performance for EM dashboard under team-scale growth">
-3. <e.g. "Recoverability of checkpoints with <30 min RTO">
+1. **Ізоляція прогресу між мовами** — жодна відповідь, картка чи лічильник однієї мови не впливає на облік іншої (PRD §6 «Ізоляція прогресу» = 0 відповідей, зарахованих не до своєї мови; AC-04, AC-05, AC-10).
+2. **Розширюваність на нову мову** — додати target language = додати контент + конфігурацію мови, без зміни коду тренера (ядро Approach C).
+3. **Швидкодія** — p95 відкриття/перемикання «Сьогодні» ≤ 1500 мс, оцінка відповіді ≤ 500 мс, пошук у словнику ≤ 300 мс (PRD §6).
 
 **Stakeholders.**
 
 | Role | Interest | Sign-off owner? |
 |---|---|---|
-| <e.g. IC> | <feature usage> | No |
-| <e.g. EM> | <dashboard reads> | No |
-| <e.g. Tech Lead> | <SAD approval> | Yes |
+| learner | обирає й веде кілька target languages з окремим прогресом | No |
+| content editor | готує й схвалює словник кожної мови окремо | No |
+| Tech Lead | затвердження SAD, форма моделі даних (OQ-3), конкурентність (OQ-4) | Yes |
+| Security Lead | ізоляція прогресу між learner і між мовами, обмеження редактора за мовою (OQ-9) | Yes |
 
 ## 2. Constraints
 
@@ -46,23 +47,27 @@ ticket: "TBD"
 <!-- 📌 Приклад: «Postgres 18» (не «Postgres»); «дедлайн Q3 — жорсткий» (не «бажано»).    -->
 
 **Technical.**
-- <Language + version, e.g. Go 1.26>
-- <Framework + version, e.g. chi v5.1, pgx v5.7>
-- <Datastore + version, e.g. Postgres 18>
-- <Architecture convention, e.g. hexagonal per CLAUDE.md>
+- Backend: C# на **.NET 10** (`net10.0`), nullable + implicit usings.
+- Persistence: **EF Core 10.0.14** + Npgsql.EntityFrameworkCore.PostgreSQL 10.0.3 (+NodaTime), NodaTime 3.3.7, **PostgreSQL**. Оптимістична конкурентність через `xmin` (`uint Version`).
+- Інтеграції: Telegram.Bot 22.10.3.3, Quartz 4.7.0 (фонові завдання), Microsoft.AspNetCore.OpenApi 10.0.14.
+- Frontend: React 18.3.1 SPA, Vite 7, TypeScript 5.9, TanStack Query 5, `@telegram-apps/telegram-ui` + `@tma.js/sdk`; типи API генеруються з OpenApi-контракту.
+- Архітектура: **feature-module monoліт** (модулі `Identity`, `Learning`, `Content`, `Notifications`, `Bot` — ADR-0003), прямі in-process DI-виклики, **без шини подій / черг / HTTP між модулями**. Scheduling за портом (`Memorize`, ADR-0009). Нотифікації через таблицю `notification_dispatches`, яку опитує воркер (ADR-0007). Фронт роздається бекендом із `wwwroot` (ADR-0002).
 
 **Organisational.**
-- <Effort budget, e.g. 3 person-weeks>
-- <Deadline, e.g. 2026-Q3 hard>
-- <Team composition, e.g. 1 backend + 0.5 frontend>
+- Час релізу: **одразу після польського пілоту** ([idea-brief §4](./idea-brief.md)), поки інтерес свіжий.
+- Пілотна база: **5–10 учнів** — впливає на статистичну вагу KPI (PRD §7, застереження про вибірку), не на архітектуру.
+- `feature_size` формально ще не класифіковано (`sdlc:classify-size` не запускали) — риси класу M прийнято як робочий дефолт; фіксація — відкритий пункт (§11).
 
 **Conventions.**
-- <Link to CLAUDE.md or project conventions>
-- <Naming, ID strategy, error-handling pattern>
+- Міграції: [`.claude/rules/migrations.md`](../../../.claude/rules/migrations.md) — UUID v7 app-side, `created_at` only, без CHECK/TRIGGER/бізнес-DEFAULT, hard delete, `VARCHAR(N)`; зеро-даунтайм на наявних таблицях (add nullable → backfill → SET NOT NULL; `CREATE INDEX CONCURRENTLY` одним стейтментом); кожен FK має індекс.
+- Контракт API: [`.claude/rules/openapi.md`](../../../.claude/rules/openapi.md) — OpenAPI 3.1, конверт помилки `{code, message, details?}` з `code = module.error_name`, курсорна пагінація, `/api/v1/...`, `BearerAuth` глобально.
+- Загальні: [`AGENTS.md`](../../../AGENTS.md) — доки/коментарі українською, імена файлів англійською, без AI co-author трейлерів, відносні markdown-лінки валідуються `tools/docs/check_links.py`.
+- Наявні ADR для перевикористання/узгодження — `docs/features/personal-trainer-mvp/adr/` (зокрема ADR-0010 вказівник версії, ADR-0012 згорнуті search-forms, ADR-0009 порт планувальника).
 
 **Regulatory / external.**
-- <e.g. GDPR — user deletion behavior per ADR-NNNN>
-- <e.g. SOC2, PCI — applicable controls>
+- Data classification: **confidential** — навчальна історія конкретних людей. Нових категорій PII фіча не додає; з'являється лише ознака мови при записах прогресу й content report (PRD §6.1).
+- AuthN: перевірена Telegram-ідентичність. Нових authz-меж між мовами фіча не вводить (роль content editor поки єдина для всіх мов; обмеження за мовою — OQ-9).
+- Окремого security review ще не проводилося (PRD §6.1) — verdict має дати Security Lead; до того ризик прийнятий (§11).
 
 ## 3. Context and scope
 
@@ -72,28 +77,36 @@ ticket: "TBD"
 <!-- 📌 Приклад: «зовнішні — нема (свідома відмова від third-party у v1)» — це теж рішення.   -->
 <!-- Кордон довіри (trust boundary) — лінія, за якою ти не довіряєш даним без перевірки.       -->
 
-<Business context in 2-3 sentences. What the system does for whom.>
+Тренер — Telegram Mini App, що навчає learner словам кількома target languages (пояснення українською), ведучи окремий прогрес на кожну мову. content editor готує й схвалює словник кожної мови офлайн тим самим редакторським методом. Кордон довіри проходить по Telegram-ідентичності: дані learner (у будь-якій мові) видно лише власнику; редакторський контент до релізу проходить схвалення. Свідома відмова від third-party навчального контенту — кожна мова готується власним словником.
 
 **External systems (in / out):**
 
 | Actor or system | Type | Interaction |
 |---|---|---|
-| <e.g. IC> | Person | Creates goals, adds checkpoints |
-| <e.g. notification-service> | System (internal) | Receives cron registration |
-| <e.g. Identity Provider> | System (external) | Provides JWT tokens |
+| learner | Person | Обирає/перемикає мову, займається, надсилає content report |
+| content editor | Person | Готує й схвалює словник кожної мови окремо |
+| Telegram | System (external) | Ідентичність (initData) + хост Mini App |
+| Per-language контент-джерела | System (external) | Частотний корпус, морфологічний лексикон, довідкове джерело звірки на кожну мову — наявність/ліцензія ще не підтверджені (OQ-7) |
+| LLM-інструмент редакторської звірки | System (external) | Офлайн-допомога редактору при підготовці словника; **поза runtime тренера** |
 
 **C4 Context (L1):**
 
 ```mermaid
 C4Context
-    title <system> — System Context
+    title multi-target-languages — System Context
 
-    Person(user, "<User>", "<role + intent>")
-    System(system, "<Our System>", "<one-sentence description>")
-    System_Ext(ext, "<External system>", "<one-sentence description>")
+    Person(learner, "learner", "Вивчає кілька target languages, прогрес окремий на кожну")
+    Person(editor, "content editor", "Готує й схвалює словник кожної мови окремо")
+    System(trainer, "Персональний тренер", "Telegram Mini App: заняття, пригадування, словник, content reports — per target language")
+    System_Ext(tg, "Telegram", "Ідентичність + хост Mini App")
+    System_Ext(sources, "Per-language контент-джерела", "Частотність, морфологія, довідка на кожну мову (OQ-7)")
+    System_Ext(llm, "LLM-інструмент звірки", "Офлайн-допомога редактору, поза runtime")
 
-    Rel(user, system, "<interaction>", "<protocol>")
-    Rel(system, ext, "<interaction>", "<protocol>")
+    Rel(learner, trainer, "Обирає мову, займається, звітує", "HTTPS / Mini App")
+    Rel(trainer, tg, "Перевіряє identity (initData)", "HTTPS")
+    Rel(editor, trainer, "Готує/схвалює словник мови", "HTTPS")
+    Rel(editor, sources, "Бере частотність/форми/довідку", "офлайн")
+    Rel(editor, llm, "Редакторська звірка чернетки", "офлайн")
 ```
 
 ## 4. Solution strategy
