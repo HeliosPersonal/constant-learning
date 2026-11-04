@@ -929,6 +929,11 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("ActiveTargetLanguage")
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("active_target_language");
+
                     b.Property<bool>("CanMessage")
                         .HasColumnType("boolean")
                         .HasColumnName("can_message");
@@ -1017,6 +1022,9 @@ namespace ConstantLearning.Migrations
                     b.HasKey("Id")
                         .HasName("learners_pkey");
 
+                    b.HasIndex("ActiveTargetLanguage")
+                        .HasDatabaseName("ix_learners_active_target_language");
+
                     b.HasIndex("ReporterAlias")
                         .IsUnique()
                         .HasDatabaseName("ux_learners_reporter_alias");
@@ -1026,6 +1034,79 @@ namespace ConstantLearning.Migrations
                         .HasDatabaseName("ux_learners_telegram_user_id");
 
                     b.ToTable("learners", (string)null);
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Identity.Data.LearnerLanguageState", b =>
+                {
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("learner_id");
+
+                    b.Property<string>("TargetLanguage")
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("target_language");
+
+                    b.Property<Instant?>("CourseCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("course_completed_at");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<LocalDate?>("CurrentDayDate")
+                        .HasColumnType("date")
+                        .HasColumnName("current_day_date");
+
+                    b.Property<Instant?>("CurrentDayEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("current_day_ends_at");
+
+                    b.Property<Instant?>("CurrentDayOriginalEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("current_day_original_ends_at");
+
+                    b.Property<Instant?>("CurrentDayStartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("current_day_starts_at");
+
+                    b.Property<string>("CurrentDayTimeZoneAtStart")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("current_day_time_zone_at_start");
+
+                    b.Property<short>("DailyNewWordsLimit")
+                        .HasColumnType("smallint")
+                        .HasColumnName("daily_new_words_limit");
+
+                    b.Property<Instant?>("NewWordsAvailableFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("new_words_available_from");
+
+                    b.Property<short?>("PendingDailyNewWordsLimit")
+                        .HasColumnType("smallint")
+                        .HasColumnName("pending_daily_new_words_limit");
+
+                    b.Property<Instant?>("PendingLimitEffectiveFrom")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("pending_limit_effective_from");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
+                    b.HasKey("LearnerId", "TargetLanguage")
+                        .HasName("learner_language_states_pkey");
+
+                    b.HasIndex("TargetLanguage")
+                        .HasDatabaseName("ix_learner_language_states_target_language");
+
+                    b.ToTable("learner_language_states", (string)null);
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.ReminderSchedule", b =>
@@ -1723,6 +1804,23 @@ namespace ConstantLearning.Migrations
                         .HasConstraintName("version_translations_version_id_fkey");
 
                     b.Navigation("Version");
+                });
+
+            modelBuilder.Entity("ConstantLearning.Features.Identity.Data.LearnerLanguageState", b =>
+                {
+                    b.HasOne("ConstantLearning.Features.Identity.Data.Learner", null)
+                        .WithMany()
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("learner_language_states_learner_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Identity.Data.TargetLanguage", null)
+                        .WithMany()
+                        .HasForeignKey("TargetLanguage")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("learner_language_states_target_language_fkey");
                 });
 
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.ReminderSchedule", b =>

@@ -13,6 +13,7 @@ internal sealed class LearnerConfiguration : IEntityTypeConfiguration<Learner>
         builder.Property(learner => learner.FirstName).HasMaxLength(64);
         builder.Property(learner => learner.TimeZone).HasMaxLength(64).IsRequired();
         builder.Property(learner => learner.CurrentDayTimeZoneAtStart).HasMaxLength(64);
+        builder.Property(learner => learner.ActiveTargetLanguage).HasMaxLength(2);
         builder.Property(learner => learner.ReporterAlias).HasMaxLength(16);
         builder.Property(learner => learner.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(learner => learner.Version).IsRowVersion();
@@ -20,5 +21,7 @@ internal sealed class LearnerConfiguration : IEntityTypeConfiguration<Learner>
             .HasDatabaseName("ux_learners_telegram_user_id");
         builder.HasIndex(learner => learner.ReporterAlias).IsUnique()
             .HasDatabaseName("ux_learners_reporter_alias");
+        builder.HasIndex(learner => learner.ActiveTargetLanguage)
+            .HasDatabaseName("ix_learners_active_target_language");
     }
 }

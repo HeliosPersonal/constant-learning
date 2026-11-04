@@ -18,7 +18,7 @@ updated_at: "2026-11-04"
 |---|---|---|---|---|---|---|
 | [T01](./T01-config-target-languages.md) | Конфіг-таблиця `target_languages` + seed + сутність/репозиторій | migration+infra | Viacheslav Melnichenko | M | — | done |
 | [T02](./T02-test-fixtures.md) | Per-language фікстури й оснастка ізоляційних тестів | tests | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | todo |
-| [T03](./T03-migrate-identity-day-state.md) | Міграції `learner_language_states` + `learners.active_target_language` | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | todo |
+| [T03](./T03-migrate-identity-day-state.md) | Міграції `learner_language_states` + `learners.active_target_language` | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | done |
 | [T04](./T04-per-language-day-state.md) | Per-language стан доби learner (`ILearnerDayStateService`) | domain | Viacheslav Melnichenko | L | [T03](./T03-migrate-identity-day-state.md) | todo |
 | [T05](./T05-migrate-content-entries.md) | Міграції `dictionary_entries.target_language` + своп індексів | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | todo |
 | [T06](./T06-base-course-availability.md) | Base course на мову + перевірка доступності мови | domain | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md), [T05](./T05-migrate-content-entries.md) | todo |

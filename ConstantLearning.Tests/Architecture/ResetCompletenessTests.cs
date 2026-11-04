@@ -37,7 +37,12 @@ public sealed class ResetCompletenessTests
         "reminder_schedules",       // налаштування нагадувань (Identity/Notifications)
         "notification_dispatches",  // черга повідомлень learner
         "publication_log",          // журнал дій content editor (actor_learner_id)
-        "content_reports"           // автор-псевдонім лишається; обробник Content лише відвʼязує answer_event_id
+        "content_reports",          // автор-псевдонім лишається; обробник Content лише відвʼязує answer_event_id
+        // Shadow-таблиця contract/debt-фази (T03, ADR-0002): наразі нічого її не читає, авторитетний
+        // день-стан — на learners. Рядок (learner_id, target_language) свідомо зберігається, як і сам
+        // рядок learner. Коли активаційна задача перемкне застосунок на читання/запис цієї таблиці,
+        // вона має додати in-place скидання полів доби на мову (не DELETE) і перевірити цей запис.
+        "learner_language_states"
     };
 
     [Fact]

@@ -19,6 +19,7 @@ public sealed class Learner
     public Instant? CurrentDayEndsAt { get; set; }
     public Instant? CurrentDayOriginalEndsAt { get; set; }
     public string? CurrentDayTimeZoneAtStart { get; set; }
+    public string? ActiveTargetLanguage { get; set; }
     public string? ReporterAlias { get; set; }
     public bool CanMessage { get; set; }
     public Instant? OnboardedAt { get; set; }

@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ChatRegistration> ChatRegistrations => Set<ChatRegistration>();
     public DbSet<Learner> Learners => Set<Learner>();
     public DbSet<TargetLanguage> TargetLanguages => Set<TargetLanguage>();
+    public DbSet<LearnerLanguageState> LearnerLanguageStates => Set<LearnerLanguageState>();
     public DbSet<ReminderSchedule> ReminderSchedules => Set<ReminderSchedule>();
     public DbSet<DictionaryEntry> DictionaryEntries => Set<DictionaryEntry>();
     public DbSet<EntryVersion> EntryVersions => Set<EntryVersion>();
@@ -38,6 +39,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new LearnerConfiguration());
         modelBuilder.ApplyConfiguration(new TargetLanguageConfiguration());
+        modelBuilder.ApplyConfiguration(new LearnerLanguageStateConfiguration());
+        modelBuilder.Entity<LearnerLanguageState>().HasOne<Learner>().WithMany()
+            .HasForeignKey(state => state.LearnerId)
+            .HasConstraintName("learner_language_states_learner_id_fkey")
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<LearnerLanguageState>().HasOne<TargetLanguage>().WithMany()
+            .HasForeignKey(state => state.TargetLanguage)
+            .HasPrincipalKey(language => language.Code)
+            .HasConstraintName("learner_language_states_target_language_fkey")
+            .OnDelete(DeleteBehavior.NoAction);
         modelBuilder.ApplyConfiguration(new ReminderScheduleConfiguration());
         modelBuilder.ApplyConfiguration(new DictionaryEntryConfiguration());
         modelBuilder.ApplyConfiguration(new EntryVersionConfiguration());
