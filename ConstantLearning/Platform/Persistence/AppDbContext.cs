@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<LearnedWord> LearnedWords => Set<LearnedWord>();
     public DbSet<ChatRegistration> ChatRegistrations => Set<ChatRegistration>();
     public DbSet<Learner> Learners => Set<Learner>();
+    public DbSet<TargetLanguage> TargetLanguages => Set<TargetLanguage>();
     public DbSet<ReminderSchedule> ReminderSchedules => Set<ReminderSchedule>();
     public DbSet<DictionaryEntry> DictionaryEntries => Set<DictionaryEntry>();
     public DbSet<EntryVersion> EntryVersions => Set<EntryVersion>();
@@ -36,6 +37,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfiguration(new LearnerConfiguration());
+        modelBuilder.ApplyConfiguration(new TargetLanguageConfiguration());
         modelBuilder.ApplyConfiguration(new ReminderScheduleConfiguration());
         modelBuilder.ApplyConfiguration(new DictionaryEntryConfiguration());
         modelBuilder.ApplyConfiguration(new EntryVersionConfiguration());

@@ -3,6 +3,7 @@ using ConstantLearning.Features.Identity.Aliases;
 using ConstantLearning.Features.Identity.Auth;
 using ConstantLearning.Features.Identity.Onboarding;
 using ConstantLearning.Features.Identity.Messaging;
+using ConstantLearning.Features.Identity.Languages;
 using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Identity.ProgressReset;
 using ConstantLearning.Features.Identity.Settings;
@@ -23,6 +24,7 @@ public static class IdentityModule
         services.AddSingleton<IReporterAliasGenerator, RandomReporterAliasGenerator>();
         services.AddScoped<IReporterAliasService, ReporterAliasService>();
         services.AddScoped<ILearnerDayStateService, LearnerDayStateService>();
+        services.AddScoped<ITargetLanguageCatalog, TargetLanguageCatalog>();
         services.AddScoped<LearnerSettingsService>();
         services.AddScoped<ProgressResetService>();
         services.AddSingleton<IProgressResetMetrics, TrainerProgressResetMetrics>();

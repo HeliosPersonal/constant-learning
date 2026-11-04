@@ -1060,6 +1060,44 @@ namespace ConstantLearning.Migrations
                     b.ToTable("reminder_schedules", (string)null);
                 });
 
+            modelBuilder.Entity("ConstantLearning.Features.Identity.Data.TargetLanguage", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("code");
+
+                    b.Property<Instant>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("DisplayNameUk")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("display_name_uk");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_enabled");
+
+                    b.Property<string>("NormalizationProfile")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("normalization_profile");
+
+                    b.Property<short>("SortOrder")
+                        .HasColumnType("smallint")
+                        .HasColumnName("sort_order");
+
+                    b.HasKey("Code")
+                        .HasName("target_languages_pkey");
+
+                    b.ToTable("target_languages", (string)null);
+                });
+
             modelBuilder.Entity("ConstantLearning.Features.Learning.Data.AnswerEvent", b =>
                 {
                     b.Property<Guid>("Id")

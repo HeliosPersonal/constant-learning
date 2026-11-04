@@ -68,7 +68,7 @@ public sealed class PostgresFixture : IAsyncLifetime
                    || ' RESTART IDENTITY CASCADE'
             FROM pg_tables
             WHERE schemaname = 'public'
-              AND tablename NOT IN ('__EFMigrationsHistory', 'morph_forms', 'reference_entries')
+              AND tablename NOT IN ('__EFMigrationsHistory', 'morph_forms', 'reference_entries', 'target_languages')
             """, connection);
         if (await tables.ExecuteScalarAsync() is string truncate)
         {
