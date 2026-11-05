@@ -2,6 +2,11 @@
 .editor [hidden] { display: none; }
 .editor-tabs { margin: 4px 0 4px; }
 .editor-tabs .ios-segment { min-height: 30px; }
+/* Фільтр черги за мовою (AC-11): кожна мова окремо, «Усі мови» — без фільтра. */
+.editor-language-filter { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 8px; }
+.editor-language-filter label { color: var(--cl-muted); font-size: 13px; line-height: 18px; }
+.editor-language-filter select { min-height: 32px; max-width: 60%; padding: 4px 8px; color: var(--cl-text); background: var(--cl-card); border: 1px solid var(--cl-border); border-radius: 8px; font: inherit; font-size: 15px; }
+.editor-language-filter select:disabled { opacity: .5; }
 .editor-empty { padding: 48px 8px 0; text-align: center; }
 .editor-empty h2, .editor-empty h3 { margin: 0 0 6px; font-size: 17px; line-height: 22px; letter-spacing: 0; }
 .editor-empty .caption { margin: 0 0 16px; }

@@ -15,11 +15,18 @@ const queuePath = '/api/v1/editor/content-reports';
 const appliedPath = '/api/v1/editor/applied-changes';
 const decisionPath = `${queuePath}/${report.id}/decision`;
 const rollbackPath = `${appliedPath}/${change.id}/rollback`;
+const languageCatalog = [
+  { code: 'pl', display_name_uk: 'Польська', is_enabled: true, sort_order: 0, available: true },
+  { code: 'en', display_name_uk: 'Англійська', is_enabled: true, sort_order: 1, available: true },
+];
 const clients: ReturnType<typeof createQueryClient>[] = [];
 function json(body: unknown, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
+// Черга редактора підвантажує каталог мов для фільтра (AC-11) — відповідаємо на нього окремо,
+// щоб тестові обробники й підрахунки стосувалися лише черги/застосованих/рішень.
 function network(handler?: (request: Request) => Response | Promise<Response>) {
   const fetcher = vi.fn<typeof fetch>().mockImplementation(async input => {
     const request = input as Request;
+    if (new URL(request.url).pathname === '/api/v1/languages') return json({ items: languageCatalog });
     return handler ? handler(request) : json(new URL(request.url).pathname === queuePath ? queuePage : appliedPage);
   }); vi.stubGlobal('fetch', fetcher); return fetcher;
 }
@@ -57,7 +64,7 @@ describe('Серверний доступ і читання', () => {
     expect(screen.getByText('Завантажуємо чергу…')).toBeVisible(); expect(screen.queryByText(report.reporter_alias)).not.toBeInTheDocument();
     await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
     await act(async () => { release(json({ code: 'server.unavailable' }, 503)); }); await screen.findByText('Не вдалося завантажити список. Спробуйте ще раз.'); expect(fetcher).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole('button', { name: 'Спробувати ще раз' })); await screen.findByText(report.reporter_alias); expect(fetcher).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Спробувати ще раз' })); await screen.findByText(report.reporter_alias); expect(requests(fetcher, queuePath)).toHaveLength(2);
   });
   it.each(['queue', 'applied'] as const)('%s передає after/before окремо й зберігає серверний порядок', async view => {
     const first = view === 'queue' ? report : change; const second = { ...first, id: '0192f0a0-0000-7000-8000-0000000000f9' };
@@ -71,6 +78,19 @@ describe('Серверний доступ і читання', () => {
     const forward = new URL(requests(fetcher, path)[1].url); expect(forward.searchParams.get('after')).toBe(first.id); expect(forward.searchParams.has('before')).toBe(false);
     fireEvent.click(screen.getByRole('button', { name: /Попередня/ })); await waitFor(() => expect(requests(fetcher, path)).toHaveLength(3));
     const backward = new URL(requests(fetcher, path)[2].url); expect(backward.searchParams.get('before')).toBe(second.id); expect(backward.searchParams.has('after')).toBe(false); expect(backward.searchParams.get('limit')).toBe('20');
+  });
+  it('AC-11: фільтр за мовою перемикає набір черги, передає target_language і скидає курсор', async () => {
+    const enReport = { ...report, id: '0192f0a0-0000-7000-8000-0000000000e5', target_language: 'en', lemma: 'office', reporter_alias: 'R-ENONLY' };
+    const fetcher = network(request => {
+      const url = new URL(request.url);
+      if (url.pathname !== queuePath) return json(appliedPage);
+      return json(url.searchParams.get('target_language') === 'en' ? { ...queuePage, items: [enReport] } : queuePage);
+    });
+    mount(); await screen.findByText(report.reporter_alias);
+    fireEvent.change(await screen.findByLabelText('Мова черги'), { target: { value: 'en' } });
+    await screen.findByText('R-ENONLY'); expect(screen.queryByText(report.reporter_alias)).not.toBeInTheDocument();
+    const filtered = new URL(requests(fetcher, queuePath).at(-1)!.url);
+    expect(filtered.searchParams.get('target_language')).toBe('en'); expect(filtered.searchParams.has('after')).toBe(false); expect(filtered.searchParams.has('before')).toBe(false);
   });
   it('403 іншого списку прибирає раніше доступні дані й кеш редактора', async () => {
     const fetcher = network(request => json(request.url.includes('/applied-changes') ? { code: 'editor.role_required' } : queuePage, request.url.includes('/applied-changes') ? 403 : 200)); const { client } = mount();

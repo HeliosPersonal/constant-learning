@@ -14,8 +14,9 @@ export class EditorApiError extends Error {
   constructor(readonly status: number, readonly body?: components['schemas']['Error']) { super('Не вдалося виконати редакторську дію.'); }
 }
 
-export async function listQueue(cursor: Cursor, signal?: AbortSignal): Promise<QueuePage> {
-  const result = await api.GET('/api/v1/editor/content-reports', { params: { query: { ...cursor, limit: 20 } }, signal });
+export async function listQueue(cursor: Cursor, targetLanguage?: string, signal?: AbortSignal): Promise<QueuePage> {
+  const query = { ...cursor, limit: 20, ...(targetLanguage ? { target_language: targetLanguage } : {}) };
+  const result = await api.GET('/api/v1/editor/content-reports', { params: { query }, signal });
   if (result.response.status !== 200 || !result.data) throw new EditorApiError(result.response.status, result.error);
   return result.data;
 }

@@ -517,10 +517,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Черга непідтверджених content reports (US-10)
-         * @description Лише для content editor; автор показаний псевдонімною міткою (PRD §6.1).
+         * Черга непідтверджених content reports із розмежуванням за мовою (US-10, US-07)
+         * @description Лише для content editor; автор показаний псевдонімною міткою (PRD §6.1). Черга
+         *     відокремлює повідомлення за мовою: кожен елемент несе свою `target_language`, а
+         *     необов'язковий фільтр `target_language` звужує набір до однієї мови (AC-11). Без
+         *     фільтра повертає всі мови. Роль редактора єдина для всіх мов, без per-language authz.
          */
-        get: operations["listEditorQueue"];
+        get: operations["listEditorQueueByLanguage"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1055,13 +1058,15 @@ export interface components {
         EditorQueueItem: {
             /** Format: uuid */
             id: string;
+            target_language: components["schemas"]["TargetLanguageCode"];
             /** @description псевдонімна мітка */
             reporter_alias: string;
             /** @enum {string} */
             origin: "card" | "answer_dispute" | "missing_word";
             /** Format: uuid */
             entry_id: string | null;
-            lemma_pl: string | null;
+            /** @description лема запису активної мови повідомлення */
+            lemma: string | null;
             field: components["schemas"]["ReportField"] | null;
             current_value: string | null;
             proposed_value: string | null;
@@ -2635,9 +2640,11 @@ export interface operations {
             };
         };
     };
-    listEditorQueue: {
+    listEditorQueueByLanguage: {
         parameters: {
             query?: {
+                /** @description фільтр черги за мовою; без нього — усі мови */
+                target_language?: components["schemas"]["TargetLanguageCode"];
                 after?: string;
                 before?: string;
                 limit?: number;
@@ -2659,10 +2666,11 @@ export interface operations {
                      *       "items": [
                      *         {
                      *           "id": "0192f0a0-0000-7000-8000-0000000000d2",
+                     *           "target_language": "pl",
                      *           "reporter_alias": "R-7F3A9C",
                      *           "origin": "card",
                      *           "entry_id": "0192f0a0-0000-7000-8000-0000000000e1",
-                     *           "lemma_pl": "urząd",
+                     *           "lemma": "urząd",
                      *           "field": "translation",
                      *           "current_value": "державна установа",
                      *           "proposed_value": "установа",

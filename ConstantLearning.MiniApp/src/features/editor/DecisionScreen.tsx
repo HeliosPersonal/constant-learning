@@ -28,7 +28,7 @@ export function DecisionScreen({ item, draft = initialDraft(item), pending, erro
   return <section className="editor-screen" aria-labelledby="editor-screen-title">
     <BackButton className="editor-navigation" navLabel="Навігація рішення" disabled={pending} onBack={onClose}>← До черги</BackButton>
     <h1 className="ios-title" id="editor-screen-title" ref={headingRef} tabIndex={-1}>{missing ? 'Розглянути відсутнє слово' : 'Розглянути повідомлення'}</h1>
-    <p className="ios-caption editor-context">{item.lemma_pl ? <span lang="pl">{item.lemma_pl}</span> : 'Новий кандидат'} · {queueField(item)}</p>
+    <p className="ios-caption editor-context">{item.lemma ? <span lang={item.target_language}>{item.lemma}</span> : 'Новий кандидат'} · {queueField(item)}</p>
     <p className="ios-footnote editor-author">Автор: <strong>{item.reporter_alias}</strong></p>
     <dl className="ios-group editor-values">
       {missing ? <div className="ios-row"><dt>Пошуковий запит</dt><dd className="ios-value">{item.search_query ?? 'Не вказано'}</dd></div> : <>

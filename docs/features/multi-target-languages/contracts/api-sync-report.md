@@ -102,9 +102,23 @@ T15 — перший споживач мовних ендпоінтів у SPA; 
 - **Телеметрія:** `ClientTiming.metric` enum `[today_ready_ms]` → `[today_ready_ms, language_switch_ms]` (окрема гістограма `trainer_language_switch_ms`, NFR ≤1500 ms). Бек: `TrainerMetrics.RecordLanguageSwitch` + маршрутизація в `ClientTimingController`.
 - **Валідація:** backend `ContractAssert` у тестах валідує відповіді проти reference-контракту; телеметричний тест (`ReportClientTiming_RecordsLanguageSwitchMetricSeparately`) проходить після злиття.
 
-**Відкладено до T16:** злиття черги редактора (`listEditorQueueByLanguage`, `EditorQueueItem`,
-`EditorQueuePage`, `ReportField`) у reference-контракт — коли SPA-споживач (T16) її потребуватиме;
-тоді ж узгодити борг SAD §11 (`lemma_pl` → `lemma`).
+## Integration merge into reference contract (T16, 2026-11-05)
+
+T16 — SPA-споживач черги редактора; злиття черги редактора у reference-контракт
+(`docs/features/personal-trainer-mvp/contracts/openapi.yaml`), раніше відкладене з T15. Виконано:
+
+- **`GET /api/v1/editor/content-reports`:** `operationId` `listEditorQueue` → `listEditorQueueByLanguage`;
+  додано перший query-параметр `target_language` (`$ref: TargetLanguageCode`, необов'язковий — без нього черга повертає всі мови); оновлено summary/description (per-language черга, AC-11).
+- **`EditorQueueItem`:** додано `target_language` (`$ref: TargetLanguageCode`, у `required`); колонку
+  `lemma_pl` перейменовано на мово-нейтральну `lemma` (узгоджено борг SAD §11); приклад `items[0]` оновлено (`target_language: pl`, `lemma: urząd`).
+- **`ReportField` — без змін:** бекенд (T14 `EditorQueueContracts.cs` + `ContentReportRequest.cs`) уже вживає
+  `[lemma, translation, pronunciation, example]`, що збігається з reference-`ReportField`; дивергентний
+  перелік фіча-контракту (`[translation, transcription, example, lemma, other]`) був doc-stage здогадкою, якої
+  бекенд не реалізував — тож міняти reference-enum не потрібно (бекенд — джерело істини). `EditorQueuePage` успадковано без змін.
+- **Валідація без spectral:** регенерація `openapi-typescript` (`npm run generate:api`) + SPA `tsc --noEmit` чисто
+  + `vitest run` 281/281 + backend `ContractAssert` слугують де-факто перевіркою контракту (spectral/npx недоступні в середовищі).
+- **Борг SAD §11 `lemma_pl` → `lemma`:** закрито в межах `EditorQueueItem`; у `AppliedChange` поле `lemma_pl` лишається
+  (інша схема, окремий контракт — поза межами T16).
 
 ## Lint / mock
 

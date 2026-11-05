@@ -1123,10 +1123,18 @@ paths:
   /api/v1/editor/content-reports:
     get:
       tags: [editor]
-      summary: Черга непідтверджених content reports (US-10)
-      operationId: listEditorQueue
-      description: Лише для content editor; автор показаний псевдонімною міткою (PRD §6.1).
+      summary: Черга непідтверджених content reports із розмежуванням за мовою (US-10, US-07)
+      operationId: listEditorQueueByLanguage
+      description: |
+        Лише для content editor; автор показаний псевдонімною міткою (PRD §6.1). Черга
+        відокремлює повідомлення за мовою: кожен елемент несе свою `target_language`, а
+        необов'язковий фільтр `target_language` звужує набір до однієї мови (AC-11). Без
+        фільтра повертає всі мови. Роль редактора єдина для всіх мов, без per-language authz.
       parameters:
+        - in: query
+          name: target_language
+          description: фільтр черги за мовою; без нього — усі мови
+          schema: { $ref: "#/components/schemas/TargetLanguageCode" }
         - in: query
           name: after
           schema: { type: string, format: uuid }
@@ -1145,10 +1153,11 @@ paths:
               example:
                 items:
                   - id: 0192f0a0-0000-7000-8000-0000000000d2
+                    target_language: pl
                     reporter_alias: R-7F3A9C
                     origin: card
                     entry_id: 0192f0a0-0000-7000-8000-0000000000e1
-                    lemma_pl: urząd
+                    lemma: urząd
                     field: translation
                     current_value: державна установа
                     proposed_value: установа
@@ -2080,14 +2089,15 @@ components:
 
     EditorQueueItem:
       type: object
-      required: [id, reporter_alias, origin, entry_id, lemma_pl, field, current_value, proposed_value, comment, search_query, created_at]
+      required: [id, target_language, reporter_alias, origin, entry_id, lemma, field, current_value, proposed_value, comment, search_query, created_at]
       additionalProperties: false
       properties:
         id: { type: string, format: uuid }
+        target_language: { $ref: "#/components/schemas/TargetLanguageCode" }
         reporter_alias: { type: string, maxLength: 16, description: псевдонімна мітка, без імені й Telegram id }
         origin: { type: string, enum: [card, answer_dispute, missing_word] }
         entry_id: { type: [string, "null"], format: uuid }
-        lemma_pl: { type: [string, "null"], maxLength: 200 }
+        lemma: { type: [string, "null"], maxLength: 200, description: лема запису активної мови повідомлення }
         field:
           oneOf:
             - $ref: "#/components/schemas/ReportField"

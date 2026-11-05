@@ -3,6 +3,7 @@ import { BackButton } from '../../components/BackButton';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Result, Spinner } from '../../components/ui';
 import { decideReport, EditorApiError, editorQueryKey, listApplied, listQueue, rollbackChange, type AppliedChange, type Cursor, type QueueItem } from './api';
+import { languageCatalogQueryKey, listTargetLanguages } from '../settings/language/api';
 import { accessFailure, decisionBody, decisionFailure, editorDate, fieldLabels, originLabels, previousValue, queueField, type DecisionDraft } from './model';
 import { DecisionScreen } from './DecisionScreen';
 import './editor.css';
@@ -12,6 +13,7 @@ export default function Editor({ onBack }: { onBack: () => void }) {
   const client = useQueryClient();
   const [view, setView] = useState<View>('queue');
   const [cursors, setCursors] = useState<Record<View, Cursor>>({ queue: {}, applied: {} });
+  const [language, setLanguage] = useState('');
   const [authorized, setAuthorized] = useState(false);
   const [blocked, setBlocked] = useState<'auth' | 'role' | null>(null);
   const [decisionItem, setDecisionItem] = useState<QueueItem | null>(null);
@@ -27,8 +29,9 @@ export default function Editor({ onBack }: { onBack: () => void }) {
   const triggerRef = useRef<HTMLElement | null>(null);
   const wasSubscreen = useRef(false);
   const queryOptions = { retry: false, staleTime: 0, refetchOnWindowFocus: false, refetchOnReconnect: false } as const;
-  const queue = useQuery({ ...queryOptions, queryKey: [...editorQueryKey, 'queue', cursors.queue], queryFn: ({ signal }) => listQueue(cursors.queue, signal), enabled: view === 'queue' && !blocked });
+  const queue = useQuery({ ...queryOptions, queryKey: [...editorQueryKey, 'queue', language, cursors.queue], queryFn: ({ signal }) => listQueue(cursors.queue, language || undefined, signal), enabled: view === 'queue' && !blocked });
   const applied = useQuery({ ...queryOptions, queryKey: [...editorQueryKey, 'applied', cursors.applied], queryFn: ({ signal }) => listApplied(cursors.applied, signal), enabled: view === 'applied' && !blocked });
+  const languages = useQuery({ ...queryOptions, queryKey: languageCatalogQueryKey, queryFn: ({ signal }) => listTargetLanguages(signal), enabled: !blocked && authorized });
   const current = view === 'queue' ? queue : applied;
   const readFailure = accessFailure(queue.error) ?? accessFailure(applied.error);
   const access = blocked ?? readFailure;
@@ -88,6 +91,7 @@ export default function Editor({ onBack }: { onBack: () => void }) {
   if (access) return <div className="editor">{back}<h1 className="ios-title">Редактор словника</h1><section className="editor-empty" aria-labelledby="editor-access-title"><h2 id="editor-access-title">{access === 'role' ? 'Потрібен доступ редактора' : 'Підтвердьте доступ'}</h2><Result tone="error">{access === 'role' ? 'Цей розділ доступний лише редакторам словника.' : 'Відкрийте тренер знову в Telegram, щоб продовжити.'}</Result></section></div>;
 
   function selectView(next: View) { if (busy) return; setView(next); setNotice(undefined); }
+  function selectLanguage(next: string) { if (busy) return; setLanguage(next); setCursors(value => ({ ...value, queue: {} })); setNotice(undefined); focusList(); }
   function page(cursor: Cursor) { if (busy) return; setCursors(value => ({ ...value, [view]: cursor })); setNotice(undefined); focusList(); }
   function openDecision(item: QueueItem, trigger: HTMLElement) { triggerRef.current = trigger; setDecisionItem(item); setDecisionError(undefined); setStaleDecision(false); }
   function openRollback(item: AppliedChange, trigger: HTMLElement) { if (!item.rollback_allowed) return; triggerRef.current = trigger; setRollbackItem(item); setRollbackError(undefined); }
@@ -101,14 +105,21 @@ export default function Editor({ onBack }: { onBack: () => void }) {
       {authorized && <div className="ios-segmented editor-tabs" role="tablist" aria-label="Розділи редактора">
         {([['queue', 'Черга'], ['applied', 'Застосовані']] as const).map(([id, label]) => <button key={id} type="button" role="tab" aria-selected={view === id} className={`ios-segment ios-plain${view === id ? ' ios-segment--on' : ''}`} disabled={busy} onClick={() => selectView(id)}>{label}</button>)}
       </div>}
+      {authorized && view === 'queue' && <div className="editor-language-filter">
+        <label htmlFor="editor-language-filter">Мова черги</label>
+        <select id="editor-language-filter" value={language} disabled={busy} onChange={event => selectLanguage(event.target.value)}>
+          <option value="">Усі мови</option>
+          {languages.data?.map(item => <option key={item.code} value={item.code}>{item.display_name_uk}</option>)}
+        </select>
+      </div>}
       {current.isPending ? <div className="loading-state" role="status"><Spinner size="s" /> {view === 'queue' ? 'Завантажуємо чергу…' : 'Завантажуємо зміни…'}</div>
         : current.isError ? <div className="editor-empty"><Result tone="error">{current.error instanceof EditorApiError && current.error.status === 400 ? 'Не вдалося відкрити цю сторінку. Оновіть список із початку.' : 'Не вдалося завантажити список. Спробуйте ще раз.'}</Result><Button size="l" stretched disabled={current.isFetching} onClick={() => { if (current.error instanceof EditorApiError && current.error.status === 400) void refresh(); else void current.refetch(); }}>{current.isFetching ? 'Завантажуємо…' : 'Спробувати ще раз'}</Button></div>
         : data && <>
           {!data.items.length && <div className="editor-empty"><h3>{view === 'queue' ? 'Усе розглянуто' : 'Застосованих змін ще немає'}</h3><p className="caption">{view === 'queue' ? 'Нові повідомлення з’являться тут після перевірки.' : 'Тут з’являться зміни, підтверджені автоматично або редактором.'}</p><Button mode="outline" size="l" stretched disabled={current.isFetching} onClick={() => { void refresh(); }}>Оновити список</Button></div>}
           {!!data.items.length && <div className="ios-caption">{view === 'queue' ? 'Найдавніші — спочатку' : 'Нові публікації — спочатку'}</div>}
           {!!data.items.length && (view === 'queue'
-            ? <ul className="ios-group editor-list">{queue.data?.items.map(item => <li key={item.id}><section aria-label={`Повідомлення: ${item.lemma_pl ?? 'відсутнє слово'}`}><button type="button" className="ios-row ios-plain editor-item" disabled={busy} onClick={event => openDecision(item, event.currentTarget)}>
-              <span className="editor-item-main"><span className="editor-item-word">{item.lemma_pl ? <span lang="pl">{item.lemma_pl}</span> : 'Відсутнє слово'}</span>
+            ? <ul className="ios-group editor-list">{queue.data?.items.map(item => <li key={item.id}><section aria-label={`Повідомлення: ${item.lemma ?? 'відсутнє слово'}`}><button type="button" className="ios-row ios-plain editor-item" disabled={busy} onClick={event => openDecision(item, event.currentTarget)}>
+              <span className="editor-item-main"><span className="editor-item-word">{item.lemma ? <span lang={item.target_language}>{item.lemma}</span> : 'Відсутнє слово'}</span>
                 <span className="editor-item-sub">{originLabels[item.origin]} · {queueField(item)}</span>
                 <span className="editor-item-excerpt">{item.origin === 'missing_word' ? item.search_query ?? 'Без пошукового запиту' : item.proposed_value ?? 'Пропозицію не вказано'}</span>
                 <span className="editor-item-sub">Автор: <strong>{item.reporter_alias}</strong> · <time dateTime={item.created_at}>{editorDate(item.created_at)}</time></span><span className="sr-only">Розглянути</span></span>

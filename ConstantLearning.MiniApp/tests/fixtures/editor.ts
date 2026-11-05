@@ -1,12 +1,12 @@
 import type { AppliedChange, AppliedPage, QueueItem, QueuePage } from '../../src/features/editor/api';
 
 export const report: QueueItem = {
-  id: '0192f0a0-0000-7000-8000-0000000000d1', reporter_alias: 'R-7F3A9C', origin: 'card',
-  entry_id: '0192f0a0-0000-7000-8000-0000000000e1', lemma_pl: 'urząd', field: 'translation',
+  id: '0192f0a0-0000-7000-8000-0000000000d1', target_language: 'pl', reporter_alias: 'R-7F3A9C', origin: 'card',
+  entry_id: '0192f0a0-0000-7000-8000-0000000000e1', lemma: 'urząd', field: 'translation',
   current_value: 'державна установа', proposed_value: 'установа', comment: 'Перевірте основний переклад.',
   search_query: null, created_at: '2026-11-02T10:00:00Z',
 };
-export const missingReport: QueueItem = { ...report, id: '0192f0a0-0000-7000-8000-0000000000d2', reporter_alias: 'R-2B4C6D', origin: 'missing_word', entry_id: null, lemma_pl: null, field: null, current_value: null, proposed_value: null, search_query: 'довідка', comment: 'Не знаходжу потрібного слова.' };
+export const missingReport: QueueItem = { ...report, id: '0192f0a0-0000-7000-8000-0000000000d2', reporter_alias: 'R-2B4C6D', origin: 'missing_word', entry_id: null, lemma: null, field: null, current_value: null, proposed_value: null, search_query: 'довідка', comment: 'Не знаходжу потрібного слова.' };
 export const disputeReport: QueueItem = { ...report, id: '0192f0a0-0000-7000-8000-0000000000d3', reporter_alias: 'R-8E6F4A', origin: 'answer_dispute', field: null, current_value: null, proposed_value: 'urzędzie', comment: 'Ця форма відповідає контексту вправи.' };
 export const queuePage: QueuePage = { items: [report], has_next: false, has_prev: false, next_cursor: null };
 export const change: AppliedChange = {
