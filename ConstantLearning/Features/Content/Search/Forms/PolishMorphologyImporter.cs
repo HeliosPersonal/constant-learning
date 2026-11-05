@@ -29,14 +29,16 @@ public sealed class PolishMorphologyImporter(AppDbContext db, ContentPublication
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
+            // PoliMorf — польський лексикон; код мови беремо з профілю нормалізації, а не з літерала.
+            var lang = NormalizationProfiles.Polish.Code;
             await publication.AcquireLockAsync(cancellationToken);
-            var existing = await db.MorphForms.LongCountAsync(form => form.Lang == "pl" && form.Source == source, cancellationToken);
+            var existing = await db.MorphForms.LongCountAsync(form => form.Lang == lang && form.Source == source, cancellationToken);
             if (existing > 0)
             {
                 await transaction.CommitAsync(cancellationToken);
                 return new(source, existing, false);
             }
-            await db.MorphForms.Where(form => form.Lang == "pl" && form.Source.StartsWith("polimorf:"))
+            await db.MorphForms.Where(form => form.Lang == lang && form.Source.StartsWith("polimorf:"))
                 .ExecuteDeleteAsync(cancellationToken);
             file.Position = 0;
             await using Stream input = path.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
@@ -63,7 +65,7 @@ public sealed class PolishMorphologyImporter(AppDbContext db, ContentPublication
                         throw new InvalidDataException($"Поля морфології виходять за допустимі межі, рядок {lineNumber}.");
                     await writer.StartRowAsync(cancellationToken);
                     await writer.WriteAsync(Guid.CreateVersion7(), NpgsqlDbType.Uuid, cancellationToken);
-                    await writer.WriteAsync("pl", NpgsqlDbType.Text, cancellationToken);
+                    await writer.WriteAsync(lang, NpgsqlDbType.Text, cancellationToken);
                     await writer.WriteAsync(source, NpgsqlDbType.Text, cancellationToken);
                     await writer.WriteAsync(lemma, NpgsqlDbType.Text, cancellationToken);
                     await writer.WriteAsync(form, NpgsqlDbType.Text, cancellationToken);

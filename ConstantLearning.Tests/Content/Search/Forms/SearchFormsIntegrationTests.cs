@@ -50,6 +50,64 @@ public sealed class SearchFormsIntegrationTests(PostgresFixture postgres) : Post
     }
 
     [DockerFact]
+    public async Task Publish_TagsFormsAndMorphologyByEntryTargetLanguage_WithEnglishAlongsidePolish()
+    {
+        // Польський лексикон + навмисний «витік»: pl-рядок із тією самою лемою "mouse", що й в англійського запису.
+        using var lexicon = new LocalLexicon();
+        await Importer.ImportAsync(lexicon.Path);
+        Db.MorphForms.AddRange(
+            new MorphForm { Lang = "en", Source = "test-en", Lemma = "mouse", Form = "mice" },
+            new MorphForm { Lang = "en", Source = "test-en", Lemma = "café", Form = "cafés" },
+            new MorphForm { Lang = "pl", Source = "test-leak", Lemma = "mouse", Form = "myszy" });
+        await Db.SaveChangesAsync();
+
+        async Task<(DictionaryEntry Entry, EntryVersion Version)> NewEnglishEntryAsync(string lemma, int coursePosition)
+        {
+            var entry = new DictionaryEntry
+            {
+                ExternalId = $"en-{lemma}-{coursePosition}", Domain = "everyday",
+                TargetLanguage = "en", CoursePosition = coursePosition
+            };
+            var version = ReportsPublicationTestData.NewVersion(entry);
+            version.LemmaPl = lemma;
+            Db.Add(version);
+            await Db.SaveChangesAsync();
+            return (entry, version);
+        }
+
+        var mouse = await NewEnglishEntryAsync("mouse", coursePosition: 1);
+        Db.Add(new VersionAcceptedAnswer { VersionId = mouse.Version.Id, TextPl = "rodent" });
+        Db.Add(new VersionTranslation { VersionId = mouse.Version.Id, Kind = "canonical", TextUk = "миша", Position = 0 });
+        var cafe = await NewEnglishEntryAsync("café", coursePosition: 2);
+        await Db.SaveChangesAsync();
+
+        await Publisher.ApplyAsync([
+            new(mouse.Entry.Id, null, mouse.Version.Id, "editor"),
+            new(cafe.Entry.Id, null, cafe.Version.Id, "editor")]);
+
+        var forms = await Db.SearchForms.AsNoTracking().ToListAsync();
+        // Форми англійського запису позначені "en"; морфологія взята з en-леми, pl-«витік» не просочився.
+        forms.Where(form => form.EntryId == mouse.Entry.Id && form.Lang == "en").Select(form => form.FormDisplay)
+            .Should().BeEquivalentTo("mouse", "mice", "rodent");
+        forms.Should().NotContain(form => form.FormDisplay == "myszy");
+        forms.Single(form => form.FormDisplay == "mouse").IsLemma.Should().BeTrue();
+        // Переклад лишається українським (мова пояснень) незалежно від цільової мови запису.
+        forms.Where(form => form.EntryId == mouse.Entry.Id && form.Lang == "uk").Select(form => form.FormDisplay)
+            .Should().BeEquivalentTo("миша");
+        // Згортання діакритики мово-свідоме для en (café→cafe, cafés→cafes) через той самий спільний fold.
+        forms.Where(form => form.EntryId == cafe.Entry.Id && form.Lang == "en").Select(form => form.FormFolded)
+            .Should().BeEquivalentTo("cafe", "cafes");
+        (await Db.SearchForms.Where(form => form.FormFolded == SearchTextNormalizer.Fold("CAFÉ"))
+            .Select(form => form.FormDisplay).ToListAsync()).Should().Contain("café");
+
+        // Регресія pl: польський запис у тій самій БД лишається мово-свідомим і повним (узагальнення не зламало pl).
+        var polish = await ReportsPublicationTestData.CreateRootAsync(Db, Clock);
+        await Publisher.ApplyAsync([new(polish.Entry.Id, null, polish.Version.Id, "editor")]);
+        (await Db.SearchForms.Where(form => form.EntryId == polish.Entry.Id && form.Lang == "pl")
+            .Select(form => form.FormDisplay).ToListAsync()).Should().BeEquivalentTo("żaba", "żaby", "żabą");
+    }
+
+    [DockerFact]
     public async Task Republish_ReplacesForms_UnpublishRemovesThem_WithoutTouchingHistory()
     {
         using var lexicon = new LocalLexicon();

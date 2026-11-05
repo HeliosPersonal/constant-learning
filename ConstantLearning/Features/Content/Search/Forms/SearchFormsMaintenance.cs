@@ -60,13 +60,17 @@ public sealed class SearchFormsMaintenance(AppDbContext db, ContentPublicationSe
     /// <summary>Редакторський індикатор: лема індексується, але її відмінювані форми відсутні в локальному лексиконі.</summary>
     public async Task<List<MissingPolishMorphology>> GetMissingPolishMorphologyAsync(CancellationToken cancellationToken = default)
     {
+        // Індикатор стосується лише польських записів: польський лексикон не покриває інші мови,
+        // тож інакше кожен en/de/nl-запис хибно рахувався б як «без польської морфології».
+        var lang = NormalizationProfiles.Polish.Code;
         var published = await db.DictionaryEntries.AsNoTracking()
-            .Where(entry => entry.PublishedVersionId != null && entry.PublishedVersion!.ValidationStatus == "approved")
+            .Where(entry => entry.TargetLanguage == lang && entry.PublishedVersionId != null
+                && entry.PublishedVersion!.ValidationStatus == "approved")
             .OrderBy(entry => entry.ExternalId)
             .Select(entry => new MissingPolishMorphology(entry.Id, entry.PublishedVersionId!.Value,
                 entry.ExternalId, entry.PublishedVersion!.LemmaPl)).ToListAsync(cancellationToken);
         var seeds = published.Select(value => SearchTextNormalizer.Normalize(value.LemmaPl)).Distinct().ToArray();
-        var covered = (await db.MorphForms.AsNoTracking().Where(form => form.Lang == "pl" && seeds.Contains(form.Lemma))
+        var covered = (await db.MorphForms.AsNoTracking().Where(form => form.Lang == lang && seeds.Contains(form.Lemma))
             .Select(form => form.Lemma).Distinct().ToListAsync(cancellationToken)).ToHashSet(StringComparer.Ordinal);
         return published.Where(value => !covered.Contains(SearchTextNormalizer.Normalize(value.LemmaPl))).ToList();
     }
