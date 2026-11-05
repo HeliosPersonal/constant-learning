@@ -55,6 +55,11 @@ public sealed class SearchFormsProjection(AppDbContext db, IClock clock) : IPubl
                     EntryId = version.EntryId, VersionId = version.Id, Lang = formLang, FormDisplay = display,
                     FormFolded = SearchTextNormalizer.Fold(display), IsLemma = isLemma, CreatedAt = clock.GetCurrentInstant()
                 });
+                // Мово-свідоме зняття артикля (de: der/die/das, nl: de/het): голий іменник додається окремою
+                // нелемною формою тієї ж мови, щоб пошук за іменником без артикля знаходив словникову форму.
+                // Діспетч за кодом мови форми — артиклі інших мов (та uk-пояснень) не чіпаються.
+                if (NormalizationProfiles.ByCode(formLang)?.StripLeadingArticle(display) is { } bare)
+                    Add(formLang, bare);
             }
             Add(lang, version.LemmaPl, true);
             var versionAnswers = answersByVersion[version.Id].ToArray();

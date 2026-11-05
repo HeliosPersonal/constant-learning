@@ -108,6 +108,72 @@ public sealed class SearchFormsIntegrationTests(PostgresFixture postgres) : Post
     }
 
     [DockerFact]
+    public async Task Publish_AppliesGermanAndDutchForms_ArticlesStrippedUmlautsExpanded()
+    {
+        using var lexicon = new LocalLexicon();
+        await Importer.ImportAsync(lexicon.Path);
+        // de-морфологія для голого іменника; nl-«витік» із тією ж лемою «hund» не має просочитися до de.
+        Db.MorphForms.AddRange(
+            new MorphForm { Lang = "de", Source = "test-de", Lemma = "hund", Form = "Hunde" },
+            new MorphForm { Lang = "nl", Source = "test-leak", Lemma = "hund", Form = "honden" });
+        await Db.SaveChangesAsync();
+
+        async Task<(DictionaryEntry Entry, EntryVersion Version)> NewEntryAsync(string lang, string lemma, int coursePosition)
+        {
+            var entry = new DictionaryEntry
+            {
+                ExternalId = $"{lang}-{coursePosition}", Domain = "everyday",
+                TargetLanguage = lang, CoursePosition = coursePosition
+            };
+            var version = ReportsPublicationTestData.NewVersion(entry);
+            version.LemmaPl = lemma;
+            Db.Add(version);
+            await Db.SaveChangesAsync();
+            return (entry, version);
+        }
+
+        // Німецька словникова форма з артиклем роду та ß; прийнята відповідь — голий іменник для морфології.
+        var strasse = await NewEntryAsync("de", "die Straße", coursePosition: 1);
+        Db.Add(new VersionAcceptedAnswer { VersionId = strasse.Version.Id, TextPl = "Hund" });
+        Db.Add(new VersionTranslation { VersionId = strasse.Version.Id, Kind = "canonical", TextUk = "вулиця", Position = 0 });
+        var huis = await NewEntryAsync("nl", "het huis", coursePosition: 2);
+        await Db.SaveChangesAsync();
+
+        await Publisher.ApplyAsync([
+            new(strasse.Entry.Id, null, strasse.Version.Id, "editor"),
+            new(huis.Entry.Id, null, huis.Version.Id, "editor")]);
+
+        var forms = await Db.SearchForms.AsNoTracking().ToListAsync();
+        var german = forms.Where(form => form.EntryId == strasse.Entry.Id && form.Lang == "de").ToList();
+        // Артикль роду знято окремою безартиклевою формою; de-морфологія взята з de-леми.
+        german.Select(form => form.FormDisplay).Should().Contain(["die Straße", "Straße", "Hund", "Hunde"]);
+        forms.Should().NotContain(form => form.FormDisplay == "honden");
+        // ß розкривається у ss; безартиклевий іменник знаходиться за folded-запитом.
+        german.Single(form => form.FormDisplay == "Straße").FormFolded.Should().Be("strasse");
+        german.Where(form => form.FormFolded == SearchTextNormalizer.Fold("Strasse"))
+            .Select(form => form.FormDisplay).Should().Contain("Straße");
+        // Лема — форма з артиклем; безартиклевий варіант не лема.
+        german.Single(form => form.FormDisplay == "die Straße").IsLemma.Should().BeTrue();
+        german.Single(form => form.FormDisplay == "Straße").IsLemma.Should().BeFalse();
+        // Переклад лишається українським незалежно від цільової мови запису.
+        forms.Where(form => form.EntryId == strasse.Entry.Id && form.Lang == "uk").Select(form => form.FormDisplay)
+            .Should().BeEquivalentTo("вулиця");
+
+        var dutch = forms.Where(form => form.EntryId == huis.Entry.Id && form.Lang == "nl").ToList();
+        // Нідерландський артикль het знято; форми позначені "nl".
+        dutch.Select(form => form.FormDisplay).Should().Contain(["het huis", "huis"]);
+        dutch.Single(form => form.FormDisplay == "huis").FormFolded.Should().Be("huis");
+        dutch.Single(form => form.FormDisplay == "het huis").IsLemma.Should().BeTrue();
+        dutch.Single(form => form.FormDisplay == "huis").IsLemma.Should().BeFalse();
+
+        // Регресія pl: польський запис у тій самій БД лишається мово-свідомим і повним.
+        var polish = await ReportsPublicationTestData.CreateRootAsync(Db, Clock);
+        await Publisher.ApplyAsync([new(polish.Entry.Id, null, polish.Version.Id, "editor")]);
+        (await Db.SearchForms.Where(form => form.EntryId == polish.Entry.Id && form.Lang == "pl")
+            .Select(form => form.FormDisplay).ToListAsync()).Should().BeEquivalentTo("żaba", "żaby", "żabą");
+    }
+
+    [DockerFact]
     public async Task Republish_ReplacesForms_UnpublishRemovesThem_WithoutTouchingHistory()
     {
         using var lexicon = new LocalLexicon();
