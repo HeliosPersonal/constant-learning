@@ -44,14 +44,17 @@ public sealed class SessionLimitsService(AppDbContext db)
         return notices;
     }
 
-    public async Task<SessionLimits> ReadAsync(LearnerDayState current, IReadOnlyList<LearnerWord> words,
-        IReadOnlyList<PublishedCourseWord> course, Instant now, CancellationToken cancellationToken = default)
+    public async Task<SessionLimits> ReadAsync(LearnerDayState current, string targetLanguage,
+        IReadOnlyList<LearnerWord> words, IReadOnlyList<PublishedCourseWord> course, Instant now,
+        CancellationToken cancellationToken = default)
     {
         RequireTransaction();
 
         // План session не є показом. Вилучення approved не скасовує вже витрачений денний ліміт.
+        // Денний ліміт нових слів незалежний на мову (OQ-1а): рахуємо only already_known активної мови.
         var known = await db.AnswerEvents.AsNoTracking()
-            .Where(answer => answer.LearnerId == current.Learner.Id && answer.Outcome == "already_known")
+            .Where(answer => answer.LearnerId == current.Learner.Id && answer.TargetLanguage == targetLanguage
+                && answer.Outcome == "already_known")
             .Select(answer => new { answer.EntryId, answer.LearnerDay }).Distinct()
             .ToArrayAsync(cancellationToken);
         var knownToday = known.Where(answer => answer.LearnerDay == current.Day.Date)

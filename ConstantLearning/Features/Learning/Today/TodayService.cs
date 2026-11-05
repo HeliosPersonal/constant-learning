@@ -24,8 +24,9 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
 
         var now = clock.GetCurrentInstant();
         var day = current.Day.Date;
-        var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
-            ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
+        var lang = current.State.TargetLanguage;
+        var session = await SessionResultView.FindOpenAsync(db, learnerId, lang, now, cancellationToken)
+            ?? await boundary.GetActiveAsync(learnerId, lang, now, cancellationToken);
         var course = await courseReader.ReadAsync(current.State.TargetLanguage, cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
         if (session is not null)
@@ -35,18 +36,19 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
             SessionViewBuilder.PrepareNextItem(session, items, published, now);
         }
 
-        var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId)
+        var words = await db.LearnerWords.AsNoTracking()
+            .Where(word => word.LearnerId == learnerId && word.TargetLanguage == lang)
             .ToArrayAsync(cancellationToken);
         // Навіть нейтральна спроба повторення прибирає слово з черги поточної доби.
         var attempted = (await db.AnswerEvents.AsNoTracking().Where(answer => answer.LearnerId == learnerId
-                && answer.LearnerDay == day
+                && answer.TargetLanguage == lang && answer.LearnerDay == day
                 && (answer.ExerciseKind == "review" || answer.ExerciseKind == "control_repetition"))
             .Select(answer => answer.EntryId).Distinct().ToArrayAsync(cancellationToken)).ToHashSet();
         var due = words.Count(word => published.ContainsKey(word.EntryId) && word.Status != "not_started"
             && word.FirstShownDay != null && word.IntervalDays > 0 && word.DueOn <= day
             && !attempted.Contains(word.EntryId));
         var recalled = words.Count(word => published.ContainsKey(word.EntryId) && word.Status == "recalled");
-        var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
+        var limits = await limitsService.ReadAsync(current, lang, words, course, now, cancellationToken);
         var notices = limitsService.ApplyNotices(current, limits, now);
         await db.SaveChangesAsync(cancellationToken);
 
@@ -55,7 +57,7 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
         var from = day.PlusDays(-6).AtStartOfDayInZone(zone).ToInstant();
         var until = day.PlusDays(1).AtStartOfDayInZone(zone).ToInstant();
         var completed = await db.LearningSessions.AsNoTracking().CountAsync(value => value.LearnerId == learnerId
-            && value.Kind == "plan" && value.Status == "completed"
+            && value.TargetLanguage == lang && value.Kind == "plan" && value.Status == "completed"
             && value.CompletedAt >= from && value.CompletedAt < until,
             cancellationToken);
 
@@ -66,7 +68,7 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
             && limits.Usage.Remaining(current.State.DailyNewWordsLimit) > 0 && !limits.CourseCompleted;
         var planDone = ExtraEligibility.PlanDone(hasActive, due, newWordsForPlan);
         var answeredToday = (await db.AnswerEvents.AsNoTracking().Where(answer => answer.LearnerId == learnerId
-                && answer.LearnerDay == day).Select(answer => answer.EntryId).Distinct()
+                && answer.TargetLanguage == lang && answer.LearnerDay == day).Select(answer => answer.EntryId).Distinct()
             .ToArrayAsync(cancellationToken)).ToHashSet();
         var hasPractice = planDone && ExtraEligibility.HasEligiblePracticeWord(words, published, answeredToday, day);
         var extra = ExtraEligibility.Evaluate(planDone, limits.CourseCompleted, hasPractice);

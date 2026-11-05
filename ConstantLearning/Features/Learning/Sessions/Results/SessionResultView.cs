@@ -16,8 +16,11 @@ public sealed record LastResultResponse(
 
 public static class SessionResultView
 {
-    public static Task<LearningSession?> FindOpenAsync(AppDbContext db, Guid learnerId, Instant now, CancellationToken ct) =>
-        db.LearningSessions.SingleOrDefaultAsync(s => s.LearnerId == learnerId && s.ResultItemId != null && s.EndsAt > now, ct);
+    // Відкрита session шукається в межах однієї мови: частковий UNIQUE активної session тепер per-language
+    // (T09), тож learner може мати відкриту session у кількох мовах одночасно без їхнього змішування (AC-04).
+    public static Task<LearningSession?> FindOpenAsync(AppDbContext db, Guid learnerId, string targetLanguage, Instant now, CancellationToken ct) =>
+        db.LearningSessions.SingleOrDefaultAsync(s => s.LearnerId == learnerId && s.TargetLanguage == targetLanguage
+            && s.ResultItemId != null && s.EndsAt > now, ct);
 
     public static async Task<LastResultResponse?> ReadAsync(AppDbContext db, LearningSession session, CancellationToken ct)
     {

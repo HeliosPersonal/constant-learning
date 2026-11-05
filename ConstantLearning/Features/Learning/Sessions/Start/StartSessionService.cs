@@ -25,8 +25,9 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
         if (current is null) return null;
 
         var now = clock.GetCurrentInstant();
-        var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
-            ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
+        var lang = current.State.TargetLanguage;
+        var session = await SessionResultView.FindOpenAsync(db, learnerId, lang, now, cancellationToken)
+            ?? await boundary.GetActiveAsync(learnerId, lang, now, cancellationToken);
 
         // Початок заняття за планом закриває активну extra-session як незавершену (ADR-0001). Зміну
         // скидаємо окремим SaveChanges, щоб звільнити частковий UNIQUE активної session до вставки плану.
@@ -41,16 +42,17 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
 
         var course = await courseReader.ReadAsync(current.State.TargetLanguage, cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
-        var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId)
+        var words = await db.LearnerWords.AsNoTracking()
+            .Where(word => word.LearnerId == learnerId && word.TargetLanguage == lang)
             .ToArrayAsync(cancellationToken);
-        var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
+        var limits = await limitsService.ReadAsync(current, lang, words, course, now, cancellationToken);
 
         var created = session is null;
         List<SessionItem> items;
         if (session is null)
         {
             var attemptedToday = await db.AnswerEvents.Where(answer => answer.LearnerId == learnerId
-                    && answer.LearnerDay == current.Day.Date
+                    && answer.TargetLanguage == lang && answer.LearnerDay == current.Day.Date
                     && (answer.ExerciseKind == "review" || answer.ExerciseKind == "control_repetition"))
                 .Select(answer => answer.EntryId).Distinct().ToArrayAsync(cancellationToken);
             var attempted = attemptedToday.ToHashSet();
@@ -66,6 +68,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
             session = new LearningSession
             {
                 LearnerId = learnerId,
+                TargetLanguage = lang,
                 LearnerDay = current.Day.Date,
                 Kind = "plan",
                 EndsAt = current.Day.EndsAt,

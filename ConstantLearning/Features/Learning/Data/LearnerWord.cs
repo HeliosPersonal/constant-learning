@@ -9,7 +9,8 @@ public sealed class LearnerWord
     public Guid EntryId { get; set; }
 
     // Денормалізований дискримінатор мови (ADR-0001): дорівнює target_language свого entry.
-    // TODO(T10): зняти інтеримний дефолт 'pl', коли ізоляція прогресу писатиме мову з активного контексту.
+    // T10: продакшн-запис (NewWordService) завжди проставляє мову з активного контексту learner. Дефолт 'pl'
+    // лишається запобіжним для тест-фабрик/оснастки, які ще не мово-свідомі; зняти, коли і вони проставлятимуть.
     public string TargetLanguage { get; set; } = "pl";
     public required string Status { get; set; }
     public short ConsecutiveScheduledCorrect { get; set; }

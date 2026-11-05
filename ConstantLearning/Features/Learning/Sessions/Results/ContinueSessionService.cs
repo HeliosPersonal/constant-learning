@@ -29,10 +29,13 @@ public sealed class ContinueSessionService(AppDbContext db, ILearnerDayStateServ
             return (409, null, expired);
         }
         if (session.ResultItemId == itemId) session.ResultItemId = null;
-        var published = await course.ReadAsync(day!.State.TargetLanguage, ct);
+        // Облік скоупиться мовою самої session, а не активною мовою learner: continue діє на конкретну session.
+        var lang = session.TargetLanguage;
+        var published = await course.ReadAsync(lang, ct);
         var next = SessionViewBuilder.PrepareNextItem(session, items!, published.ToDictionary(w => w.EntryId), now);
-        var words = await db.LearnerWords.AsNoTracking().Where(w => w.LearnerId == learnerId).ToArrayAsync(ct);
-        var state = await limits.ReadAsync(day!, words, published, now, ct);
+        var words = await db.LearnerWords.AsNoTracking()
+            .Where(w => w.LearnerId == learnerId && w.TargetLanguage == lang).ToArrayAsync(ct);
+        var state = await limits.ReadAsync(day!, lang, words, published, now, ct);
         var notices = limits.ApplyNotices(day!, state, now);
         var response = SessionResponse.From(session, items!, notices, next, await SessionResultView.ReadAsync(db, session, ct));
         await db.SaveChangesAsync(ct);

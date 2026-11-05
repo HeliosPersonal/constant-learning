@@ -53,7 +53,8 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         if (session.Status != "active") return Error("new_word.session_inactive", "Заняття вже закрито.");
         if (item.Kind != "new_word_card") return Error("new_word.invalid_item_kind", "Ця картка очікує відповіді на вправу.");
 
-        var course = await courseReader.ReadAsync(current.State.TargetLanguage, cancellationToken);
+        var lang = current.State.TargetLanguage;
+        var course = await courseReader.ReadAsync(lang, cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
         var items = await db.SessionItems.Where(value => value.SessionId == session.Id)
             .OrderBy(value => value.Position).ToListAsync(cancellationToken);
@@ -67,8 +68,9 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
 
         // Додаткове нове слово (unlimited-learning) не рахується до денного ліміту і не вимагає квоти (AC-02).
         var isExtra = session.Kind == "extra_word";
-        var words = await db.LearnerWords.Where(value => value.LearnerId == learnerId).ToListAsync(cancellationToken);
-        var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
+        var words = await db.LearnerWords.Where(value => value.LearnerId == learnerId && value.TargetLanguage == lang)
+            .ToListAsync(cancellationToken);
+        var limits = await limitsService.ReadAsync(current, lang, words, course, now, cancellationToken);
         if (!isExtra && (!limits.NewWordsAvailable || limits.Usage.Remaining(current.State.DailyNewWordsLimit) == 0))
             return Error("new_word.limit_reached", "Нові слова стануть доступні наступної навчальної доби.");
         var word = words.SingleOrDefault(value => value.EntryId == item.EntryId);
@@ -86,6 +88,7 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
             word = new LearnerWord
             {
                 LearnerId = learnerId,
+                TargetLanguage = lang,
                 EntryId = item.EntryId,
                 Status = "not_started",
                 ModelState = "{}",
@@ -103,6 +106,7 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
             db.AnswerEvents.Add(new AnswerEvent
             {
                 LearnerId = learnerId,
+                TargetLanguage = lang,
                 EntryId = item.EntryId,
                 VersionId = target.VersionId,
                 SessionItemId = item.Id,
@@ -120,7 +124,7 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         session.LastActivityAt = now;
         // Наступне читання квоти має бачити і показ, і already_known; транзакція ще не завершена.
         await db.SaveChangesAsync(cancellationToken);
-        limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
+        limits = await limitsService.ReadAsync(current, lang, words, course, now, cancellationToken);
 
         var replacementAdded = false;
         // extra_word ніколи не підставляє нове слово замість «Вже знаю» (AC-03); заміна лише для плану.

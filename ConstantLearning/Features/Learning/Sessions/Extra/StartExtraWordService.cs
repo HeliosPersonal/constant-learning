@@ -44,8 +44,9 @@ public sealed class StartExtraWordService(AppDbContext db, ILearnerDayStateServi
 
         var now = clock.GetCurrentInstant();
         var day = current.Day.Date;
-        var session = await SessionResultView.FindOpenAsync(db, learnerId, now, ct)
-            ?? await boundary.GetActiveAsync(learnerId, now, ct);
+        var lang = current.State.TargetLanguage;
+        var session = await SessionResultView.FindOpenAsync(db, learnerId, lang, now, ct)
+            ?? await boundary.GetActiveAsync(learnerId, lang, now, ct);
         var course = await courseReader.ReadAsync(current.State.TargetLanguage, ct);
         var published = course.ToDictionary(word => word.EntryId);
 
@@ -64,9 +65,10 @@ public sealed class StartExtraWordService(AppDbContext db, ILearnerDayStateServi
             return new ExtraStartResult(200, openResponse, null);
         }
 
-        var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId).ToArrayAsync(ct);
-        var limits = await limitsService.ReadAsync(current, words, course, now, ct);
-        if (!await ExtraPlanGate.PlanDoneAsync(db, learnerId, current, words, published, limits, ct))
+        var words = await db.LearnerWords.AsNoTracking()
+            .Where(word => word.LearnerId == learnerId && word.TargetLanguage == lang).ToArrayAsync(ct);
+        var limits = await limitsService.ReadAsync(current, lang, words, course, now, ct);
+        if (!await ExtraPlanGate.PlanDoneAsync(db, learnerId, lang, current, words, published, limits, ct))
             return new ExtraStartResult(409, null, ExtraErrors.PlanNotDone);
         if (await ExtraPlanGate.RateLimitedAsync(db, learnerId, now, ct))
             return new ExtraStartResult(429, null, ExtraErrors.RateLimited);
@@ -77,6 +79,7 @@ public sealed class StartExtraWordService(AppDbContext db, ILearnerDayStateServi
         var created = new LearningSession
         {
             LearnerId = learnerId,
+            TargetLanguage = lang,
             LearnerDay = day,
             Kind = "extra_word",
             EndsAt = current.Day.EndsAt,

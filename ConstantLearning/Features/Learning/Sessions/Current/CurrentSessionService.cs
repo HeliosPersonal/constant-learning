@@ -21,8 +21,9 @@ public sealed class CurrentSessionService(AppDbContext db, ILearnerDayStateServi
         if (current is null) return null;
 
         var now = clock.GetCurrentInstant();
-        var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
-            ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
+        var lang = current.State.TargetLanguage;
+        var session = await SessionResultView.FindOpenAsync(db, learnerId, lang, now, cancellationToken)
+            ?? await boundary.GetActiveAsync(learnerId, lang, now, cancellationToken);
         SessionResponse? response = null;
         if (session is not null)
         {
@@ -33,9 +34,10 @@ public sealed class CurrentSessionService(AppDbContext db, ILearnerDayStateServi
                 course.ToDictionary(word => word.EntryId), now);
             if (next is not null || session.ResultItemId is not null)
             {
-                var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId)
+                var words = await db.LearnerWords.AsNoTracking()
+                    .Where(word => word.LearnerId == learnerId && word.TargetLanguage == lang)
                     .ToArrayAsync(cancellationToken);
-                var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
+                var limits = await limitsService.ReadAsync(current, lang, words, course, now, cancellationToken);
                 var notices = limitsService.ApplyNotices(current, limits, now);
                 response = SessionResponse.From(session, items, notices, next, await SessionResultView.ReadAsync(db, session, cancellationToken));
             }

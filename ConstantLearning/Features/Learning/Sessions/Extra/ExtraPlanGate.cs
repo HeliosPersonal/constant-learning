@@ -17,13 +17,13 @@ internal static class ExtraPlanGate
     public const int RateLimitPerMinute = 30;
 
     /// <summary>План дня виконано (session тут немає, бо extra стартує лише без активної session).</summary>
-    public static async Task<bool> PlanDoneAsync(AppDbContext db, Guid learnerId, LearnerDayState current,
-        IReadOnlyList<LearnerWord> words, IReadOnlyDictionary<Guid, PublishedCourseWord> published,
-        SessionLimits limits, CancellationToken ct)
+    public static async Task<bool> PlanDoneAsync(AppDbContext db, Guid learnerId, string targetLanguage,
+        LearnerDayState current, IReadOnlyList<LearnerWord> words,
+        IReadOnlyDictionary<Guid, PublishedCourseWord> published, SessionLimits limits, CancellationToken ct)
     {
         var day = current.Day.Date;
         var attempted = (await db.AnswerEvents.AsNoTracking().Where(answer => answer.LearnerId == learnerId
-                && answer.LearnerDay == day
+                && answer.TargetLanguage == targetLanguage && answer.LearnerDay == day
                 && (answer.ExerciseKind == "review" || answer.ExerciseKind == "control_repetition"))
             .Select(answer => answer.EntryId).Distinct().ToArrayAsync(ct)).ToHashSet();
         var due = words.Count(word => published.ContainsKey(word.EntryId) && word.Status != "not_started"
@@ -34,7 +34,10 @@ internal static class ExtraPlanGate
         return ExtraEligibility.PlanDone(false, due, newWordsForPlan);
     }
 
-    /// <summary>Понад 30 стартів extra-session за хвилину — захист від автоматичних дотиків (PRD §6.1).</summary>
+    /// <summary>
+    /// Понад 30 стартів extra-session за хвилину — захист від автоматичних дотиків (PRD §6.1).
+    /// Ліміт частоти навмисно крос-мовний: зловживання — на рівні людини, не мови (без фільтра target_language).
+    /// </summary>
     public static async Task<bool> RateLimitedAsync(AppDbContext db, Guid learnerId, Instant now, CancellationToken ct)
     {
         var since = now - Duration.FromMinutes(1);

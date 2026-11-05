@@ -29,6 +29,8 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
             && value.SessionId == sessionId, cancellationToken);
         if (session is null || item is null) return NotFound();
 
+        // Відповідь належить мові своєї session; усі читання прогресу й запис події беруть цю мову (AC-04).
+        var lang = session.TargetLanguage;
         var now = clock.GetCurrentInstant();
         if (SessionExpiryGuard.CheckAndClose(session, now) is { } expired)
         {
@@ -72,7 +74,7 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
         }
 
         var word = await db.LearnerWords.SingleOrDefaultAsync(value => value.LearnerId == learnerId
-            && value.EntryId == item.EntryId, cancellationToken);
+            && value.TargetLanguage == lang && value.EntryId == item.EntryId, cancellationToken);
         if (word?.FirstShownDay is null || word.DueOn is null || word.IntervalDays is null)
             return Error(409, "answer.word_not_ready", "Спершу перегляньте картку нового слова.");
         var before = AnswerWordState.Read(word);
@@ -90,16 +92,17 @@ public sealed class AnswerSessionService(AppDbContext db, ILearnerDayStateServic
                 || before.FirstShownDay != current.Day.Date,
             ReviewExerciseKind.ExtraPractice => before.ControlPending || before.FirstShownDay >= current.Day.Date
                 || await db.AnswerEvents.AnyAsync(answer => answer.LearnerId == learnerId
-                    && answer.EntryId == item.EntryId && answer.LearnerDay == current.Day.Date, cancellationToken),
+                    && answer.TargetLanguage == lang && answer.EntryId == item.EntryId
+                    && answer.LearnerDay == current.Day.Date, cancellationToken),
             _ => !before.IsDue(current.Day.Date) || await db.AnswerEvents.AnyAsync(answer => answer.LearnerId == learnerId
-                && answer.EntryId == item.EntryId && answer.LearnerDay == current.Day.Date
+                && answer.TargetLanguage == lang && answer.EntryId == item.EntryId && answer.LearnerDay == current.Day.Date
                 && (answer.ExerciseKind == "review" || answer.ExerciseKind == "control_repetition"), cancellationToken)
         };
         if (notDue) return Error(409, "answer.not_due", "Це слово зараз не очікує повторення.");
 
         var answerEvent = new AnswerEvent
         {
-            LearnerId = learnerId, EntryId = item.EntryId, VersionId = target.VersionId, SessionItemId = item.Id,
+            LearnerId = learnerId, TargetLanguage = lang, EntryId = item.EntryId, VersionId = target.VersionId, SessionItemId = item.Id,
             ExerciseKind = item.Kind, Outcome = OutcomeName(evaluation.Outcome!.Value), RawAnswer = request.Answer,
             NormalizedAnswer = evaluation.NormalizedAnswer, AnsweredAt = now, LearnerDay = current.Day.Date,
             TimeZone = current.Learner.TimeZone, IntervalBefore = word.IntervalDays, SchedulerVersion = scheduler.Version,

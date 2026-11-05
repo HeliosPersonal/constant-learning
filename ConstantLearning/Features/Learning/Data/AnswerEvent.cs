@@ -9,7 +9,8 @@ public sealed class AnswerEvent
     public Guid EntryId { get; set; }
 
     // Денормалізований дискримінатор мови (ADR-0001): дорівнює target_language свого entry.
-    // TODO(T10): зняти інтеримний дефолт 'pl', коли ізоляція прогресу писатиме мову з активного контексту.
+    // T10: продакшн-запис (Answer/NewWord) завжди проставляє мову з session/активного контексту. Дефолт 'pl'
+    // лишається запобіжним для тест-фабрик/оснастки, які ще не мово-свідомі; зняти, коли і вони проставлятимуть.
     public string TargetLanguage { get; set; } = "pl";
     public Guid VersionId { get; set; }
     public Guid? SessionItemId { get; set; }
