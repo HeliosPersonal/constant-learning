@@ -9,7 +9,7 @@ files_hint:
   - "ConstantLearning/Features/Content/Search/Forms/ (seed профілів)"
 owner: "Viacheslav Melnichenko"
 estimate: "S"
-status: "todo"
+status: "done"
 ---
 
 # T07s — Spike: джерела й ліцензії для en/de/nl + заведення профілів нормалізації
@@ -42,7 +42,24 @@ status: "todo"
 
 ## Definition of Done
 
-- [ ] Для en/de/nl задокументовані джерела + ліцензії в `_audit/` (одна таблиця: мова → джерело → ліцензія → покриття).
-- [ ] Профілі `normalization_profile` `'en'`/`'de'`/`'nl'` заведені в seed `target_languages` (не NULL).
-- [ ] Зафіксовано рішення OQ-7 у [SAD §11](../sad.md#11-risks-and-technical-debt) (із «Open question» → resolved) + [tracker.md](./tracker.md).
-- [ ] [T07a](./T07a-generalize-forms-pl-en.md)/[T07b](./T07b-full-rules-de-nl.md) розблоковані: обсяг правил на мову відомий.
+- [x] Для en/de/nl задокументовані джерела + ліцензії в `_audit/` (одна таблиця: мова → джерело → ліцензія → покриття).
+- [x] Профілі `normalization_profile` `'en'`/`'de'`/`'nl'` заведені в seed `target_languages` (не NULL).
+- [x] Зафіксовано рішення OQ-7 у [SAD §11](../sad.md#11-risks-and-technical-debt) (із «Open question» → resolved) + [tracker.md](./tracker.md).
+- [x] [T07a](./T07a-generalize-forms-pl-en.md)/[T07b](./T07b-full-rules-de-nl.md) розблоковані: обсяг правил на мову відомий.
+
+## Нотатки реалізації
+
+- **Джерела — вільна ліцензійна історія.** Для en/de/nl підтверджено єдиний набір CC-BY-SA/CC-BY:
+  **Wiktextract/Kaikki** або **UniMorph** (морфологія), **HermitDave FrequencyWords / wordfreq**
+  (частотність), **Tatoeba** (довідка автозвірки). Повна таблиця «мова → джерело → ліцензія → покриття» +
+  відхилені невільні джерела → [_audit/language-sources-2026-11-05.md](../_audit/language-sources-2026-11-05.md).
+- **Профілі вже заведено.** `normalization_profile` `'en'`/`'de'`/`'nl'` (не NULL) сидиться разом із `'pl'`
+  у [`20261104090100_seed_target_languages.up.sql`](../migrations/20261104090100_seed_target_languages.up.sql)
+  ще з T01 — цей spike лише верифікував, без повторного додавання.
+- **Відхилено як невільне/ризиковане:** CELEX / e-Lex / RBN (платні), GermaNet (академічна),
+  SUBTLEX-DE/NL (без чистого комерційного гранту), Leipzig Corpora (суперечлива ліцензія). UD German-GSD —
+  лише ≥ v2.5 (у ≤ v2.4 ліцензія NC).
+- **OQ-7 resolved.** Перенесено з таблиці ризиків §11 (де Severity тримає лише санкціоновані літерали) у
+  «Resolved open questions» [SAD §11](../sad.md#11-risks-and-technical-debt); tracker.md оновлено.
+- **T07a/T07b розблоковані:** обсяг правил на мову відомий (морфологія з Wiktextract/UniMorph), монстро-PR
+  не загрожує — spike зафіксував межу дослідження окремо від PR реалізації.

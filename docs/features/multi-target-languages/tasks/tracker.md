@@ -22,7 +22,7 @@ updated_at: "2026-11-05"
 | [T04](./T04-per-language-day-state.md) | Per-language стан доби learner (`ILearnerDayStateService`) | domain | Viacheslav Melnichenko | L | [T03](./T03-migrate-identity-day-state.md) | done |
 | [T05](./T05-migrate-content-entries.md) | Міграції `dictionary_entries.target_language` + своп індексів | migration | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md) | done |
 | [T06](./T06-base-course-availability.md) | Base course на мову + перевірка доступності мови | domain | Viacheslav Melnichenko | M | [T01](./T01-config-target-languages.md), [T05](./T05-migrate-content-entries.md) | done |
-| [T07s](./T07s-spike-language-sources.md) | Spike: джерела й ліцензії для en/de/nl + заведення профілів нормалізації (OQ-7) | research | Viacheslav Melnichenko | S | [T01](./T01-config-target-languages.md) | todo |
+| [T07s](./T07s-spike-language-sources.md) | Spike: джерела й ліцензії для en/de/nl + заведення профілів нормалізації (OQ-7) | research | Viacheslav Melnichenko | S | [T01](./T01-config-target-languages.md) | done |
 | [T07a](./T07a-generalize-forms-pl-en.md) | Узагальнення пошуку форм і нормалізації (зняти хардкод `"pl"`) + профіль en | domain | Viacheslav Melnichenko | M | [T05](./T05-migrate-content-entries.md), [T07s](./T07s-spike-language-sources.md) | todo |
 | [T07b](./T07b-full-rules-de-nl.md) | Повні правила нормалізації/форм для de/nl | domain | Viacheslav Melnichenko | M | [T07a](./T07a-generalize-forms-pl-en.md) | todo |
 | [T08](./T08-migrate-learner-words-answer-events.md) | Міграції дискримінатора `learner_words` + `answer_events` | migration | Viacheslav Melnichenko | M | [T05](./T05-migrate-content-entries.md) | done |
@@ -36,10 +36,10 @@ updated_at: "2026-11-05"
 | [T16](./T16-ui-editor-queue-by-language.md) | SPA: черга content reports редактора за мовою | ui | Viacheslav Melnichenko | M | [T14](./T14-editor-queue-by-language.md) | todo |
 | [T17](./T17-isolation-contract-e2e-load.md) | Наскрізна ізоляція / контракт / e2e / навантаження | tests | Viacheslav Melnichenko | L | [T02](./T02-test-fixtures.md), [T13](./T13-set-active-scope-existing.md), [T14](./T14-editor-queue-by-language.md), [T15](./T15-ui-language-switcher.md), [T16](./T16-ui-editor-queue-by-language.md) | todo |
 
-## Відкриті питання — закрито (2026-11-04), крім OQ-7
+## Відкриті питання — усі закрито (OQ-7 resolved 2026-11-05)
 
-Усі OQ, крім OQ-7, закрито в інтерв'ю ([PRD §8](../PRD.md#8-open-questions)); T07s/T07a/T07b/T12/T14 розблоковано.
-**OQ-7** — відкрите: вирішується окремою spike-задачею [T07s](./T07s-spike-language-sources.md), рішення ще не зафіксовано ([SAD §11](../sad.md), [_epic.md](./_epic.md)).
+Усі OQ закрито: OQ-1…OQ-6/OQ-8/OQ-9 в інтерв'ю ([PRD §8](../PRD.md#8-open-questions)); **OQ-7 — resolved spike-задачею [T07s](./T07s-spike-language-sources.md) (2026-11-05)**. T07a/T07b/T12/T14 розблоковано.
+**OQ-7** — resolved: для en/de/nl підтверджено вільно-ліцензований набір джерел (Wiktextract/UniMorph + HermitDave/wordfreq + Tatoeba, CC-BY-SA/CC-BY); рішення зафіксовано в [SAD §11 Resolved](../sad.md#11-risks-and-technical-debt) + [_audit/language-sources-2026-11-05.md](../_audit/language-sources-2026-11-05.md).
 
 - **T07s/T07a/T07b** — узагальнення форм/нормалізації розбито заздалегідь на три задачі: **T07s** (spike OQ-7: джерела/ліцензії en/de/nl + заведення профілів `de`/`nl` не NULL), **T07a** (**OQ-5** узагальнення pl/en, зняття хардкоду `"pl"`), **T07b** (повні правила de/nl). Кожна ≤1 дня / ≤500 LOC, без умовності.
 - **T12** — **OQ-4** = оптимістична `xmin` `(learner_id, target_language)`; конфлікт → `409 language.concurrent_update`, клієнт повторює. Без server-side retry.
