@@ -7,7 +7,7 @@ import SessionRoute from '../src/features/session/shell/SessionRoute';
 import type { SessionResponse } from '../src/features/today/api';
 
 const item = { id: 'item', position: 31, kind: 'new_word_card' as const, prompt_uk: 'дім', context_uk: null, card: { lemma_pl: 'dom', translations_uk: ['дім'], pronunciation_uk: 'дом', example_pl: 'To dom.', example_uk: 'Це дім.', gender: 'm' } };
-const session: SessionResponse = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'plan', total_items: 40, completed_items: 2, notices: [], current_item: item, last_result: null };
+const session: SessionResponse = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'plan', target_language: 'pl', total_items: 40, completed_items: 2, notices: [], current_item: item, last_result: null };
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 function mount(initialSession?: SessionResponse, client = createQueryClient()) { render(<QueryClientProvider client={client}><ThemeProvider><SessionRoute initialSession={initialSession} onToday={vi.fn()} /></ThemeProvider></QueryClientProvider>); return client; }
 afterEach(() => { vi.unstubAllGlobals(); });
@@ -82,9 +82,9 @@ describe('Каркас заняття', () => {
 });
 
 const extraWordItem = { id: 'ex-d1', position: 1, kind: 'new_word_card' as const, prompt_uk: 'хата', context_uk: null, card: { lemma_pl: 'chata', translations_uk: ['хата'], pronunciation_uk: 'хата', example_pl: 'Mieszkam w małej chacie.', example_uk: 'Я живу в маленькій хаті.', gender: 'f' } };
-const extraWord: SessionResponse = { id: 'extra-word', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'extra_word', total_items: 2, completed_items: 0, notices: [], current_item: extraWordItem, last_result: null };
+const extraWord: SessionResponse = { id: 'extra-word', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'extra_word', target_language: 'pl', total_items: 2, completed_items: 0, notices: [], current_item: extraWordItem, last_result: null };
 const extraWordDone: SessionResponse = { ...extraWord, status: 'completed', completed_items: 2, current_item: null, last_result: null };
-const extraPractice: SessionResponse = { id: 'extra-practice', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'extra_practice', total_items: 12, completed_items: 0, notices: [], current_item: { id: 'ex-d2', position: 1, kind: 'extra_practice', prompt_uk: 'хата', context_uk: null, card: null }, last_result: null };
+const extraPractice: SessionResponse = { id: 'extra-practice', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'extra_practice', target_language: 'pl', total_items: 12, completed_items: 0, notices: [], current_item: { id: 'ex-d2', position: 1, kind: 'extra_practice', prompt_uk: 'хата', context_uk: null, card: null }, last_result: null };
 
 describe('Extra-заняття (unlimited-learning)', () => {
   it('extra_word показує картку нового слова з діями «Далі» і «Вже знаю»', async () => {

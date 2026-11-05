@@ -13,11 +13,21 @@ function readDraft(): Draft | null { try { return JSON.parse(sessionStorage.getI
 function saveDraft(value: Draft | null) { try { if (value) sessionStorage.setItem(storageKey, JSON.stringify(value)); else sessionStorage.removeItem(storageKey); } catch { /* Стан зберігається в пам’яті поточного екрана. */ } }
 const outcomes = { correct: 'Правильно!', mistake_typo: 'Цього разу є помилка.', mistake_diacritic: 'Зверніть увагу на діакритичний знак.', dont_know: 'Вивчимо це слово разом.', synonym: 'Це теж правильне слово, але тут вивчаємо інше. Відповідь нейтральна.' };
 const genders: Record<string, string> = { m: 'чоловічий рід', f: 'жіночий рід', n: 'середній рід', pl: 'множина' };
+/** Назва мови в тексті інтерфейсу: орудний відмінок («Пригадайте польською») і знахідний («на польську»). Невідома мова — нейтральна форма. */
+const languageForms: Record<string, { instrumental: string; accusative: string }> = {
+  pl: { instrumental: 'польською', accusative: 'польську' },
+  en: { instrumental: 'англійською', accusative: 'англійську' },
+  de: { instrumental: 'німецькою', accusative: 'німецьку' },
+  nl: { instrumental: 'нідерландською', accusative: 'нідерландську' },
+};
+const neutralLanguageForms = { instrumental: 'мовою навчання', accusative: 'мову навчання' };
 type Props = { session: SessionResponse; refresh: () => Promise<SessionResponse>; replace: (value: SessionResponse) => void; onBusy: (value: boolean) => void; onTerminal: (value: 'expired' | 'missing' | 'auth') => void };
 export function Recall({ session, refresh, replace, onBusy, onTerminal }: Props) {
   const client = useQueryClient();
   const item = session.current_item;
   const result = session.last_result;
+  // Мова береться із заняття, а не з глобальної активної мови: вона може змінитися в налаштуваннях під час заняття.
+  const forms = languageForms[session.target_language] ?? neutralLanguageForms;
   const [draft, setDraft] = useState<Draft | null>(() => { const saved = readDraft(); return saved?.sessionId === session.id && saved.itemId === session.current_item?.id && !session.last_result ? saved : null; });
   const [text, setText] = useState(() => draft?.body.answer ?? '');
   const [pending, setPending] = useState(false);
@@ -48,7 +58,7 @@ export function Recall({ session, refresh, replace, onBusy, onTerminal }: Props)
       else { setNeedsRecovery(false); setError('Стан заняття оновлено. Повторіть ту саму відповідь.'); }
       void client.invalidateQueries({ queryKey: todayQueryKey });
     } catch (e) {
-      if (e instanceof SessionApiError && e.status === 400) { saveDraft(null); setDraft(null); setError(e.code === 'answer.wrong_layout' ? 'Перемкніть розкладку на польську або натисніть «Не знаю».' : 'Перевірте відповідь і спробуйте ще раз.'); }
+      if (e instanceof SessionApiError && e.status === 400) { saveDraft(null); setDraft(null); setError(e.code === 'answer.wrong_layout' ? `Перемкніть розкладку на ${forms.accusative} або натисніть «Не знаю».` : 'Перевірте відповідь і спробуйте ще раз.'); }
       else if (!terminal(e)) {
         try {
           const current = await refresh();
@@ -76,18 +86,19 @@ export function Recall({ session, refresh, replace, onBusy, onTerminal }: Props)
   if (result) {
     const a = result.answer; const neutral = result.dispute;
     return <><p className="eyebrow">РЕЗУЛЬТАТ</p><h1>{neutral ? 'Відповідь нейтралізовано' : outcomes[a.outcome]}</h1>
-      {neutral ? <p role="status">{neutral.message}</p> : <>{a.diff.length > 0 && <div className="recall-diff" aria-label="Порівняння відповіді"><span>Ваша відповідь: </span><span lang="pl">{a.diff.map((part, i) => <span key={i} className={`recall-diff--${part.op}`}>{part.actual}</span>)}</span><br /><span>Правильна форма: </span><span lang="pl">{a.diff.map((part, i) => <span key={i} className={`recall-diff--${part.op}`}>{part.expected}</span>)}</span></div>}</>}
-      <p className="recall-correct" lang="pl">{a.correct_form}</p><p className="caption">{a.pronunciation_uk}{a.gender && genders[a.gender] ? ` · ${genders[a.gender]}` : ''}</p>
-      <div className="recall-example"><p lang="pl">{a.example_pl}</p><p>{a.example_uk}</p></div>
+      {neutral ? <p role="status">{neutral.message}</p> : <>{a.diff.length > 0 && <div className="recall-diff" aria-label="Порівняння відповіді"><span>Ваша відповідь: </span><span lang={session.target_language}>{a.diff.map((part, i) => <span key={i} className={`recall-diff--${part.op}`}>{part.actual}</span>)}</span><br /><span>Правильна форма: </span><span lang={session.target_language}>{a.diff.map((part, i) => <span key={i} className={`recall-diff--${part.op}`}>{part.expected}</span>)}</span></div>}</>}
+      <p className="recall-correct" lang={session.target_language}>{a.correct_form}</p><p className="caption">{a.pronunciation_uk}{a.gender && genders[a.gender] ? ` · ${genders[a.gender]}` : ''}</p>
+      <div className="recall-example"><p lang={session.target_language}>{a.example_pl}</p><p>{a.example_uk}</p></div>
       {error && <Result tone="error">{error}</Result>}
       {needsRecovery ? <Button size="l" stretched disabled={pending} onClick={() => { void runRecovery(); }}>Оновити стан</Button> : <><Button size="l" stretched disabled={pending} onClick={() => { void command('continue'); }}>Продовжити</Button>
       {!neutral && a.dispute_allowed && (confirming ? <div className="recall-actions"><p>Передати відповідь на перевірку та нейтралізувати результат?</p><Button size="l" stretched disabled={pending} onClick={() => { void command('dispute'); }}>Підтвердити</Button><Button size="l" mode="plain" stretched disabled={pending} onClick={() => setConfirming(false)}>Скасувати</Button></div> : <div className="recall-dispute"><Button size="l" mode="outline" stretched disabled={pending} onClick={() => setConfirming(true)}>Моя відповідь теж правильна</Button></div>)}</>}
       {pending && <p role="status">Зберігаємо результат…</p>}</>;
   }
   if (!item) return null;
-  return <><p className="eyebrow">ПРИГАДАЙТЕ ПОЛЬСЬКОЮ</p><h1>{item.prompt_uk}</h1>{item.context_uk && <p className="caption">{item.context_uk}</p>}
+  const placeholder = `${forms.instrumental.charAt(0).toUpperCase()}${forms.instrumental.slice(1)}…`;
+  return <><p className="eyebrow">ПРИГАДАЙТЕ {forms.instrumental.toUpperCase()}</p><h1>{item.prompt_uk}</h1>{item.context_uk && <p className="caption">{item.context_uk}</p>}
     <form onSubmit={event => { event.preventDefault(); if (!draft && text.trim()) void submit({ sessionId: session.id, itemId: item.id, body: { answer: text, dont_know: false } }); }}>
-      <label className="sr-only" htmlFor="recall-answer">Ваша відповідь</label><input id="recall-answer" className="recall-input" lang="pl" placeholder="Польською…" autoCapitalize="none" spellCheck={false} autoComplete="off" maxLength={200} value={text} disabled={pending || !!draft} onChange={event => setText(event.target.value)} />
+      <label className="sr-only" htmlFor="recall-answer">Ваша відповідь</label><input id="recall-answer" className="recall-input" lang={session.target_language} placeholder={placeholder} autoCapitalize="none" spellCheck={false} autoComplete="off" maxLength={200} value={text} disabled={pending || !!draft} onChange={event => setText(event.target.value)} />
       {error && <Result tone="error">{error}</Result>}
       <div className="recall-actions">{draft ? <Button size="l" stretched disabled={pending} onClick={() => { if (needsRecovery) void runRecovery(); else void submit(draft); }}>{needsRecovery ? 'Оновити стан' : 'Повторити відповідь'}</Button> : <><Button type="submit" size="l" stretched disabled={pending || !text.trim()}>Перевірити</Button><Button type="button" size="l" mode="plain" stretched disabled={pending} onClick={() => { void submit({ sessionId: session.id, itemId: item.id, body: { answer: null, dont_know: true } }); }}>Не знаю</Button></>}</div>
       {pending && <p role="status">Перевіряємо відповідь…</p>}

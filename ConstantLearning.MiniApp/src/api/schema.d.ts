@@ -824,6 +824,8 @@ export interface components {
             /** @enum {string} */
             status: "active" | "completed" | "incomplete";
             kind: components["schemas"]["SessionKind"];
+            /** @description Мова, якій належить це заняття (learning_sessions.target_language). Текст вправи й поле відповіді показуються цією мовою, а не поточною активною мовою learner. */
+            target_language: components["schemas"]["TargetLanguageCode"];
             /** @description Кількість фізичних карток разом із перевірками; ліміт session залишається 20 слів. */
             total_items: number;
             /** @description Кількість опрацьованих або пропущених фізичних карток. */

@@ -70,6 +70,8 @@ public sealed class ProgressIsolationTests(PostgresFixture postgres) : PostgresI
         var en = await StartSessionAsync(app);
         Assert.Equal(1, en["total_items"]!.GetValue<int>());
         Assert.Equal("new_word_card", en["current_item"]!["kind"]!.GetValue<string>());
+        // Мова заняття відповідає мові, яку learner обрав, а не лише активній мові на момент запиту.
+        Assert.Equal("en", en["target_language"]!.GetValue<string>());
     }
 
     [DockerFact]

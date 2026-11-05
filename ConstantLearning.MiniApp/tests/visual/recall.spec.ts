@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 const learner = { id: 'learner', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: { local_time: '19:00', days_of_week: ['mon'] }, onboarded_at: '2026-11-01T09:00:00Z' };
 const item = { id: 'item', position: 1, kind: 'review', prompt_uk: 'жаба', context_uk: 'Це жаба.', card: null };
-const session = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', total_items: 1, completed_items: 0, notices: [], current_item: item, last_result: null };
+const session = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', target_language: 'pl', total_items: 1, completed_items: 0, notices: [], current_item: item, last_result: null };
 const answer = { answer_event_id: 'event', outcome: 'mistake_typo', correct_form: 'żaba', diff: [{ op: 'substitute', actual: 'x', expected: 'ż' }, { op: 'equal', actual: 'aba', expected: 'aba' }], pronunciation_uk: 'жаба', example_pl: 'To żaba.', example_uk: 'Це жаба.', gender: 'f', dispute_allowed: true, word_status: 'review', next_review_on: '2026-11-03', next_item: null, session_completed: true };
 for (const theme of ['light', 'dark']) for (const state of ['diff', 'diacritic', 'synonym', 'neutralized', 'pending', 'error']) test(`${theme}: ${state}`, async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });

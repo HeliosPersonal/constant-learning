@@ -8,13 +8,27 @@ import type { SessionResponse } from '../src/features/today/api';
 import type { components } from '../src/api/schema';
 
 const item = { id: 'item', position: 1, kind: 'review' as const, prompt_uk: 'жаба', context_uk: 'Це жаба.', card: null };
-const session: SessionResponse = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'plan', total_items: 1, completed_items: 0, notices: [], current_item: item, last_result: null };
+const session: SessionResponse = { id: 'session', learner_day: '2026-11-02', ends_at: '2026-11-03T00:00:00Z', status: 'active', kind: 'plan', target_language: 'pl', total_items: 1, completed_items: 0, notices: [], current_item: item, last_result: null };
 const answer: components['schemas']['AnswerResult'] = { answer_event_id: 'event', outcome: 'mistake_typo', correct_form: 'żaba', diff: [{ op: 'substitute', actual: 'x', expected: 'ż' }, { op: 'equal', actual: 'aba', expected: 'aba' }], pronunciation_uk: 'жаба', example_pl: 'To żaba.', example_uk: 'Це жаба.', gender: 'f', dispute_allowed: true, word_status: 'review', next_review_on: '2026-11-03', next_item: { ...item, id: 'preview', prompt_uk: 'таємне' }, session_completed: true };
 const result = (a = answer, dispute: components['schemas']['DisputeResult'] | null = null): SessionResponse => ({ ...session, status: 'completed', completed_items: 1, current_item: null, last_result: { item_id: 'item', answer: a, dispute } });
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 function mount() { const client = createQueryClient(); const busy = vi.fn(); render(<QueryClientProvider client={client}><ThemeProvider><SessionRoute onToday={vi.fn()} onBusy={busy} /></ThemeProvider></QueryClientProvider>); return { client, busy }; }
 afterEach(() => { vi.unstubAllGlobals(); sessionStorage.clear(); });
 describe('Пригадування', () => {
+  it('мова береться із заняття: для німецького заняття текст і поле не згадують польську', async () => {
+    const german = { ...session, target_language: 'de' };
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'GET' ? json(german) : json({ code: 'answer.wrong_layout' }, 400)))); mount();
+    const input = await screen.findByLabelText('Ваша відповідь');
+    expect(screen.getByText('ПРИГАДАЙТЕ НІМЕЦЬКОЮ')).toBeVisible(); expect(screen.queryByText(/польськ/i)).not.toBeInTheDocument();
+    expect(input).toHaveAttribute('placeholder', 'Німецькою…'); expect(input).toHaveAttribute('lang', 'de');
+    fireEvent.change(input, { target: { value: 'жаба' } }); fireEvent.click(screen.getByRole('button', { name: 'Перевірити' }));
+    await screen.findByText('Перемкніть розкладку на німецьку або натисніть «Не знаю».');
+  });
+  it('невідома мова отримує нейтральний текст без назви конкретної мови', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ ...session, target_language: 'xx' }))); mount();
+    await screen.findByLabelText('Ваша відповідь');
+    expect(screen.getByText('ПРИГАДАЙТЕ МОВОЮ НАВЧАННЯ')).toBeVisible(); expect(screen.getByLabelText('Ваша відповідь')).toHaveAttribute('placeholder', 'Мовою навчання…');
+  });
   it('порожня відповідь заблокована, 400 розкладки залишає введений текст', async () => {
     vi.stubGlobal('fetch', vi.fn().mockImplementation((r: Request) => Promise.resolve(r.method === 'GET' ? json(session) : json({ code: 'answer.wrong_layout' }, 400)))); mount();
     const input = await screen.findByLabelText('Ваша відповідь'); fireEvent.change(input, { target: { value: '  ' } }); expect(screen.getByRole('button', { name: 'Перевірити' })).toBeDisabled();

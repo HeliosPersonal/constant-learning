@@ -7,7 +7,7 @@ import Stats from '../src/features/stats/Stats';
 import type { SessionResponse } from '../src/features/today/api';
 import { summary, weakWord, wordCard, wordsPage } from './fixtures/stats';
 
-const practiceSession: SessionResponse = { id: '0192f0a0-0000-7000-8000-0000000000c2', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', kind: 'extra_practice', total_items: 12, completed_items: 0, notices: [], last_result: null, current_item: { id: '0192f0a0-0000-7000-8000-0000000000d2', position: 1, kind: 'extra_practice', prompt_uk: 'хата', context_uk: null, card: null } };
+const practiceSession: SessionResponse = { id: '0192f0a0-0000-7000-8000-0000000000c2', learner_day: '2026-11-02', ends_at: '2026-11-02T23:00:00Z', status: 'active', kind: 'extra_practice', target_language: 'pl', total_items: 12, completed_items: 0, notices: [], last_result: null, current_item: { id: '0192f0a0-0000-7000-8000-0000000000d2', position: 1, kind: 'extra_practice', prompt_uk: 'хата', context_uk: null, card: null } };
 const clients: ReturnType<typeof createQueryClient>[] = [];
 function json(body: unknown, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
 function network(handler?: (request: Request) => Response | Promise<Response>) {

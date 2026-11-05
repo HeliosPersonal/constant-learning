@@ -1776,7 +1776,7 @@ components:
 
     Session:
       type: object
-      required: [id, learner_day, ends_at, status, kind, total_items, completed_items, notices, current_item, last_result]
+      required: [id, learner_day, ends_at, status, kind, target_language, total_items, completed_items, notices, current_item, last_result]
       additionalProperties: false
       properties:
         id: { type: string, format: uuid }
@@ -1784,6 +1784,9 @@ components:
         ends_at: { type: string, format: date-time }
         status: { type: string, enum: [active, completed, incomplete] }
         kind: { $ref: "#/components/schemas/SessionKind" }
+        target_language:
+          $ref: "#/components/schemas/TargetLanguageCode"
+          description: Мова, якій належить це заняття (learning_sessions.target_language). Текст вправи й поле відповіді показуються цією мовою, а не поточною активною мовою learner.
         total_items: { type: integer, minimum: 0, maximum: 50, description: Кількість фізичних карток разом із перевірками; ліміт session залишається 20 слів. }
         completed_items: { type: integer, minimum: 0, maximum: 50, description: Кількість опрацьованих або пропущених фізичних карток. }
         notices:
