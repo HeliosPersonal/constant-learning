@@ -1,7 +1,7 @@
 using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using ConstantLearning.Platform.Persistence;

@@ -1,6 +1,6 @@
 using ConstantLearning.Configuration;
 using ConstantLearning.Services;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;

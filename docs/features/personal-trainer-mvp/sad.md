@@ -51,7 +51,7 @@ target_surfaces: [backend-service, web-frontend]  # Read (never re-derived) by a
 **Conventions.**
 - DI-реєстрація в `Program.cs`, primary constructors, interface-per-service, `IOptions<T>` — `architecture-map.md` §Conventions.
 - EF Core Migrations з іменами `yyyyMMddHHmmss_Name`, застосування на старті.
-- Тести: xUnit + Moq + FluentAssertions; документація й коментарі українською (`AGENTS.md`).
+- Тести: xUnit + Moq + AwesomeAssertions; документація й коментарі українською (`AGENTS.md`).
 - Свідоме відхилення від конвенції тестів: окрім InMemory-тестів сервісів, додаються інтеграційні тести на справжньому PostgreSQL (Testcontainers), бо InMemory-провайдер не перевіряє транзакції, `xmin` і захоплення рядків з пропуском заблокованих, на яких тримаються QG-1 і QG-3.
 
 **Regulatory / external.**

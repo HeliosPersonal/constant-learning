@@ -2,7 +2,7 @@ using ConstantLearning.Features.Notifications.Data;
 using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Tests.Content.Data;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;

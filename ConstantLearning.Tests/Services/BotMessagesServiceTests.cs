@@ -1,7 +1,7 @@
 using ConstantLearning.Configuration;
 using ConstantLearning.Enums;
 using ConstantLearning.Services;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

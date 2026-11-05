@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { BackButton } from '../../../components/BackButton';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../../components/ui';
@@ -25,7 +25,7 @@ export default function SessionRoute({ initialSession, onToday, onBusy, renderRe
   const refresh = async () => { const value = await currentSession(); client.setQueryData(['session', 'current'], value); return value; };
   const replace = (value: SessionResponse) => client.setQueryData(['session', 'current'], value);
   const left = useRef(false);
-  const leave = (notice?: string) => { client.removeQueries({ queryKey: ['session', 'current'] }); void client.invalidateQueries({ queryKey: todayQueryKey }); onToday(notice); };
+  const leave = useCallback((notice?: string) => { client.removeQueries({ queryKey: ['session', 'current'] }); void client.invalidateQueries({ queryKey: todayQueryKey }); onToday(notice); }, [client, onToday]);
   // Відповідь на стерту картку (404 → 'missing') означає, що заняття зникло, найімовірніше через скидання
   // прогресу (AC-08): без помилки повертаємо learner на «Сьогодні» з пояснювальним повідомленням.
   useEffect(() => { if (terminal === 'missing' && !left.current) { left.current = true; leave(RESET_NOTICE); } }, [terminal, leave]);

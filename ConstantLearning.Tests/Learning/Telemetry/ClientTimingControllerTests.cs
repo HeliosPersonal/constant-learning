@@ -2,7 +2,7 @@ using System.Net;
 using System.Text;
 using ConstantLearning.Tests.Infrastructure;
 using ConstantLearning.Tests.Platform.Metrics;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ConstantLearning.Tests.Learning.Telemetry;
 

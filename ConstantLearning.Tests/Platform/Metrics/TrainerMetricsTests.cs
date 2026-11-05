@@ -1,6 +1,6 @@
 using System.Globalization;
 using ConstantLearning.Platform.Metrics;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ConstantLearning.Tests.Platform.Metrics;
 

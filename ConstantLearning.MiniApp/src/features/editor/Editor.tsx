@@ -40,7 +40,10 @@ export default function Editor({ onBack }: { onBack: () => void }) {
     setBlocked(reason); setDecisionItem(null); setRollbackItem(null); setDrafts({}); setDecisionError(undefined); setRollbackError(undefined); setNotice(undefined);
     void client.cancelQueries({ queryKey: editorQueryKey }).then(() => client.removeQueries({ queryKey: editorQueryKey }));
   }, [client]);
+  // Синхронізація результату запиту у локальний стан доступу — зовнішнє джерело, setState в ефекті тут навмисний.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (readFailure && !blocked) deny(readFailure); }, [readFailure, blocked, deny]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (current.isSuccess) setAuthorized(true); }, [current.isSuccess]);
 
   const subscreenOpen = !!decisionItem || !!rollbackItem;

@@ -1,6 +1,6 @@
 using ConstantLearning.Features.Identity.Data;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.Tests.Fixtures;

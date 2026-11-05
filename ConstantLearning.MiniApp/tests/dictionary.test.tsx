@@ -94,13 +94,13 @@ describe('AC-30: пошук і картка', () => {
   it('закрита картка скасовується; її пізній результат не змінює іншу картку', async () => {
     const old = deferred(); const requests: Request[] = [];
     mockFetch(request => { requests.push(request); if (request.url.includes(firstId)) return old.promise; if (request.url.includes(secondId)) return json({ ...card, entry_id: secondId, lemma_pl: 'urządzać' }); return json({ ...page, items: [item, { ...item, entry_id: secondId, lemma_pl: 'urządzać' }] }); });
-    mount(); query('ur'); fireEvent.click(await screen.findByRole('button', { name: /^urząd / })); await waitFor(() => expect(requests).toHaveLength(2)); fireEvent.click(screen.getByRole('button', { name: '← До результатів' })); expect(requests[1].signal.aborted).toBe(true);
+    mount(); query('ur'); fireEvent.click(await screen.findByRole('button', { name: /^urząd(?!zać)/ })); await waitFor(() => expect(requests).toHaveLength(2)); fireEvent.click(screen.getByRole('button', { name: '← До результатів' })); expect(requests[1].signal.aborted).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: /urządzać/ })); await screen.findByRole('heading', { name: 'urządzać' }); await act(async () => old.resolve(json(card))); expect(screen.getByRole('heading', { name: 'urządzać' })).toBeVisible();
   });
   it('наступна й попередня сторінки передають серверні курсори, новий запит скидає їх', async () => {
     const requests: Request[] = []; mockFetch(request => { requests.push(request); const params = new URL(request.url).searchParams; return json(params.has('after') ? { ...page, items: [{ ...item, entry_id: secondId, lemma_pl: 'urządzać' }], has_prev: true } : { ...page, has_next: true, next_cursor: firstId }); }); mount(); query('ur');
     fireEvent.click(await screen.findByRole('button', { name: 'Наступні ›' })); await screen.findByRole('button', { name: /urządzać/ }); expect(new URL(requests[1].url).searchParams.get('after')).toBe(firstId); expect(screen.getByRole('button', { name: 'Наступні ›' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: '‹ Попередні' })); await screen.findByRole('button', { name: /^urząd / }); expect(new URL(requests[2].url).searchParams.get('before')).toBe(secondId);
+    fireEvent.click(screen.getByRole('button', { name: '‹ Попередні' })); await screen.findByRole('button', { name: /^urząd(?!zać)/ }); expect(new URL(requests[2].url).searchParams.get('before')).toBe(secondId);
     query('u'); await waitFor(() => expect(requests).toHaveLength(4)); expect(new URL(requests[3].url).searchParams.has('before')).toBe(false); expect(new URL(requests[3].url).searchParams.has('after')).toBe(false);
   });
 });

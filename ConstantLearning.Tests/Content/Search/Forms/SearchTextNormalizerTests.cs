@@ -1,5 +1,5 @@
 using ConstantLearning.Features.Content.Search.Forms;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ConstantLearning.Tests.Content.Search.Forms;
 

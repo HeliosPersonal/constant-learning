@@ -1,6 +1,6 @@
 using System.Text.Json.Nodes;
 using ConstantLearning.Features.Content.Import;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ConstantLearning.Tests.Content.Import;
 

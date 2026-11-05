@@ -2,7 +2,7 @@ using ConstantLearning.Features.Content.Availability;
 using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ConstantLearning.Tests.Content.Course;

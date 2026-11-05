@@ -1,7 +1,7 @@
 using ConstantLearning.Features.Identity.Data;
 using ConstantLearning.Platform;
 using ConstantLearning.Platform.Persistence;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Configuration;

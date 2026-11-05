@@ -1,7 +1,7 @@
 using System.Net;
 using ConstantLearning.Configuration;
 using ConstantLearning.Platform.Telegram;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ConstantLearning.Tests.Notifications.Dispatch;

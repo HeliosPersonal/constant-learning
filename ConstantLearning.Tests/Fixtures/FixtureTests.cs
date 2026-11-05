@@ -1,5 +1,5 @@
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using NodaTime;
 using NodaTime.Testing;
 

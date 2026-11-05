@@ -1,7 +1,7 @@
 using ConstantLearning.Data.Entities;
 using ConstantLearning.Platform;
 using ConstantLearning.Platform.Persistence;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;

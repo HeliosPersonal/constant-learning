@@ -1,7 +1,7 @@
 using ConstantLearning.Features.Identity.Languages;
 using ConstantLearning.Tests.Fixtures;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ConstantLearning.Tests.Identity.Languages;
 

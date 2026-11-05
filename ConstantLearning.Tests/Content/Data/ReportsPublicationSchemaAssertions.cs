@@ -1,5 +1,5 @@
 using ConstantLearning.Platform.Persistence;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 
 namespace ConstantLearning.Tests.Content.Data;

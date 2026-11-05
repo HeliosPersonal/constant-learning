@@ -16,7 +16,7 @@ reflects_commit: "2026702"
 
 - Мова й рантайм: C# на .NET 10 (`net10.0`), nullable та implicit usings увімкнено — `ConstantLearning.csproj:3-8`.
 - Фреймворки: ASP.NET Core (Web SDK) з контролерами; EF Core 10.0.2 + Npgsql 10.0.0; Telegram.Bot 22.8.1; Quartz 3.15.1 з hosted service — `ConstantLearning.csproj:12-21`.
-- Тести: xUnit 2.9.3, Moq 4.20.72, FluentAssertions 7.2.0, EF Core InMemory 10.0.2 — `../ConstantLearning.Tests/ConstantLearning.Tests.csproj`.
+- Тести: xUnit 2.9.3, Moq 4.20.72, AwesomeAssertions 9.6.0, EF Core InMemory 10.0.2 — `../ConstantLearning.Tests/ConstantLearning.Tests.csproj`.
 - Команди збирання й тестів (з CI, `../.github/workflows/ci-cd.yml:31,34`):
   - `dotnet build ConstantLearning.slnx --configuration Release`
   - `dotnet test ConstantLearning.Tests/ConstantLearning.Tests.csproj --no-build --configuration Release`
@@ -63,7 +63,7 @@ C4Container
 - **IDs:** `int` identity для сутностей БД — `Migrations/20260130060918_Init.cs:20`; Telegram-група ідентифікується `long ChatId` — `Data/Entities/ChatRegistration.cs:6`. Ідентифікатора користувача немає.
 - **Persistence:** EF Core через `AppDbContext`, конфігурація моделі у `OnModelCreating` — `Data/AppDbContext.cs:19-38`. Час зберігається в UTC — `Data/Entities/LearnedWord.cs`.
 - **Migrations:** EF Core Migrations, назви `yyyyMMddHHmmss_Name.cs` + `.Designer.cs` + snapshot; застосовуються автоматично на старті — `Migrations/20260201161043_AddWordsCountToChat.cs`, `HostedServices/DatabaseInitializationService.cs:21`.
-- **Tests:** xUnit `[Fact]`, Moq, FluentAssertions, AAA-коментарі українською, InMemory-БД з унікальною назвою на тест — `../ConstantLearning.Tests/Services/ChatRegistrationServiceTests.cs:20`. Тести є лише для сервісів; завдань, контролера, `WordService` і `WordImportService` тести не покривають.
+- **Tests:** xUnit `[Fact]`, Moq, AwesomeAssertions, AAA-коментарі українською, InMemory-БД з унікальною назвою на тест — `../ConstantLearning.Tests/Services/ChatRegistrationServiceTests.cs:20`. Тести є лише для сервісів; завдань, контролера, `WordService` і `WordImportService` тести не покривають.
 - **Inter-module communication:** прямі виклики через DI-інтерфейси; подій і черг немає — `Jobs/NewWordsJob.cs:99-113`.
 - **Розклад:** Quartz cron `0 * * * * ?` (щохвилини) для обох завдань; група отримує повідомлення, коли `DateTime.Now` збігається з її `HH:mm` — `Program.cs:60,68`, `Jobs/NewWordsJob.cs:39-41`.
 

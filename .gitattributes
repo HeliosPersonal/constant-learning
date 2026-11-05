@@ -2,3 +2,7 @@
 # Шаблон із ** покриває і корінь (pl), і підтеки цільових мов (en/de/nl).
 docs/dictionary/**/course.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 docs/dictionary/**/evidence.jsonl -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Фікстури вікітексту: парсер очікує LF (регекси [^\r\n]+$ у multiline).
+# На Windows з autocrlf CRLF ламає збіги — тримаємо LF у робочій копії.
+ConstantLearning.Tests/Content/References/Fixtures/*.wikitext text eol=lf

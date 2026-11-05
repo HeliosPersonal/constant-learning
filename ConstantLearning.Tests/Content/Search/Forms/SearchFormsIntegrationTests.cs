@@ -6,7 +6,7 @@ using ConstantLearning.Features.Content.Search.Forms;
 using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Tests.Content.Data;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

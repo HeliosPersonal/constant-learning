@@ -1,5 +1,5 @@
 using ConstantLearning.Features.Learning.Domain.LearnerDay;
-using FluentAssertions;
+using AwesomeAssertions;
 using NodaTime;
 using NodaTime.Testing;
 

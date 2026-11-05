@@ -14,7 +14,7 @@ using ConstantLearning.Tests.Content.Import;
 using ConstantLearning.Tests.Fixtures;
 using ConstantLearning.Tests.Content.Reports;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;

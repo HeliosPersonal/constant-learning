@@ -5,7 +5,7 @@ using ConstantLearning.Features.Identity.Data;
 using ConstantLearning.Features.Learning.Data;
 using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;

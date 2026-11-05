@@ -9,7 +9,7 @@ using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Platform.Telegram;
 using ConstantLearning.Tests.Content.Data;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

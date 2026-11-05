@@ -1,7 +1,7 @@
 using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Data.Entities;
 using ConstantLearning.Services;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;

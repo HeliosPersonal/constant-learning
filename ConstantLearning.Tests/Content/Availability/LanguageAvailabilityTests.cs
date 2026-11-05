@@ -1,5 +1,5 @@
 using ConstantLearning.Features.Content.Availability;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ConstantLearning.Tests.Content.Availability;
 

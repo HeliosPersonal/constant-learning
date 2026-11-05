@@ -1,7 +1,7 @@
 using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Features.Notifications.Data;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 

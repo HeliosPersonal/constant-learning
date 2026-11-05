@@ -1,5 +1,5 @@
 using ConstantLearning.Features.Bot;
-using FluentAssertions;
+using AwesomeAssertions;
 using NetArchTest.Rules;
 
 namespace ConstantLearning.Tests.Architecture;

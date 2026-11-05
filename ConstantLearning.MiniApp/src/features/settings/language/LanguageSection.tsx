@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Spinner } from '../../../components/ui';
 import { learnerQueryKey } from '../../onboarding/api';
@@ -56,7 +56,7 @@ export function LanguageSection() {
   });
 
   const busy = switchLanguage.isPending || addLanguage.isPending;
-  function pick(code: string, mutate: (code: string) => void) { if (busy) return; setError(undefined); startedAt.current = performance.now(); mutate(code); }
+  const pick = useCallback((code: string, mutate: (code: string) => void) => { if (busy) return; setError(undefined); startedAt.current = performance.now(); mutate(code); }, [busy]);
 
   if (catalog.isLoading || learner.isLoading) {
     return <><div className="ios-caption">Мова навчання</div>

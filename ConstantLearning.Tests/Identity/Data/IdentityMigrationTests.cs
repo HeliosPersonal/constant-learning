@@ -2,7 +2,7 @@ using ConstantLearning.Features.Identity.Data;
 using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Tests.Fixtures;
 using ConstantLearning.Tests.Infrastructure;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;

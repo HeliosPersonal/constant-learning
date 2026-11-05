@@ -1,7 +1,7 @@
 using ConstantLearning.Data.Entities;
 using ConstantLearning.Enums;
 using ConstantLearning.Services;
-using FluentAssertions;
+using AwesomeAssertions;
 using Moq;
 
 namespace ConstantLearning.Tests.Services;

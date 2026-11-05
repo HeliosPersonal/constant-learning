@@ -102,6 +102,8 @@ export function Today({ learner, onOpenSession, onStart, notice, onNoticeShown, 
   useEffect(() => { if (notice) onNoticeShown?.(); }, [notice, onNoticeShown]);
   useEffect(() => {
     if (today.data?.course_replenished_notice && !shownNotices.has(today.data)) {
+      // Показ повідомлення про поповнення курсу один раз на нові дані — навмисний setState у ефекті.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       shownNotices.add(today.data); setReplenished(true);
     }
   }, [today.data]);

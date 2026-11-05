@@ -1,5 +1,5 @@
 using ConstantLearning.Features.Content.References;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ConstantLearning.Tests.Content.References;
 

@@ -1,6 +1,6 @@
 using System.Net;
 using ConstantLearning.Features.Content.References;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using NodaTime;
 using NodaTime.Testing;
