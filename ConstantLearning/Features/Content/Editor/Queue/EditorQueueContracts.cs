@@ -10,10 +10,11 @@ public sealed record EditorError(
     [property: JsonPropertyName("message")] string Message);
 public sealed record EditorQueueItem(
     [property: JsonPropertyName("id")] Guid Id,
+    [property: JsonPropertyName("target_language")] string TargetLanguage,
     [property: JsonPropertyName("reporter_alias")] string ReporterAlias,
     [property: JsonPropertyName("origin")] string Origin,
     [property: JsonPropertyName("entry_id")] Guid? EntryId,
-    [property: JsonPropertyName("lemma_pl")] string? LemmaPl,
+    [property: JsonPropertyName("lemma")] string? Lemma,
     [property: JsonPropertyName("field")] string? Field,
     [property: JsonPropertyName("current_value")] string? CurrentValue,
     [property: JsonPropertyName("proposed_value")] string? ProposedValue,
@@ -33,12 +34,13 @@ public sealed record ContentReportClosed(
     [property: JsonPropertyName("resulting_version_id")] Guid? ResultingVersionId,
     [property: JsonPropertyName("closed_at")] DateTimeOffset ClosedAt);
 
-public sealed record EditorQueueRequest(Guid? After, Guid? Before, int Limit)
+public sealed record EditorQueueRequest(Guid? After, Guid? Before, int Limit, string? TargetLanguage)
 {
     public static EditorError? Read(IQueryCollection query, out EditorQueueRequest? request)
     {
         request = null;
-        if (query.Any(pair => pair.Value.Count != 1 || pair.Key is not ("after" or "before" or "limit"))) return Invalid();
+        if (query.Any(pair => pair.Value.Count != 1
+                || pair.Key is not ("after" or "before" or "limit" or "target_language"))) return Invalid();
         Guid? after = null, before = null;
         if (query.ContainsKey("after"))
         {
@@ -54,9 +56,20 @@ public sealed record EditorQueueRequest(Guid? After, Guid? Before, int Limit)
         var limit = 20;
         if (query.ContainsKey("limit") && (!int.TryParse(query["limit"], NumberStyles.None,
                 CultureInfo.InvariantCulture, out limit) || limit is < 1 or > 100)) return Invalid();
-        request = new(after, before, limit);
+        string? targetLanguage = null;
+        if (query.ContainsKey("target_language"))
+        {
+            // Лише формат ISO-639-1 (два малих ASCII-символи); існування коду звіряє каталог у ListAsync.
+            var code = query["target_language"].ToString();
+            if (!IsLanguageCode(code)) return Invalid();
+            targetLanguage = code;
+        }
+        request = new(after, before, limit, targetLanguage);
         return null;
     }
+
+    private static bool IsLanguageCode(string value) =>
+        value.Length == 2 && value[0] is >= 'a' and <= 'z' && value[1] is >= 'a' and <= 'z';
 
     public static EditorError Invalid() => new("editor.invalid_request", "Перевірте параметри черги або рішення.");
 }

@@ -39,7 +39,7 @@ public sealed class TelegramAuthenticationTests(PostgresFixture postgres) : Post
         Assert.Equal(learner.TelegramUserId.ToString(CultureInfo.InvariantCulture), body.RootElement.GetProperty("telegram_user_id").GetString());
         Assert.Equal("Test User", body.RootElement.GetProperty("first_name").GetString());
         var editor = await app.Client.GetAsync("/auth-test/editor/queue");
-        await AssertErrorAsync(editor, HttpStatusCode.Forbidden, "editor.role_required", "listEditorQueue");
+        await AssertErrorAsync(editor, HttpStatusCode.Forbidden, "editor.role_required", "listEditorQueueByLanguage");
     }
 
     [DockerFact]
@@ -140,7 +140,7 @@ public sealed class TelegramAuthenticationTests(PostgresFixture postgres) : Post
         await using var app = await AuthTestApplication.StartAsync(_postgres.ConnectionString, Clock, editor.TelegramUserId);
         var cases = new[]
         {
-            (HttpMethod.Get, "/auth-test/editor/queue", "listEditorQueue"),
+            (HttpMethod.Get, "/auth-test/editor/queue", "listEditorQueueByLanguage"),
             (HttpMethod.Get, "/auth-test/editor/changes", "listAppliedChanges"),
             (HttpMethod.Post, "/auth-test/editor/rollback", "rollbackAppliedChange")
         };

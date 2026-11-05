@@ -29,16 +29,20 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
         }
 
         Guid? versionId = null;
+        // Мова report (AC-09): для звіту про запис — мова цього запису; для відсутньої леми — активна мова learner.
+        var targetLanguage = current.Learner.ActiveTargetLanguage ?? "pl";
         if (request.EntryId is { } entryId)
         {
-            versionId = await db.DictionaryEntries.AsNoTracking()
+            var entry = await db.DictionaryEntries.AsNoTracking()
                 .Where(entry => entry.Id == entryId && entry.PublishedVersionId != null
                                 && entry.PublishedVersion!.ValidationStatus == "approved")
-                .Select(entry => entry.PublishedVersionId).SingleOrDefaultAsync(cancellationToken);
-            if (versionId is null)
+                .Select(entry => new { entry.PublishedVersionId, entry.TargetLanguage }).SingleOrDefaultAsync(cancellationToken);
+            if (entry is null)
             {
                 return new ContentReportResult(null, 404, new ContentReportError("dictionary.entry_not_found", "Слово не знайдено."));
             }
+            versionId = entry.PublishedVersionId;
+            targetLanguage = entry.TargetLanguage;
         }
 
         var count = await db.ContentReports.CountAsync(report => report.LearnerId == learnerId
@@ -56,6 +60,7 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
         var report = new ContentReport
         {
             LearnerId = learnerId,
+            TargetLanguage = targetLanguage,
             EntryId = request.EntryId,
             VersionId = versionId,
             Origin = request.Origin,
@@ -131,9 +136,14 @@ public sealed class ContentReportService(AppDbContext db, ILearnerDayStateServic
         }
 
         await aliases.GetOrCreateAsync(learnerId, cancellationToken);
+        // Оскарження завжди має entry (AnswerDisputeSource.EntryId не nullable) → мова report = мова цього запису (AC-09).
+        var targetLanguage = await db.DictionaryEntries.AsNoTracking()
+            .Where(entry => entry.Id == answer.EntryId)
+            .Select(entry => entry.TargetLanguage).SingleOrDefaultAsync(cancellationToken) ?? "pl";
         var report = new ContentReport
         {
             LearnerId = learnerId,
+            TargetLanguage = targetLanguage,
             EntryId = answer.EntryId,
             VersionId = answer.VersionId,
             AnswerEventId = answer.AnswerId,

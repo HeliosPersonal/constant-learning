@@ -8,7 +8,7 @@ files_hint:
   - "ConstantLearning/Features/Content/"
 owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "todo"
+status: "done"
 ---
 
 # T14 — `listEditorQueueByLanguage` + прив'язка report до мови запису
@@ -36,9 +36,9 @@ AC-09: content report прив'язується до запису **активн
 
 ## Definition of Done
 
-- [ ] Черга фільтрується за `target_language`; повідомлення різних мов не змішуються (AC-11); курсорна пагінація за контрактом.
-- [ ] Новий report отримує `target_language` запису з `entry_id`; не змінює контент інших мов (AC-09).
-- [ ] Схвалення/відкат зачіпає лише словник мови повідомлення (integration-тест).
-- [ ] Жодної per-language authz-гілки (OQ-9 = єдина роль); маршрутизація зміни за мовою покрита integration-тестом.
-- [ ] Contract-тест на `openapi.yaml` зелений.
-- [ ] PR ≤500 LOC.
+- [x] Черга фільтрується за `target_language`; повідомлення різних мов не змішуються (AC-11); курсорна пагінація за контрактом.
+- [x] Новий report отримує `target_language` запису з `entry_id`; не змінює контент інших мов (AC-09).
+- [x] Схвалення/відкат зачіпає лише словник мови повідомлення (integration-тест).
+- [x] Жодної per-language authz-гілки (OQ-9 = єдина роль); маршрутизація зміни за мовою покрита integration-тестом.
+- [x] Contract-тест на `openapi.yaml` зелений.
+- [x] PR ≤500 LOC.

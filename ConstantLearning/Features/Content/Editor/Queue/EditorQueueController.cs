@@ -10,7 +10,7 @@ namespace ConstantLearning.Features.Content.Editor.Queue;
 [Route("api/v1/editor/content-reports")]
 public sealed class EditorQueueController(EditorQueueService queue) : ControllerBase
 {
-    [HttpGet(Name = "listEditorQueue")]
+    [HttpGet(Name = "listEditorQueueByLanguage")]
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
         if (EditorQueueRequest.Read(Request.Query, out var request) is { } error) return BadRequest(error);

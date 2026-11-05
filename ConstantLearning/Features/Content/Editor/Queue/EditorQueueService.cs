@@ -1,6 +1,7 @@
 using ConstantLearning.Features.Content.Data;
 using ConstantLearning.Features.Content.Publishing;
 using ConstantLearning.Features.Identity.Aliases;
+using ConstantLearning.Features.Identity.Languages;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -8,11 +9,17 @@ using NodaTime;
 namespace ConstantLearning.Features.Content.Editor.Queue;
 
 public sealed class EditorQueueService(AppDbContext db, ContentPublicationService publication,
-    IReporterAliasService reporterAliases, IClock clock)
+    IReporterAliasService reporterAliases, ITargetLanguageCatalog languages, IClock clock)
 {
     public async Task<EditorQueuePage?> ListAsync(EditorQueueRequest request, CancellationToken cancellationToken)
     {
         var reports = db.ContentReports.AsNoTracking().Where(row => row.Status == "in_editor_queue");
+        if (request.TargetLanguage is { } language)
+        {
+            // Невідомий код мови → null → контролер віддає 400 (єдиний шлях валідації, як у startLearnerLanguage).
+            if (await languages.FindAsync(language, cancellationToken) is null) return null;
+            reports = reports.Where(row => row.TargetLanguage == language);
+        }
         var window = reports;
         if ((request.After ?? request.Before) is { } cursor)
         {
@@ -48,7 +55,7 @@ public sealed class EditorQueueService(AppDbContext db, ContentPublicationServic
                 "example" => version?.ExamplePl,
                 _ => null
             };
-            return new EditorQueueItem(row.Id, aliases.GetValueOrDefault(row.LearnerId) ?? "R-UNKNOWN", row.Origin,
+            return new EditorQueueItem(row.Id, row.TargetLanguage, aliases.GetValueOrDefault(row.LearnerId) ?? "R-UNKNOWN", row.Origin,
                 row.EntryId, version?.LemmaPl, row.Field, current, row.ProposedValue, row.Comment, row.SearchQuery, row.CreatedAt.ToDateTimeOffset());
         }).ToArray();
         return new(items, hasNext, hasPrev, hasNext ? rows[^1].Id : null);

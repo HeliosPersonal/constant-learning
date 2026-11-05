@@ -10,8 +10,8 @@ using ConstantLearning.Features.Content.Search.Forms;
 using ConstantLearning.Features.Identity.Auth;
 using ConstantLearning.Features.Identity.Data;
 using ConstantLearning.Features.Learning.Data;
-using ConstantLearning.Platform.Persistence;
 using ConstantLearning.Tests.Content.Import;
+using ConstantLearning.Tests.Fixtures;
 using ConstantLearning.Tests.Content.Reports;
 using ConstantLearning.Tests.Infrastructure;
 using FluentAssertions;
@@ -345,6 +345,94 @@ public sealed class EditorQueueTests(PostgresFixture postgres) : PostgresIntegra
         }
     }
 
+    [DockerFact]
+    public async Task Ac11_Queue_FiltersByTargetLanguageWithoutMixing()
+    {
+        var root = await SeedAsync();
+        await AddLanguageReportAsync(root, "de", "Haus", Duration.FromMinutes(1));
+        await AddLanguageReportAsync(root, "en", "house", Duration.FromMinutes(2));
+        await using var app = await StartAsync();
+
+        // OQ-9: один редактор читає будь-яку мову без per-language 403 — фільтр лише розмежовує, не авторизує.
+        using var german = await SendAsync(app, HttpMethod.Get, Path + "?target_language=de");
+        await AssertResponseAsync(german, HttpStatusCode.OK, queue: true);
+        var germanItem = (await JsonAsync(german))["items"]!.AsArray().Single()!;
+        Assert.Equal("de", germanItem["target_language"]!.GetValue<string>());
+
+        using var polish = await SendAsync(app, HttpMethod.Get, Path + "?target_language=pl");
+        await AssertResponseAsync(polish, HttpStatusCode.OK, queue: true);
+        var polishItems = (await JsonAsync(polish))["items"]!.AsArray();
+        Assert.Equal(root.Report.Id, polishItems.Single()!["id"]!.GetValue<Guid>());
+        Assert.Equal("pl", polishItems.Single()!["target_language"]!.GetValue<string>());
+
+        using var all = await SendAsync(app, HttpMethod.Get, Path);
+        await AssertResponseAsync(all, HttpStatusCode.OK, queue: true);
+        var languages = (await JsonAsync(all))["items"]!.AsArray()
+            .Select(item => item!["target_language"]!.GetValue<string>()).OrderBy(code => code, StringComparer.Ordinal).ToArray();
+        Assert.Equal(new[] { "de", "en", "pl" }, languages);
+
+        using var unknown = await SendAsync(app, HttpMethod.Get, Path + "?target_language=zz");
+        await AssertResponseAsync(unknown, HttpStatusCode.BadRequest, "editor.invalid_request", queue: true);
+        using var malformed = await SendAsync(app, HttpMethod.Get, Path + "?target_language=pol");
+        await AssertResponseAsync(malformed, HttpStatusCode.BadRequest, "editor.invalid_request", queue: true);
+    }
+
+    [DockerFact]
+    public async Task Ac09_CardReport_InheritsEntryTargetLanguage()
+    {
+        var root = await SeedAsync();
+        var german = await AddApprovedEntryAsync("de", "Haus", 2);
+        await using var app = await StartAsync();
+        using var response = await SendAsync(app, HttpMethod.Post, "/api/v1/content-reports",
+            new { origin = "card", entry_id = german.Id, field = "lemma", proposed_value = "Gebäude" }, LearnerTelegramId);
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+        var report = await Db.ContentReports.AsNoTracking().SingleAsync(row => row.EntryId == german.Id);
+        Assert.Equal("de", report.TargetLanguage);
+    }
+
+    [DockerFact]
+    public async Task Ac09_MissingWordReport_InheritsActiveTargetLanguage()
+    {
+        var root = await SeedAsync();
+        await Db.Learners.Where(row => row.Id == root.Learner.Id)
+            .ExecuteUpdateAsync(update => update.SetProperty(row => row.ActiveTargetLanguage, "en"));
+        await using var app = await StartAsync();
+        using var response = await SendAsync(app, HttpMethod.Post, "/api/v1/content-reports",
+            new { origin = "missing_word", search_query = "cat" }, LearnerTelegramId);
+        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+        var report = await Db.ContentReports.AsNoTracking()
+            .SingleAsync(row => row.Origin == "missing_word" && row.LearnerId == root.Learner.Id);
+        Assert.Equal("en", report.TargetLanguage);
+    }
+
+    private async Task<ContentReport> AddLanguageReportAsync(Root root, string targetLanguage, string query, Duration offset = default)
+    {
+        var report = new ContentReport
+        {
+            LearnerId = root.Learner.Id,
+            TargetLanguage = targetLanguage,
+            Origin = "missing_word",
+            SearchQuery = query,
+            Status = "in_editor_queue",
+            CreatedAt = Clock.GetCurrentInstant() + offset
+        };
+        Db.ContentReports.Add(report);
+        await Db.SaveChangesAsync();
+        Db.ChangeTracker.Clear();
+        return report;
+    }
+
+    private async Task<DictionaryEntry> AddApprovedEntryAsync(string targetLanguage, string lemmaPl, int coursePosition)
+    {
+        var graph = ContentFixtures.NewPublishedEntry(targetLanguage, lemmaPl, coursePosition, clock: Clock);
+        Db.AddRange(graph.Entry, graph.Version, graph.Translation);
+        await Db.SaveChangesAsync();
+        graph.Entry.PublishedVersionId = graph.Version.Id;
+        await Db.SaveChangesAsync();
+        Db.ChangeTracker.Clear();
+        return graph.Entry;
+    }
+
     private async Task<Root> SeedAsync(bool context = false)
     {
         using var bundle = new DictionaryImportTestBundle();
@@ -437,7 +525,7 @@ public sealed class EditorQueueTests(PostgresFixture postgres) : PostgresIntegra
     private static async Task AssertResponseAsync(HttpResponseMessage response, HttpStatusCode status, string? code = null, bool queue = false)
     {
         Assert.Equal(status, response.StatusCode);
-        await ContractAssert.ResponseAsync(queue ? "listEditorQueue" : "decideContentReport", response);
+        await ContractAssert.ResponseAsync(queue ? "listEditorQueueByLanguage" : "decideContentReport", response);
         if (code is not null) Assert.Equal(code, (await JsonAsync(response))["code"]!.GetValue<string>());
     }
     private static async Task<JsonObject> JsonAsync(HttpResponseMessage response) => JsonNode.Parse(await response.Content.ReadAsStringAsync())!.AsObject();

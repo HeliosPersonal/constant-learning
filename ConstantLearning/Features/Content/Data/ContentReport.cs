@@ -8,7 +8,8 @@ public sealed class ContentReport
     public Guid LearnerId { get; set; }
 
     // Денормалізований дискримінатор мови (ADR-0001): розмежування черги редактора за мовою (AC-09/AC-11).
-    // TODO(T14): зняти інтеримний дефолт 'pl', коли прив'язка report до мови писатиме мову з контексту.
+    // Прод-шляхи (ContentReportService, T14) виводять мову з entry_id або активної мови learner; дефолт 'pl'
+    // лишається запобіжником для прямих конструкцій у тестах-фікстурах.
     public string TargetLanguage { get; set; } = "pl";
     public Guid? EntryId { get; set; }
     public Guid? VersionId { get; set; }
