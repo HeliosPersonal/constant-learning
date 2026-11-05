@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Xml;
 using System.Xml.Linq;
 using ConstantLearning.Features.Content.Data;
+using ConstantLearning.Features.Content.Import;
 using ConstantLearning.Features.Content.Search.Forms;
 using ConstantLearning.Platform.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -40,13 +41,36 @@ public sealed class ReferenceSnapshotImporter(AppDbContext db, WikislownikParser
 
     public async Task<ReferenceImportResult> ImportPackagedAsync(CancellationToken cancellationToken = default)
     {
-        var directory = Path.Combine(AppContext.BaseDirectory, "Resources", "Dictionary");
-        return await ImportEvidenceFileAsync(Path.Combine(directory, "evidence.jsonl"),
-            Path.Combine(directory, "sources-manifest.json"), cancellationToken);
+        var root = Path.Combine(AppContext.BaseDirectory, "Resources", "Dictionary");
+        var aggregate = new ReferenceImportResult(0, 0, 0, []);
+        var issues = new List<ReferenceImportIssue>();
+        foreach (var (directory, profile) in ReferenceDatasets(root))
+        {
+            var result = await ImportEvidenceFileAsync(Path.Combine(directory, "evidence.jsonl"),
+                Path.Combine(directory, "sources-manifest.json"), profile.WiktionaryHost, cancellationToken);
+            issues.AddRange(result.Issues);
+            aggregate = new ReferenceImportResult(aggregate.Imported + result.Imported,
+                aggregate.Unchanged + result.Unchanged, aggregate.ManualRecords + result.ManualRecords, issues);
+        }
+        return aggregate;
+    }
+
+    // Пласка тека = історичний польський набір; підтеки <lang>/ — нові мови (ім'я теки = код мови).
+    internal static IReadOnlyList<(string Directory, ContentLanguageProfile Profile)> ReferenceDatasets(string root)
+    {
+        var datasets = new List<(string, ContentLanguageProfile)>();
+        if (File.Exists(Path.Combine(root, "evidence.jsonl")))
+            datasets.Add((root, ContentLanguageProfiles.Polish));
+        if (Directory.Exists(root))
+            foreach (var sub in Directory.EnumerateDirectories(root).OrderBy(path => path, StringComparer.Ordinal))
+                if (File.Exists(Path.Combine(sub, "evidence.jsonl"))
+                    && ContentLanguageProfiles.ByCode(Path.GetFileName(sub)) is { } profile)
+                    datasets.Add((sub, profile));
+        return datasets;
     }
 
     public async Task<ReferenceImportResult> ImportEvidenceFileAsync(string evidencePath, string manifestPath,
-        CancellationToken cancellationToken = default)
+        string wiktionaryHost = "pl.wiktionary.org", CancellationToken cancellationToken = default)
     {
         if (!File.Exists(evidencePath) || !File.Exists(manifestPath))
             return new(0, 0, 1, [new("", "packaged_snapshot_missing")]);
@@ -56,12 +80,12 @@ public sealed class ReferenceSnapshotImporter(AppDbContext db, WikislownikParser
         var date = DateOnly.ParseExact(retrieved!, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         var snapshotAt = Instant.FromUtc(date.Year, date.Month, date.Day, 0, 0);
         using var evidence = File.OpenText(evidencePath);
-        return await ImportEvidenceAsync(evidence, snapshotAt, cancellationToken);
+        return await ImportEvidenceAsync(evidence, snapshotAt, wiktionaryHost, cancellationToken);
     }
 
     /// <summary>Імпортує локальний експорт доказів Kaikki; без revid він лишається матеріалом для редактора.</summary>
     public async Task<ReferenceImportResult> ImportEvidenceAsync(TextReader reader, Instant snapshotAt,
-        CancellationToken cancellationToken = default)
+        string wiktionaryHost = "pl.wiktionary.org", CancellationToken cancellationToken = default)
     {
         var imported = 0;
         var unchanged = 0;
@@ -80,7 +104,7 @@ public sealed class ReferenceSnapshotImporter(AppDbContext db, WikislownikParser
                 lemma = root.GetProperty("lemma_pl").GetString() ?? "";
                 if (!ValidText(lemma, 200)) throw new FormatException();
                 var url = root.GetProperty("source_url").GetString();
-                if (url != PageUrl(lemma)) throw new FormatException();
+                if (url != PageUrl(lemma, wiktionaryHost)) throw new FormatException();
                 var values = new List<ReferenceValue>();
                 foreach (var item in root.GetProperty("translation_candidates").EnumerateArray())
                 {
@@ -109,7 +133,7 @@ public sealed class ReferenceSnapshotImporter(AppDbContext db, WikislownikParser
                     parsed = Failure("invalid_evidence_record");
             }
             if (parsed is null) continue;
-            if (await StoreAsync(lemma, WikislownikReferenceSource.KaikkiSourceName, null, snapshotAt, parsed, cancellationToken)) imported++;
+            if (await StoreAsync(lemma, WikislownikReferenceSource.KaikkiSourceName, null, snapshotAt, parsed, wiktionaryHost, cancellationToken)) imported++;
             else unchanged++;
         }
         return new(imported, unchanged, manual, issues);
@@ -159,14 +183,14 @@ public sealed class ReferenceSnapshotImporter(AppDbContext db, WikislownikParser
                     if (issues.Count < 100) issues.Add(new(lemma, decision.Field + ":" + decision.Value));
             }
             if (await StoreAsync(lemma, WikislownikReferenceSource.SourceName, validRevision ? revisionId : null,
-                    snapshotAt, parsed, cancellationToken)) imported++;
+                    snapshotAt, parsed, "pl.wiktionary.org", cancellationToken)) imported++;
             else unchanged++;
         }
         return new(imported, unchanged, manual, issues);
     }
 
     private async Task<bool> StoreAsync(string lemma, string source, string? revisionId, Instant snapshotAt,
-        ReferenceParseResult parsed, CancellationToken cancellationToken)
+        ReferenceParseResult parsed, string wiktionaryHost, CancellationToken cancellationToken)
     {
         var values = parsed.Values.Concat(parsed.ManualDecisions.Select(decision =>
             new ReferenceValue(ReferenceFields.ManualReview, decision.Field + ":" + decision.Value))).Distinct().ToArray();
@@ -188,7 +212,7 @@ public sealed class ReferenceSnapshotImporter(AppDbContext db, WikislownikParser
         db.ReferenceEntries.AddRange(values.Select(value => new ReferenceEntry
         {
             Source = source, Lemma = lemma, LemmaFolded = folded, Field = value.Field, Value = value.Value,
-            Url = PageUrl(lemma), RevisionId = revisionId, RetrievedAt = snapshotAt, CreatedAt = clock.GetCurrentInstant()
+            Url = PageUrl(lemma, wiktionaryHost), RevisionId = revisionId, RetrievedAt = snapshotAt, CreatedAt = clock.GetCurrentInstant()
         }));
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -199,6 +223,7 @@ public sealed class ReferenceSnapshotImporter(AppDbContext db, WikislownikParser
 
     private static ReferenceParseResult Failure(string reason) => new([], [
         new(ReferenceFields.Translation, reason), new(ReferenceFields.Transcription, reason)]);
-    private static string PageUrl(string lemma) => "https://pl.wiktionary.org/wiki/" + Uri.EscapeDataString(lemma.Replace(' ', '_'));
+    private static string PageUrl(string lemma, string wiktionaryHost) =>
+        "https://" + wiktionaryHost + "/wiki/" + Uri.EscapeDataString(lemma.Replace(' ', '_'));
     private static bool ValidText([NotNullWhen(true)] string? text, int maximum) => !string.IsNullOrWhiteSpace(text) && text.Length <= maximum && !text.Any(char.IsControl);
 }

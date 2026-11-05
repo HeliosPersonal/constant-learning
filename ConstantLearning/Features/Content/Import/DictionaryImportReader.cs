@@ -18,6 +18,9 @@ public sealed record DictionaryImportRow(IReadOnlyDictionary<string, string> Fie
                                                                  | StringSplitOptions.RemoveEmptyEntries);
 }
 
+/// <summary>Прочитаний набір: цільова мова (з <c>readiness.json</c>) та перевірені рядки.</summary>
+public sealed record DictionaryImportDataset(string Language, IReadOnlyList<DictionaryImportRow> Rows);
+
 public sealed class DictionaryImportReader
 {
     public static IReadOnlyList<string> Columns { get; } = Array.AsReadOnly(new[]
@@ -28,7 +31,7 @@ public sealed class DictionaryImportReader
         "validation_sources", "reviewed_by", "review_note"
     });
 
-    public async Task<IReadOnlyList<DictionaryImportRow>> ReadAsync(string directory,
+    public async Task<DictionaryImportDataset> ReadAsync(string directory,
         CancellationToken cancellationToken = default)
     {
         var csv = await File.ReadAllBytesAsync(Path.Combine(directory, "course.csv"), cancellationToken);
@@ -41,6 +44,12 @@ public sealed class DictionaryImportReader
         Require(manifest.GetProperty("course_sha256").GetString() == Hash(csv)
                 && manifest.GetProperty("evidence_sha256").GetString() == Hash(proofs),
             "Контрольна сума набору не відповідає readiness.json.");
+        // Відсутнє поле language = історичний польський набір (сумісність зі старою readiness.json).
+        var language = manifest.TryGetProperty("language", out var languageElement)
+                       && languageElement.ValueKind == JsonValueKind.String
+            ? languageElement.GetString()! : ContentLanguageProfiles.DefaultCode;
+        var profile = ContentLanguageProfiles.ByCode(language);
+        Require(profile is not null, "Невідома цільова мова набору.");
 
         var evidence = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         using (var lines = new StringReader(Encoding.UTF8.GetString(proofs)))
@@ -76,15 +85,15 @@ public sealed class DictionaryImportReader
                 values[name] = string.Join(';', values[name].Split(';', StringSplitOptions.TrimEntries));
             evidence.TryGetValue(values["validation_sources"], out var proof);
             var row = new DictionaryImportRow(values, proof.ValueKind == JsonValueKind.Undefined ? null : proof, "");
-            Validate(row);
+            Validate(row, profile!);
             Require(ids.Add(row["id"]) && lemmas.Add(Normalize(row["lemma_pl"])), "Повтор ID або леми в CSV.");
             result.Add(row with { ContentHash = ContentHash(row) });
         }
         Require(result.Count == manifest.GetProperty("released").GetInt32(), "Кількість записів не відповідає readiness.json.");
-        return result.AsReadOnly();
+        return new DictionaryImportDataset(language, result.AsReadOnly());
     }
 
-    private static void Validate(DictionaryImportRow row)
+    private static void Validate(DictionaryImportRow row, ContentLanguageProfile profile)
     {
         foreach (var (field, maximum) in new Dictionary<string, int>
         {
@@ -109,11 +118,13 @@ public sealed class DictionaryImportReader
         }
         if (row["validation_status"] != "approved") return;
 
-        Require(Regex.IsMatch(row["lemma_pl"], "^[a-ząćęłńóśźż]+$", RegexOptions.CultureInvariant),
-            "Схвалена лема має бути одним польським словом.");
+        Require(Regex.IsMatch(row["lemma_pl"], profile.LemmaPattern, RegexOptions.CultureInvariant),
+            "Схвалена лема має бути одним словом цільової мови.");
         Require(row["part_of_speech"] is "noun" or "verb" or "adj" or "adv" or "pron" or "det"
             or "prep" or "conj" or "particle" or "num" or "intj", "Невідома частина мови.");
-        Require(row["part_of_speech"] != "noun" || row["gender"] is "m" or "f" or "n" or "pl",
+        // Мови без роду (en) мають порожній набір — іменник не потребує позначки.
+        Require(row["part_of_speech"] != "noun" || profile.NounGenders.Count == 0
+            || profile.NounGenders.Contains(row["gender"]),
             "Для іменника потрібен рід або позначка множини.");
         foreach (var field in new[] { "translation_uk", "accepted_answers_pl", "pronunciation_uk", "example_pl",
                      "example_uk", "topic", "reviewed_by" })
@@ -126,7 +137,7 @@ public sealed class DictionaryImportReader
         var proof = row.Evidence!.Value;
         Require(Text(proof, "lemma_pl") == row["lemma_pl"] && Text(proof, "part_of_speech") == row["part_of_speech"],
             "Доказ не відповідає лемі та частині мови.");
-        Require(Text(proof, "source_url") == "https://pl.wiktionary.org/wiki/" + Uri.EscapeDataString(row["lemma_pl"]),
+        Require(Text(proof, "source_url") == "https://" + profile.WiktionaryHost + "/wiki/" + Uri.EscapeDataString(row["lemma_pl"]),
             "Невідповідна сторінка джерела.");
         Require(Text(proof, "sense_index").Length is > 0 and <= 32 && Text(proof, "ipa").Length is > 0 and <= 200
                 && Regex.IsMatch(Text(proof, "source_record_sha256"), "^[0-9a-f]{64}$")

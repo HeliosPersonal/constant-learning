@@ -9,6 +9,8 @@ namespace ConstantLearning.Tests.Content.Import;
 internal sealed class DictionaryImportTestBundle : IDisposable
 {
     public string DirectoryPath { get; } = Path.Combine(Path.GetTempPath(), "dictionary-import-" + Guid.NewGuid().ToString("N"));
+    /// <summary>Код цільової мови набору; null — поле відсутнє в readiness.json (читач трактує як pl).</summary>
+    public string? Language { get; set; }
     public Dictionary<string, string> Row { get; } = DictionaryImportReader.Columns.ToDictionary(column => column, _ => "");
     public JsonObject Evidence { get; } = new()
     {
@@ -52,12 +54,14 @@ internal sealed class DictionaryImportTestBundle : IDisposable
         var evidence = proof.ToJsonString() + "\n";
         await File.WriteAllTextAsync(Path.Combine(DirectoryPath, "course.csv"), csv, new UTF8Encoding(false));
         await File.WriteAllTextAsync(Path.Combine(DirectoryPath, "evidence.jsonl"), evidence, new UTF8Encoding(false));
-        await File.WriteAllTextAsync(Path.Combine(DirectoryPath, "readiness.json"), JsonSerializer.Serialize(new
+        var readiness = new Dictionary<string, object>
         {
-            ready = true, approval_policy_confirmed = true, released = 1, target = 1,
-            course_sha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(csv))),
-            evidence_sha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(evidence)))
-        }));
+            ["ready"] = true, ["approval_policy_confirmed"] = true, ["released"] = 1, ["target"] = 1,
+            ["course_sha256"] = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(csv))),
+            ["evidence_sha256"] = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(evidence)))
+        };
+        if (Language is not null) readiness["language"] = Language;
+        await File.WriteAllTextAsync(Path.Combine(DirectoryPath, "readiness.json"), JsonSerializer.Serialize(readiness));
     }
 
     public void Dispose()

@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using ConstantLearning.Features.Content.Data;
+using ConstantLearning.Features.Content.Import;
 using ConstantLearning.Features.Content.References;
 using NodaTime;
 
@@ -24,10 +25,13 @@ internal static class VerificationPolicy
         if (version.ValidationStatus != "approved" || proposed.Length is 0 or > 200
             || proposed.Any(char.IsControl) || proposed.Contains(';')) return "invalid_proposed_value";
         if (report.Field == "translation" && version.ShowContextBefore) return "context_requires_editor";
-        if (!Regex.IsMatch(version.LemmaPl, "^[a-ząćęłńóśźż]+$")
+        // Профіль цільової мови (алфавіт леми, допустимі роди) — за кодом мови запису; фолбек — польська.
+        var profile = ContentLanguageProfiles.ByCode(entry.TargetLanguage) ?? ContentLanguageProfiles.Polish;
+        if (!Regex.IsMatch(version.LemmaPl, profile.LemmaPattern, RegexOptions.CultureInvariant)
             || version.PartOfSpeech is not ("noun" or "verb" or "adj" or "adv" or "pron" or "det"
                 or "prep" or "conj" or "particle" or "num" or "intj")
-            || version.PartOfSpeech == "noun" && version.Gender is not ("m" or "f" or "n" or "pl")
+            || version.PartOfSpeech == "noun" && profile.NounGenders.Count > 0
+                && (version.Gender is null || !profile.NounGenders.Contains(version.Gender))
             || string.IsNullOrWhiteSpace(version.Topic)
             || entry.Domain is not ("everyday" or "legalization")
             || entry.Domain == "everyday" && version.FrequencyRank is not > 0
@@ -59,10 +63,12 @@ internal static class VerificationPolicy
         if (report.Field == "pronunciation" && all.Select(candidate => Normalize(candidate.Value)).Distinct().Count() > 1)
             return new(null, "source_conflict");
         var proposed = Normalize(report.ProposedValue!);
+        // Хост Вікісловника для валідації доказу — за цільовою мовою запису; фолбек — польська.
+        var profile = ContentLanguageProfiles.ByCode(entry.TargetLanguage) ?? ContentLanguageProfiles.Polish;
         foreach (var (source, result) in results.Where(item => item.Result.Status == ReferenceStatus.Available))
         {
             var match = result.Candidates.FirstOrDefault(candidate => Normalize(candidate.Value) == proposed
-                && ValidEvidence(candidate, source, entry.Domain, report.Field!, now));
+                && ValidEvidence(candidate, source, entry.Domain, report.Field!, now, profile.WiktionaryHost));
             if (match is not null) return new(match, null);
         }
         var transient = results.Select(item => item.Result.Reason).FirstOrDefault(IsTransient);
@@ -71,16 +77,18 @@ internal static class VerificationPolicy
                          ?? "value_not_confirmed");
     }
 
-    private static bool ValidEvidence(ReferenceCandidate candidate, string source, string domain, string field, Instant now)
+    private static bool ValidEvidence(ReferenceCandidate candidate, string source, string domain, string field,
+        Instant now, string wiktionaryHost)
     {
         if (candidate.Source != source || candidate.SnapshotAt > now || now - candidate.SnapshotAt > Duration.FromDays(35)
             || string.IsNullOrWhiteSpace(candidate.Attribution) || candidate.Attribution.Length > 200
             || !Uri.TryCreate(candidate.Url, UriKind.Absolute, out var url) || url.Scheme != "https"
             || !url.IsDefaultPort || url.UserInfo.Length != 0) return false;
+        // gov.pl/wsjp.pl лишаються польськими джерелами (OQ-9: єдиний редактор веде репорти інших мов вручну).
         if (field == "translation" && domain == "legalization")
             return source == "government" && (url.Host == "gov.pl" || url.Host.EndsWith(".gov.pl", StringComparison.Ordinal));
         if (source == "wikislownik")
-            return url.Host == "pl.wiktionary.org" && candidate.RevisionId is { Length: > 0 and <= 32 }
+            return url.Host == wiktionaryHost && candidate.RevisionId is { Length: > 0 and <= 32 }
                 && !string.IsNullOrWhiteSpace(candidate.License);
         return field == "pronunciation" && source == "wsjp" && url.Host == "wsjp.pl"
             && candidate.RevisionId is null or { Length: <= 32 };

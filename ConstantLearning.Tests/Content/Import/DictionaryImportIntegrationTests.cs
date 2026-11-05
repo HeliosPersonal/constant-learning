@@ -34,6 +34,48 @@ public sealed class DictionaryImportIntegrationTests(PostgresFixture postgres) :
     }
 
     [DockerFact]
+    public async Task EnglishDataset_ImportsUnderTargetLanguageAndEnablesLanguage()
+    {
+        using var bundle = new DictionaryImportTestBundle { Language = "en" };
+        bundle.Row["id"] = "editorial-water-not-a-uuid";
+        bundle.Row["lemma_pl"] = "water";
+        bundle.Row["gender"] = "";                       // en — рід відсутній; схвалений іменник не потребує позначки.
+        bundle.Row["translation_uk"] = "вода";
+        bundle.Row["accepted_answers_pl"] = "water";
+        bundle.Row["pronunciation_uk"] = "вотер";
+        bundle.Row["example_pl"] = "This is clean water.";
+        bundle.Row["example_uk"] = "Це чиста вода.";
+        bundle.Evidence["id"] = "proof-water";
+        bundle.Evidence["lemma_pl"] = "water";
+        bundle.Evidence["source_url"] = "https://en.wiktionary.org/wiki/water";
+        bundle.Evidence["ipa"] = "ˈwɔːtər";
+        bundle.Evidence["translation_candidates"] = new System.Text.Json.Nodes.JsonArray("вода", "водичка");
+        bundle.Row["validation_sources"] = "proof-water";
+        await bundle.WriteAsync();
+
+        (await Db.TargetLanguages.AsNoTracking().SingleAsync(language => language.Code == "en")).IsEnabled
+            .Should().BeFalse("en стартує вимкненою, доки немає валідного контенту");
+        try
+        {
+            var result = await Importer(Db).ImportAsync(bundle.DirectoryPath);
+
+            result.Should().Be(new DictionaryImportResult(1, 1, 0, 1, 0));
+            var entry = await Db.DictionaryEntries.AsNoTracking().SingleAsync();
+            entry.TargetLanguage.Should().Be("en");
+            entry.PublishedVersionId.Should().NotBeNull();
+            (await Db.TargetLanguages.SingleAsync(language => language.Code == "en")).IsEnabled
+                .Should().BeTrue("валідний імпорт зі схваленим контентом вмикає мову (OQ-7)");
+        }
+        finally
+        {
+            // target_languages переживає ResetAsync — повертаємо en у вимкнений стан, щоб не впливати на інші тести.
+            var english = await Db.TargetLanguages.SingleAsync(language => language.Code == "en");
+            english.IsEnabled = false;
+            await Db.SaveChangesAsync();
+        }
+    }
+
+    [DockerFact]
     public Task Draft_UnpublishesAndPreservesHistory() => LossOfApprovalAsync("draft");
 
     [DockerFact]

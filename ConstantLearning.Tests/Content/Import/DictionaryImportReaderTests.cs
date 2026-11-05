@@ -11,8 +11,10 @@ public sealed class DictionaryImportReaderTests
     [Fact]
     public async Task PackagedRelease_ValidatesAllTwoThousandRowsAndEvidence()
     {
-        var rows = await _reader.ReadAsync(Path.Combine(AppContext.BaseDirectory, "Resources", "Dictionary"));
+        var dataset = await _reader.ReadAsync(Path.Combine(AppContext.BaseDirectory, "Resources", "Dictionary"));
+        var rows = dataset.Rows;
 
+        dataset.Language.Should().Be("pl");
         rows.Should().HaveCount(2000);
         rows.Should().OnlyContain(row => row["validation_status"] == "approved" && row.Evidence.HasValue);
         rows.Select(row => row["id"]).Should().OnlyHaveUniqueItems();
@@ -26,17 +28,17 @@ public sealed class DictionaryImportReaderTests
         using var bundle = new DictionaryImportTestBundle();
         bundle.Row["example_pl"] = "To jest żaba,\nktóra mówi: \"kum\".";
         await bundle.WriteAsync();
-        var first = (await _reader.ReadAsync(bundle.DirectoryPath)).Single();
+        var first = (await _reader.ReadAsync(bundle.DirectoryPath)).Rows.Single();
         first["example_pl"].Should().Be(bundle.Row["example_pl"]);
         first.Values("translation_uk").Should().Equal("жаба", "жабка");
 
         await bundle.WriteAsync(quoteAll: true, reverseEvidence: true);
-        var second = (await _reader.ReadAsync(bundle.DirectoryPath)).Single();
+        var second = (await _reader.ReadAsync(bundle.DirectoryPath)).Rows.Single();
         second.ContentHash.Should().Be(first.ContentHash);
 
         bundle.Row["example_uk"] = "Це маленька жаба.";
         await bundle.WriteAsync();
-        (await _reader.ReadAsync(bundle.DirectoryPath)).Single().ContentHash.Should().NotBe(first.ContentHash);
+        (await _reader.ReadAsync(bundle.DirectoryPath)).Rows.Single().ContentHash.Should().NotBe(first.ContentHash);
     }
 
     [Theory]
@@ -64,7 +66,7 @@ public sealed class DictionaryImportReaderTests
         bundle.Evidence["source_tags"] = new JsonArray("plural");
         bundle.Evidence["accepted_answers_pl"] = new JsonArray("żaby");
         await bundle.WriteAsync();
-        var row = (await _reader.ReadAsync(bundle.DirectoryPath)).Single();
+        var row = (await _reader.ReadAsync(bundle.DirectoryPath)).Rows.Single();
         row["gender"].Should().Be("pl");
         row.Values("accepted_answers_pl").Should().Equal("żaba", "żaby");
     }

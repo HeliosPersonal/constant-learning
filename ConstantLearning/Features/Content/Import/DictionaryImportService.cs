@@ -12,12 +12,35 @@ public sealed record DictionaryImportResult(int EntriesCreated, int VersionsCrea
 public sealed class DictionaryImportService(AppDbContext db, DictionaryImportReader reader,
     ContentPublicationService publication, IClock clock, ILogger<DictionaryImportService> logger)
 {
-    public Task<DictionaryImportResult> ImportPackagedAsync(CancellationToken cancellationToken = default)
-        => ImportAsync(Path.Combine(AppContext.BaseDirectory, "Resources", "Dictionary"), cancellationToken);
+    public async Task<DictionaryImportResult> ImportPackagedAsync(CancellationToken cancellationToken = default)
+    {
+        var aggregate = new DictionaryImportResult(0, 0, 0, 0, 0);
+        foreach (var directory in DatasetDirectories(Path.Combine(AppContext.BaseDirectory, "Resources", "Dictionary")))
+        {
+            var result = await ImportAsync(directory, cancellationToken);
+            aggregate = new DictionaryImportResult(aggregate.EntriesCreated + result.EntriesCreated,
+                aggregate.VersionsCreated + result.VersionsCreated, aggregate.Unchanged + result.Unchanged,
+                aggregate.Published + result.Published, aggregate.Unpublished + result.Unpublished);
+        }
+        return aggregate;
+    }
+
+    // Пласка тека = історичний польський набір; підтеки <lang>/ — нові мови. Підтримуються обидва макети.
+    internal static IReadOnlyList<string> DatasetDirectories(string root)
+    {
+        var directories = new List<string>();
+        if (File.Exists(Path.Combine(root, "course.csv"))) directories.Add(root);
+        if (Directory.Exists(root))
+            foreach (var sub in Directory.EnumerateDirectories(root).OrderBy(path => path, StringComparer.Ordinal))
+                if (File.Exists(Path.Combine(sub, "course.csv"))) directories.Add(sub);
+        return directories;
+    }
 
     public async Task<DictionaryImportResult> ImportAsync(string directory, CancellationToken cancellationToken = default)
     {
-        var rows = await reader.ReadAsync(directory, cancellationToken);
+        var dataset = await reader.ReadAsync(directory, cancellationToken);
+        var rows = dataset.Rows;
+        var profile = ContentLanguageProfiles.ByCode(dataset.Language)!;
         if (db.Database.CurrentTransaction is not null)
             throw new InvalidOperationException("Імпорт має власну атомарну транзакцію.");
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -42,7 +65,7 @@ public sealed class DictionaryImportService(AppDbContext db, DictionaryImportRea
             {
                 if (!entries.TryGetValue(row["id"], out var entry))
                 {
-                    entry = new DictionaryEntry { ExternalId = row["id"], Domain = row["domain"], CreatedAt = clock.GetCurrentInstant() };
+                    entry = new DictionaryEntry { ExternalId = row["id"], Domain = row["domain"], TargetLanguage = dataset.Language, CreatedAt = clock.GetCurrentInstant() };
                     db.DictionaryEntries.Add(entry);
                     entries.Add(entry.ExternalId, entry);
                     entriesCreated++;
@@ -80,7 +103,7 @@ public sealed class DictionaryImportService(AppDbContext db, DictionaryImportRea
                         Version = version, VersionId = version.Id, TextPl = answer,
                         IsCanonical = answer == row["lemma_pl"], CreatedAt = clock.GetCurrentInstant()
                     });
-                AddEvidence(row, version.Id);
+                AddEvidence(row, version.Id, profile);
                 changes.Add(new PublicationChange(entry.Id, entry.PublishedVersionId,
                     version.ValidationStatus == "approved" ? version.Id : null, "import",
                     Action: version.ValidationStatus == "approved" ? "publish" : "unpublish"));
@@ -88,6 +111,19 @@ public sealed class DictionaryImportService(AppDbContext db, DictionaryImportRea
             }
             await db.SaveChangesAsync(cancellationToken);
             await publication.ApplyAsync(changes, cancellationToken);
+            // Валідний імпорт зі схваленим контентом вмикає мову (OQ-7): is_enabled=true в тій самій транзакції.
+            var published = changes.Count(change => change.ToVersionId is not null);
+            if (published > 0)
+            {
+                var targetLanguage = await db.TargetLanguages
+                    .FirstOrDefaultAsync(language => language.Code == dataset.Language, cancellationToken);
+                if (targetLanguage is { IsEnabled: false })
+                {
+                    targetLanguage.IsEnabled = true;
+                    await db.SaveChangesAsync(cancellationToken);
+                    logger.LogInformation("Мову {Language} увімкнено після валідного імпорту", dataset.Language);
+                }
+            }
             await transaction.CommitAsync(cancellationToken);
             var result = new DictionaryImportResult(entriesCreated, versionsCreated, rows.Count - versionsCreated,
                 changes.Count(change => change.ToVersionId is not null),
@@ -104,19 +140,19 @@ public sealed class DictionaryImportService(AppDbContext db, DictionaryImportRea
         }
     }
 
-    private void AddEvidence(DictionaryImportRow row, Guid versionId)
+    private void AddEvidence(DictionaryImportRow row, Guid versionId, ContentLanguageProfile profile)
     {
         if (row.Evidence is not { } proof) return;
         var sourceUrl = DictionaryImportReader.Text(proof, "source_url");
         var sense = DictionaryImportReader.Text(proof, "sense_index");
         void Add(string field, string attribution, string? url = null) => db.ValidationEvidence.Add(new ValidationEvidence
         {
-            VersionId = versionId, Field = field, Source = "Wikisłownik", Url = url ?? sourceUrl,
+            VersionId = versionId, Field = field, Source = profile.ReferenceSourceLabel, Url = url ?? sourceUrl,
             RevisionId = sense.Length is > 0 and <= 32 ? sense : null, Attribution = attribution,
             Outcome = row["validation_status"] == "approved" ? "confirmed" : "unconfirmed",
             RetrievedAt = clock.GetCurrentInstant(), CreatedAt = clock.GetCurrentInstant()
         });
-        Add("translation_uk", "Wikisłownik contributors; CC BY-SA; " + row["validation_sources"]);
+        Add("translation_uk", profile.AttributionPrefix + "; " + row["validation_sources"]);
         Add("source_record_sha256", DictionaryImportReader.Text(proof, "source_record_sha256"));
         Add("usage_example_sha256", DictionaryImportReader.Text(proof, "usage_example_sha256"));
         Add("pronunciation_uk", DictionaryImportReader.Text(proof, "ipa"));
