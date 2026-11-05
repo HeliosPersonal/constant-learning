@@ -6,6 +6,7 @@ using ConstantLearning.Features.Learning.Notifications;
 using ConstantLearning.Features.Notifications.Data;
 using ConstantLearning.Features.Notifications.Dispatch;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.WebUtilities;
 using NodaTime;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -57,6 +58,6 @@ public sealed class ReminderHandler(INotificationAudienceReader audience, IRemin
         return new NotificationPreparation.Deliver(new NotificationMessage(
             resume ? $"Час продовжити заняття: {name}." : $"Час для щоденного заняття: {name}.",
             ReplyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithWebApp(
-                resume ? "Продовжити заняття" : "Відкрити заняття", new WebAppInfo { Url = app.AbsoluteUri }))));
+                resume ? "Продовжити заняття" : "Відкрити заняття", new WebAppInfo { Url = QueryHelpers.AddQueryString(app.AbsoluteUri, "reminder_language", language) }))));
     }
 }

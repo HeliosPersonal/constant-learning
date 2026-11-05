@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../components/ui';
 import { getCurrentLearner, learnerQueryKey, OnboardingApiError, type Learner } from './api';
 import { Onboarding } from './Onboarding';
 import type { PrivacyContact } from './privacy';
 import { Today } from '../today/Today';
+import { LanguageApiError, setActiveLanguage, learnerLanguagesQueryKey } from '../settings/language/api';
+import { todayQueryKey } from '../today/api';
 
 export function OnboardingGate({ onNavigateToToday, privacyContact, preserveRoute = false, renderLearner, notOnboarded }: {
   onNavigateToToday?: (learner: Learner) => void;
@@ -13,7 +15,25 @@ export function OnboardingGate({ onNavigateToToday, privacyContact, preserveRout
   renderLearner?: (learner: Learner) => ReactNode;
   notOnboarded?: ReactNode;
 }) {
-  const profile = useQuery({ queryKey: learnerQueryKey, queryFn: ({ signal }) => getCurrentLearner(signal), retry: false, refetchOnReconnect: false });
+  const queryClient = useQueryClient();
+  const [reminderLanguage] = useState(() => new URLSearchParams(window.location.search).get('reminder_language'));
+  const reminderApplied = useRef(false);
+  const profile = useQuery({
+    queryKey: reminderLanguage ? [...learnerQueryKey, 'reminder', reminderLanguage] : learnerQueryKey,
+    queryFn: async ({ signal }) => {
+      if (reminderLanguage && !reminderApplied.current) {
+        await setActiveLanguage(reminderLanguage);
+        reminderApplied.current = true;
+        queryClient.removeQueries({ queryKey: todayQueryKey });
+        queryClient.removeQueries({ queryKey: ['session', 'current'] });
+        queryClient.removeQueries({ queryKey: learnerLanguagesQueryKey });
+      }
+      const learner = await getCurrentLearner(signal);
+      if (reminderLanguage) queryClient.setQueryData(learnerQueryKey, learner);
+      return learner;
+    },
+    retry: false, refetchOnReconnect: false, refetchOnWindowFocus: !reminderLanguage,
+  });
   const forwardedId = useRef<string | null>(null);
   const navigate = useCallback((learner: Learner) => {
     if (forwardedId.current === learner.id) return;
@@ -25,7 +45,7 @@ export function OnboardingGate({ onNavigateToToday, privacyContact, preserveRout
 
   if (profile.isPending) return <div className="loading-state app-status" role="status"><Spinner size="s" /> Відкриваємо ваш тренер…</div>;
   if (profile.isError) {
-    const unauthorized = profile.error instanceof OnboardingApiError && profile.error.status === 401;
+    const unauthorized = (profile.error instanceof OnboardingApiError || profile.error instanceof LanguageApiError) && profile.error.status === 401;
     return <Card aria-labelledby="profile-error-title"><h1 id="profile-error-title">Повернімося до навчання</h1><Result tone="error">{unauthorized ? 'Відкрийте тренер знову в Telegram, щоб продовжити.' : 'Не вдалося відкрити тренер. Спробуйте ще раз.'}</Result>
       {!unauthorized && <Button size="l" stretched disabled={profile.isFetching} onClick={() => { void profile.refetch(); }}>{profile.isFetching ? 'Завантажуємо…' : 'Спробувати ще раз'}</Button>}
     </Card>;

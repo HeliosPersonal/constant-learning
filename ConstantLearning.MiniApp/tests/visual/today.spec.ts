@@ -1,10 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { components } from '../../src/api/schema';
 import { todaySummary } from '../fixtures/today';
+import { mockLanguages } from '../fixtures/languages';
 
 const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', time_zone: 'Europe/Kyiv', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: 10, reminder: { local_time: '19:00', days_of_week: ['mon'] }, active_target_language: 'pl', onboarded_at: '2026-11-01T09:00:00Z' };
 
 async function prepare(page: Page, theme: string, profile = learner) {
+  await mockLanguages(page);
+  await page.route('**/api/v1/learners/me/access', route => route.fulfill({ json: { content_editor: false } }));
   await page.route('https://telegram.org/**', route => route.fulfill({ contentType: 'text/javascript', body: `window.Telegram={WebApp:{initData:"fixture=today",colorScheme:"${theme}",version:"6.0"}};` }));
   await page.addInitScript(theme => localStorage.setItem('constant-learning.theme.v1', theme), theme);
   await page.route('**/api/v1/learners/me', route => route.fulfill({ json: profile }));

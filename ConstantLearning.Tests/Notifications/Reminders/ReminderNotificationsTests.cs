@@ -60,7 +60,7 @@ public sealed class ReminderNotificationsTests(PostgresFixture postgres) : Postg
         var message = Assert.Single(telegram.Messages);
         Assert.Contains("щоденного заняття", message.Text, StringComparison.Ordinal);
         Assert.Equal("Відкрити заняття", message.Markup!.InlineKeyboard.Single().Single().Text);
-        Assert.Equal("https://trainer.example/", message.Markup.InlineKeyboard.Single().Single().WebApp!.Url);
+        Assert.Equal("https://trainer.example/?reminder_language=pl", message.Markup.InlineKeyboard.Single().Single().WebApp!.Url);
         Assert.Equal("sent", (await DispatchRowAsync()).Status);
     }
 

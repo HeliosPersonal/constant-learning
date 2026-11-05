@@ -39,6 +39,46 @@ function chooseLimit(value: number) {
 
 afterEach(() => { clients.forEach(client => client.clear()); clients.length = 0; vi.unstubAllGlobals(); vi.restoreAllMocks(); window.history.replaceState(null, '', '/'); });
 
+describe('Мова посилання нагадування', () => {
+  it('перемикає мову до читання профілю й не показує кеш іншої мови', async () => {
+    window.history.replaceState(null, '', '/?reminder_language=en');
+    let release!: () => void;
+    const pending = new Promise<void>(resolve => { release = resolve; });
+    const requests: string[] = [];
+    mockFetch(async request => {
+      requests.push(request.url);
+      if (request.method === 'PUT') {
+        expect(await request.json()).toEqual({ target_language: 'en' });
+        await pending;
+        return new Response(JSON.stringify({ active_target_language: 'en' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      return json({ ...learner, active_target_language: 'en' }, 200);
+    });
+    const client = createQueryClient(); clients.push(client);
+    client.setQueryData(['current-learner'], learner);
+    render(<QueryClientProvider client={client}><ThemeProvider><OnboardingGate renderLearner={value => <p>Мова: {value.active_target_language}</p>} /></ThemeProvider></QueryClientProvider>);
+    await waitFor(() => expect(requests).toHaveLength(1));
+    expect(screen.queryByText('Мова: pl')).not.toBeInTheDocument();
+    expect(screen.queryByText('Мова: en')).not.toBeInTheDocument();
+    release();
+    expect(await screen.findByText('Мова: en')).toBeVisible();
+    expect(requests[1]).toMatch(/\/learners\/me$/);
+    expect(window.location.pathname).toBe('/today');
+    expect(window.location.search).toBe('');
+  });
+
+  it('у разі помилки не відкриває заняття активною мовою й дозволяє повторити', async () => {
+    window.history.replaceState(null, '', '/?reminder_language=en');
+    const fetcher = mockFetch(() => json({ code: 'language.not_studying', message: 'Мову ще не почато.' }, 409));
+    mount(<OnboardingGate renderLearner={() => <p>Заняття</p>} />);
+    expect(await screen.findByRole('button', { name: 'Спробувати ще раз' })).toBeVisible();
+    expect(screen.queryByText('Заняття')).not.toBeInTheDocument();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Спробувати ще раз' }));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+  });
+});
+
 describe('Приватність перед початком', () => {
   it('без перевизначення використовує погоджений mailto, а порожнє чи невалідне значення блокує початок', () => {
     expect(resolvePrivacyContact(undefined)?.url).toBe('mailto:melnichenkoviatcheslav@gmail.com');

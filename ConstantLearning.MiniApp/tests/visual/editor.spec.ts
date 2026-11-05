@@ -1,7 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { mockLanguages } from '../fixtures/languages';
 import { answerChange, appliedPage, change, closedReport, disputeReport, missingReport, queuePage, report, rollbackResult } from '../fixtures/editor';
 
 async function prepare(page: Page, theme: string) {
+  await mockLanguages(page);
   await page.route('https://telegram.org/**', route => route.fulfill({ contentType: 'text/javascript', body: `window.Telegram={WebApp:{initData:"fixture=editor",colorScheme:"${theme}",version:"6.0"}};` }));
   await page.addInitScript(theme => localStorage.setItem('constant-learning.theme.v1', theme), theme);
   const errors: string[] = [];

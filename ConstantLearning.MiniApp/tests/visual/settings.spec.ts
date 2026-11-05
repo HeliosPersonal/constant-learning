@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { components } from '../../src/api/schema';
 import { todaySummary } from '../fixtures/today';
+import { mockLanguages } from '../fixtures/languages';
 
 type Learner = components['schemas']['Learner'];
 type SettingsUpdate = components['schemas']['LearnerSettingsUpdate'];
@@ -9,6 +10,7 @@ const original: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_na
 for (const theme of ['light', 'dark'] as const) {
   test(`${theme}: налаштування, локальна тема й автозбереження`, async ({ page }) => {
     let profile = { ...original };
+    await mockLanguages(page);
     const errors: string[] = [];
     const patches: SettingsUpdate[] = [];
     page.on('pageerror', error => errors.push(error.message));
