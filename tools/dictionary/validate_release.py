@@ -11,10 +11,17 @@ import urllib.parse
 from pathlib import Path
 
 from build_release import FIELDS, KNOWN_POS, accepted_translations, normalize
+from languages import config
 
 
 def validate(directory: Path, target: int) -> dict:
     readiness = json.loads((directory / "readiness.json").read_text(encoding="utf-8"))
+    # Відсутнє поле language означає pl — так само, як трактує C# імпортер.
+    lang = readiness.get("language", "pl")
+    settings = config(lang)
+    lemma_pattern = settings["lemma_regex"]
+    noun_genders = settings["noun_genders"]
+    host = settings["wiktionary_host"]
     if not readiness.get("ready") or not readiness.get("approval_policy_confirmed"):
         raise ValueError("Стандарт схвалення не погоджено або набір не готовий")
     if readiness.get("course_sha256") != hashlib.sha256((directory / "course.csv").read_bytes()).hexdigest():
@@ -40,11 +47,11 @@ def validate(directory: Path, target: int) -> dict:
         word = row["lemma_pl"]
         if row["part_of_speech"] not in KNOWN_POS:
             raise ValueError("Невизначена частина мови: " + word)
-        if not re.fullmatch("[a-ząćęłńóśźż]+", word):
-            raise ValueError("Очікується однословна польська лема: " + word)
+        if not re.fullmatch(lemma_pattern, word):
+            raise ValueError("Очікується однословна лема цільової мови: " + word)
         if any(not row[key].strip() for key in required) or row["validation_status"] != "approved":
             raise ValueError("Неповна або несхвалена картка: " + word)
-        if row["part_of_speech"] == "noun" and row["gender"] not in ["m", "f", "n", "pl"]:
+        if noun_genders and row["part_of_speech"] == "noun" and row["gender"] not in noun_genders:
             raise ValueError("Не визначено рід іменника: " + word)
         proof = evidence.get(row["validation_sources"])
         if not proof or proof["lemma_pl"] != word or proof["part_of_speech"] != row["part_of_speech"]:
@@ -53,9 +60,9 @@ def validate(directory: Path, target: int) -> dict:
             raise ValueError("Множину не підтверджено джерелом: " + word)
         if not proof.get("sense_index") or not proof.get("ipa") or not re.fullmatch("[0-9a-f]{64}", proof["source_record_sha256"]):
             raise ValueError("Неповний доказ: " + word)
-        if proof["source_url"] != "https://pl.wiktionary.org/wiki/" + urllib.parse.quote(word):
+        if proof["source_url"] != "https://" + host + "/wiki/" + urllib.parse.quote(word):
             raise ValueError("Невідповідне посилання: " + word)
-        variants = accepted_translations(word, proof["translation_candidates"])
+        variants = accepted_translations(word, proof["translation_candidates"], lang)
         if any(normalize(value) not in variants for value in row["translation_uk"].split(";")):
             raise ValueError("Переклад не підтверджено джерелом: " + word)
         if hashlib.sha256(row["example_pl"].encode("utf-8")).hexdigest() == proof["usage_example_sha256"]:

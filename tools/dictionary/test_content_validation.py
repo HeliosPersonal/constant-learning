@@ -8,7 +8,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import csv
+
 from build_release import main, validate_editorial
+from validate_release import validate
 
 
 class ContentValidationTests(unittest.TestCase):
@@ -74,6 +77,58 @@ class ContentValidationTests(unittest.TestCase):
             with patch("sys.argv", arguments), self.assertRaises(SystemExit):
                 main()
             self.assertFalse((root / "out/course.csv").exists())
+
+
+class EnglishContentValidationTests(unittest.TestCase):
+    def setUp(self):
+        # Англійський іменник без роду: gender порожній і НЕ повинен вимагатися.
+        self.source = {
+            "lemma": "water", "pos": "noun", "gender": "", "tags": [],
+            "translation_candidates": ["вода"], "usage_example": "The water is very cold.",
+            "frequency_rank": 1, "source_url": "https://en.wiktionary.org/wiki/water",
+            "source_record_sha256": "b" * 64, "sense": "1.1", "ipa": "ˈwɔːtə",
+        }
+        self.row = {
+            "lemma": "water", "translation_uk": "вода", "pronunciation_uk": "вотер",
+            "example_pl": "I drink a glass of water.",
+            "example_uk": "Я п'ю склянку води.", "review_note": "",
+        }
+
+    def test_english_noun_with_empty_gender_passes(self):
+        # Для en набір родів порожній: відсутність роду не є помилкою.
+        self.assertEqual(validate_editorial(self.row, self.source, "en"), [])
+
+    def test_english_translation_match_and_mismatch(self):
+        self.assertNotIn("translation_not_in_evidence", validate_editorial(self.row, self.source, "en"))
+        self.row["translation_uk"] = "вогонь"
+        self.assertIn("translation_not_in_evidence", validate_editorial(self.row, self.source, "en"))
+
+    def test_english_verbatim_source_example_is_rejected(self):
+        self.row["example_pl"] = self.source["usage_example"]
+        self.assertIn("copied_source_example", validate_editorial(self.row, self.source, "en"))
+
+    def test_english_release_builds_validates_and_tags_language(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "sources.jsonl").write_text(json.dumps(self.source) + "\n", encoding="utf-8")
+            (root / "editorial.jsonl").write_text(json.dumps(self.row) + "\n", encoding="utf-8")
+            out = root / "out"
+            arguments = [
+                "build_release", "--lang", "en",
+                "--sources", str(root / "sources.jsonl"),
+                "--editorial", str(root / "editorial.jsonl"),
+                "--output", str(out), "--target", "1", "--approve-source-backed",
+            ]
+            with patch("sys.argv", arguments), contextlib.redirect_stdout(io.StringIO()):
+                main()
+            readiness = json.loads((out / "readiness.json").read_text(encoding="utf-8"))
+            self.assertEqual(readiness["language"], "en")
+            with (out / "course.csv").open(encoding="utf-8", newline="") as stream:
+                card = next(csv.DictReader(stream))
+            self.assertTrue(card["id"].startswith("en-"))
+            self.assertEqual(card["gender"], "")
+            # Валідатор бере мову з readiness.language й приймає порожній рід англійського іменника.
+            self.assertEqual(validate(out, 1)["approved_unique_lemmas"], 1)
 
 
 if __name__ == "__main__":

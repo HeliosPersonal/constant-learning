@@ -51,8 +51,16 @@ def prepare(source, course, output):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, required=True)
+    parser.add_argument("--lang", choices=sorted(("pl", "en", "de", "nl")), default="pl")
+    parser.add_argument("--source", type=Path)
     parser.add_argument("--course", type=Path, default=Path("docs/dictionary/course.csv"))
     parser.add_argument("--output", type=Path, default=Path("ConstantLearning/Resources/Morphology"))
     args = parser.parse_args()
-    prepare(args.source, args.course, args.output)
+    if args.lang != "pl":
+        # Для en/de/nl морфологія необов'язкова: пошук відкочується на леми, коли її немає.
+        # Джерело морфології для цих мов не налаштовано (багатогігабайтні дампи не завантажуємо) — no-op.
+        print(json.dumps({"lang": args.lang, "status": "skip", "reason": "морфологія необов'язкова для цієї мови; джерело не налаштовано, пошук використовує леми"}, ensure_ascii=False))
+    else:
+        if args.source is None:
+            parser.error("для --lang pl потрібен --source (офіційний знімок PoliMorf 0.6.7)")
+        prepare(args.source, args.course, args.output)
