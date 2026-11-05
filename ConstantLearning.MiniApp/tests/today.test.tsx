@@ -46,6 +46,10 @@ describe('Прогрес і стани дня', () => {
     expect(screen.getByText(/2 листопада/)).toBeVisible();
     expect(requests(fetcher, '/api/v1/today')).toHaveLength(1);
   });
+  it('показує українську назву активної мови під заголовком', async () => {
+    network(); mount();
+    expect(await screen.findByText('Польська')).toBeVisible();
+  });
   it('поки запит очікує, кнопка заняття й метрика відсутні', () => {
     const fetcher = network(() => new Promise<Response>(() => {})); mount();
     expect(screen.getByText('Збираємо ваш прогрес…')).toBeVisible();

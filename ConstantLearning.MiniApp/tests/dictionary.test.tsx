@@ -31,6 +31,10 @@ function deferred() { let resolve!: (response: Response) => void; const promise 
 afterEach(() => { clients.forEach(client => client.clear()); clients.length = 0; vi.unstubAllGlobals(); vi.restoreAllMocks(); delete window.Telegram; window.history.replaceState(null, '', '/'); });
 
 describe('AC-30: пошук і картка', () => {
+  it('показує назву активної мови під заголовком словника', () => {
+    mount(<Dictionary onBack={vi.fn()} learner={learner} />);
+    expect(screen.getByText('Польська')).toBeVisible();
+  });
   it('порожнє поле й пробіли не запитують API; очистка повертає початковий стан', async () => {
     const fetcher = mockFetch(() => json(page)); mount();
     expect(screen.getByRole('heading', { name: 'З чого почнемо?' })).toBeVisible(); query('   '); expect(fetcher).not.toHaveBeenCalled();
