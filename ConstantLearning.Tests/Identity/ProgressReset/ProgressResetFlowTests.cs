@@ -121,7 +121,7 @@ public sealed class ProgressResetFlowTests(PostgresFixture postgres) : PostgresI
         var learner = await SeedAsync();
         learner.PendingDailyNewWordsLimit = 10;
         learner.PendingLimitEffectiveFrom = Instant.FromUtc(2026, 1, 16, 22, 0);
-        learner.ReminderSchedule = new ReminderSchedule { LocalTime = new LocalTime(19, 0), DaysOfWeek = 1 };
+        learner.ReminderSchedules.Add(new ReminderSchedule { TargetLanguage = "pl", LocalTime = new LocalTime(19, 0), DaysOfWeek = 1 });
         await Db.SaveChangesAsync();
         await using var app = await StartAsync(ConfigureProbe(new ProbeState(), new CapturingMetrics()));
 

@@ -95,6 +95,7 @@ paths:
                 pending_daily_new_words_limit: null
                 reminder: null
                 onboarded_at: "2026-10-31T09:00:00Z"
+                active_target_language: null
         "200":
           description: learner уже існує — повернуто наявні налаштування без змін (AC-53)
           content:
@@ -111,6 +112,7 @@ paths:
                   local_time: "19:00"
                   days_of_week: [mon, wed, fri]
                 onboarded_at: "2026-10-30T09:00:00Z"
+                active_target_language: null
         "400":
           description: Невалідні налаштування (AC-02, AC-45)
           content:
@@ -143,6 +145,7 @@ paths:
                   local_time: "19:00"
                   days_of_week: [mon, wed, fri]
                 onboarded_at: "2026-10-31T09:00:00Z"
+                active_target_language: null
         "401": { $ref: "#/components/responses/Unauthorized" }
         "404":
           description: Онбординг ще не завершено
@@ -360,6 +363,7 @@ paths:
                   local_time: "19:00"
                   days_of_week: [mon]
                 onboarded_at: "2026-10-31T09:00:00Z"
+                active_target_language: null
         "400":
           description: Невалідні налаштування (AC-02, AC-27, AC-45)
           content:
@@ -1601,7 +1605,7 @@ components:
 
     Learner:
       type: object
-      required: [id, time_zone, time_zone_confirmed, daily_new_words_limit, reminder, onboarded_at]
+      required: [id, time_zone, time_zone_confirmed, daily_new_words_limit, reminder, onboarded_at, active_target_language]
       additionalProperties: false
       properties:
         id: { type: string, format: uuid }
@@ -1618,6 +1622,11 @@ components:
             - $ref: "#/components/schemas/ReminderSchedule"
             - type: "null"
         onboarded_at: { type: [string, "null"], format: date-time }
+        active_target_language:
+          description: learners.active_target_language; null, якщо learner ще не обрав мову (налаштування доби й нагадування — для активної мови)
+          oneOf:
+            - $ref: "#/components/schemas/TargetLanguageCode"
+            - type: "null"
 
     LearnerAccess:
       type: object

@@ -10,17 +10,46 @@ internal sealed class ReminderAudienceReader(AppDbContext db, IClock clock) : IR
     public async Task<IReadOnlyList<Guid>> ReadRecipientsAsync(Guid? after, int take, CancellationToken cancellationToken = default) =>
         await db.ReminderSchedules.AsNoTracking().Where(schedule => schedule.Learner.OnboardedAt != null
                 && (after == null || schedule.LearnerId.CompareTo(after.Value) > 0))
-            .OrderBy(schedule => schedule.LearnerId).Take(take).Select(schedule => schedule.LearnerId).ToArrayAsync(cancellationToken);
+            .Select(schedule => schedule.LearnerId).Distinct()
+            .OrderBy(learnerId => learnerId).Take(take).ToArrayAsync(cancellationToken);
 
-    public async Task<ReminderPreferences?> ReadAsync(Guid learnerId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ReminderPreferences>> ReadAsync(Guid learnerId, CancellationToken cancellationToken = default)
     {
+        var learner = await db.Learners.AsNoTracking()
+            .Where(value => value.Id == learnerId && value.OnboardedAt != null && value.TimeZoneConfirmed)
+            .Select(value => new { value.DailyNewWordsLimit })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (learner is null)
+        {
+            return [];
+        }
+
+        var schedules = await db.ReminderSchedules.AsNoTracking().Where(schedule => schedule.LearnerId == learnerId)
+            .Select(schedule => new { schedule.TargetLanguage, schedule.LocalTime, schedule.DaysOfWeek })
+            .ToArrayAsync(cancellationToken);
+        if (schedules.Length == 0)
+        {
+            return [];
+        }
+
+        // Стан мови може ще не існувати (онбординг створює нагадування до першого відкриття мови): тоді ліміт — стартовий з онбордингу.
+        var states = (await db.LearnerLanguageStates.AsNoTracking().Where(state => state.LearnerId == learnerId)
+                .Select(state => new
+                {
+                    state.TargetLanguage, state.DailyNewWordsLimit, state.PendingDailyNewWordsLimit,
+                    state.PendingLimitEffectiveFrom, state.NewWordsAvailableFrom
+                }).ToArrayAsync(cancellationToken))
+            .ToDictionary(state => state.TargetLanguage, StringComparer.Ordinal);
         var now = clock.GetCurrentInstant();
-        return await db.ReminderSchedules.AsNoTracking().Where(schedule => schedule.LearnerId == learnerId
-                && schedule.Learner.OnboardedAt != null && schedule.Learner.TimeZoneConfirmed)
-            .Select(schedule => new ReminderPreferences(schedule.LocalTime, schedule.DaysOfWeek,
-                schedule.Learner.PendingDailyNewWordsLimit != null && schedule.Learner.PendingLimitEffectiveFrom <= now
-                    ? schedule.Learner.PendingDailyNewWordsLimit.Value : schedule.Learner.DailyNewWordsLimit,
-                schedule.Learner.NewWordsAvailableFrom)).SingleOrDefaultAsync(cancellationToken);
+        return schedules.Select(schedule =>
+        {
+            states.TryGetValue(schedule.TargetLanguage, out var state);
+            var limit = state is null ? learner.DailyNewWordsLimit
+                : state.PendingDailyNewWordsLimit is { } pending && state.PendingLimitEffectiveFrom <= now
+                    ? pending : state.DailyNewWordsLimit;
+            return new ReminderPreferences(schedule.TargetLanguage, schedule.LocalTime, schedule.DaysOfWeek,
+                limit, state?.NewWordsAvailableFrom);
+        }).ToArray();
     }
 }
 

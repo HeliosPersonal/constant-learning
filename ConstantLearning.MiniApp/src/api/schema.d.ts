@@ -714,6 +714,8 @@ export interface components {
             reminder: components["schemas"]["ReminderSchedule"] | null;
             /** Format: date-time */
             onboarded_at: string | null;
+            /** @description learners.active_target_language; null, якщо learner ще не обрав мову (налаштування доби й нагадування — для активної мови) */
+            active_target_language: components["schemas"]["TargetLanguageCode"] | null;
         };
         LearnerAccess: {
             /** @description true, якщо Telegram id користувача є в списку редакторів контенту */

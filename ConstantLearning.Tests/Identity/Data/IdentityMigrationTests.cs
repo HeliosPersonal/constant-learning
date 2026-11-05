@@ -74,18 +74,19 @@ public sealed class IdentityMigrationTests(PostgresFixture postgres) : PostgresI
         learner.PendingLimitEffectiveFrom = Clock.GetCurrentInstant() + Duration.FromHours(14);
         learner.NewWordsAvailableFrom = Clock.GetCurrentInstant() + Duration.FromHours(15);
         learner.OnboardedAt = Clock.GetCurrentInstant();
-        learner.ReminderSchedule = new ReminderSchedule
+        learner.ReminderSchedules.Add(new ReminderSchedule
         {
+            TargetLanguage = "pl",
             LocalTime = new LocalTime(8, 30, 15),
             DaysOfWeek = 31
-        };
+        });
         var otherLearner = NewLearner();
         otherLearner.FirstName = null;
         Db.Learners.AddRange(learner, otherLearner);
         await Db.SaveChangesAsync();
         Db.ChangeTracker.Clear();
 
-        var stored = await Db.Learners.Include(item => item.ReminderSchedule)
+        var stored = await Db.Learners.Include(item => item.ReminderSchedules)
             .SingleAsync(item => item.Id == learner.Id);
         stored.TelegramUserId.Should().Be(learner.TelegramUserId);
         stored.TimeZone.Should().Be("Europe/Warsaw");
@@ -98,10 +99,12 @@ public sealed class IdentityMigrationTests(PostgresFixture postgres) : PostgresI
         stored.CanMessage.Should().BeTrue();
         stored.CreatedAt.Should().NotBe(default(Instant));
         stored.Version.Should().NotBe(0);
-        stored.ReminderSchedule!.LocalTime.Should().Be(new LocalTime(8, 30, 15));
-        stored.ReminderSchedule.DaysOfWeek.Should().Be(31);
-        stored.ReminderSchedule.CreatedAt.Should().NotBe(default(Instant));
-        stored.ReminderSchedule.Version.Should().NotBe(0);
+        var reminder = stored.ReminderSchedules.Single();
+        reminder.TargetLanguage.Should().Be("pl");
+        reminder.LocalTime.Should().Be(new LocalTime(8, 30, 15));
+        reminder.DaysOfWeek.Should().Be(31);
+        reminder.CreatedAt.Should().NotBe(default(Instant));
+        reminder.Version.Should().NotBe(0);
         var otherStored = await Db.Learners.SingleAsync(item => item.Id == otherLearner.Id);
         otherStored.FirstName.Should().BeNull();
         otherStored.ReporterAlias.Should().BeNull();

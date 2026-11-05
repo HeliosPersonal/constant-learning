@@ -4,7 +4,7 @@ import { todaySummary } from '../fixtures/today';
 
 type Learner = components['schemas']['Learner'];
 type SettingsUpdate = components['schemas']['LearnerSettingsUpdate'];
-const original: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: 10, reminder: { local_time: '19:00', days_of_week: ['mon', 'fri'] }, onboarded_at: '2026-11-01T09:00:00Z' };
+const original: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: 10, reminder: { local_time: '19:00', days_of_week: ['mon', 'fri'] }, active_target_language: 'pl', onboarded_at: '2026-11-01T09:00:00Z' };
 
 for (const theme of ['light', 'dark'] as const) {
   test(`${theme}: налаштування, локальна тема й автозбереження`, async ({ page }) => {

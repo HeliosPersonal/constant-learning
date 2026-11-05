@@ -7,6 +7,9 @@ public sealed class NotificationDispatch
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public long RecipientTelegramUserId { get; set; }
     public Guid? LearnerId { get; set; }
+
+    /// <summary>Мова, якої стосується сповіщення (лише для <c>reminder</c>); для інших видів <c>null</c> (ADR-0005).</summary>
+    public string? TargetLanguage { get; set; }
     public required string Kind { get; set; }
     public LocalDate LocalDate { get; set; }
     public Instant DueAt { get; set; }

@@ -12,7 +12,7 @@ import { todaySummary } from './fixtures/today';
 
 // Синтетичний контакт використовується лише в локальних тестах.
 const contact = parsePrivacyContact('mailto:privacy@example.test')!;
-const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: null, onboarded_at: '2026-11-01T09:00:00Z' };
+const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: null, active_target_language: 'pl', onboarded_at: '2026-11-01T09:00:00Z' };
 const notOnboarded: ApiErrorBody = { code: 'learner.not_onboarded', message: 'Спершу налаштуйте тренер.' };
 const clients: ReturnType<typeof createQueryClient>[] = [];
 

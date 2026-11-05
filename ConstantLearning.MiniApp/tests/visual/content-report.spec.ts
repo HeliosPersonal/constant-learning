@@ -1,7 +1,7 @@
 import { expect, test, type Locator } from '@playwright/test';
 import type { components } from '../../src/api/schema';
 
-const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: null, onboarded_at: '2026-11-01T09:00:00Z' };
+const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: null, active_target_language: 'pl', onboarded_at: '2026-11-01T09:00:00Z' };
 const entry: components['schemas']['DictionaryEntryCard'] = { entry_id: '0192f0a0-0000-7000-8000-0000000000e1', lemma_pl: 'urząd', part_of_speech: 'noun', gender: 'm', translations_uk: [{ kind: 'canonical', text_uk: 'державна установа' }], pronunciation_uk: 'ужонд', example_pl: 'Idę do urzędu.', example_uk: 'Я йду до державної установи.', word_status: 'review' };
 const accepted: components['schemas']['ContentReportAccepted'] = { id: '0192f0a0-0000-7000-8000-0000000000d2', status: 'pending_verification', message: 'Дякуємо, передали на перевірку' };
 const results: components['schemas']['DictionarySearchPage'] = { items: [{ entry_id: entry.entry_id, lemma_pl: entry.lemma_pl, part_of_speech: 'noun', short_meaning_uk: 'державна установа', matched_form: 'urzedzie', word_status: 'review' }], has_next: false, has_prev: false, next_cursor: null };

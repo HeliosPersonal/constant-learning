@@ -400,10 +400,10 @@ public sealed class ReminderNotificationsTests(PostgresFixture postgres) : Postg
         await using var provider = Provider(new StubTelegram());
         await using var scope = provider.CreateAsyncScope();
         var reader = scope.ServiceProvider.GetRequiredService<IReminderLearningReader>();
-        Assert.True((await reader.ReadAsync(learner.Id, Day, 5, null)).HasWork);
-        Assert.Null((await reader.ReadAsync(learner.Id, Day, 5, null)).LastAnsweredAt);
+        Assert.True((await reader.ReadAsync(learner.Id, "pl", Day, 5, null)).HasWork);
+        Assert.Null((await reader.ReadAsync(learner.Id, "pl", Day, 5, null)).LastAnsweredAt);
         await Db.LearningSessions.ExecuteUpdateAsync(update => update.SetProperty(row => row.EndsAt, Clock.GetCurrentInstant()));
-        Assert.False((await reader.ReadAsync(learner.Id, Day, 5, null)).HasWork);
+        Assert.False((await reader.ReadAsync(learner.Id, "pl", Day, 5, null)).HasWork);
         Assert.Equal("active", (await Db.LearningSessions.AsNoTracking().SingleAsync()).Status);
     }
 
@@ -505,6 +505,52 @@ public sealed class ReminderNotificationsTests(PostgresFixture postgres) : Postg
 
     private void AtReminder() => Clock.Reset(Instant.FromUtc(2026, 11, 2, 18, 0));
 
+    [DockerFact]
+    public async Task PerLanguageReminders_PlanEachLanguage_AndSettingsChangeTouchesOnlyItsLanguage()
+    {
+        // 05:00 UTC = 06:00 у Варшаві: обидва нагадування (en 08:00, pl 19:00) ще попереду сьогодні.
+        Clock.Reset(Instant.FromUtc(2026, 11, 2, 5, 0));
+        var learner = await LearnerAsync(new LocalTime(19, 0));
+        Db.ReminderSchedules.Add(new IdentityReminder
+        {
+            LearnerId = learner.Id,
+            TargetLanguage = "en",
+            LocalTime = new LocalTime(8, 0),
+            DaysOfWeek = 127,
+            CreatedAt = Clock.GetCurrentInstant()
+        });
+        await Db.SaveChangesAsync();
+        Db.ChangeTracker.Clear();
+
+        await using var provider = Provider(new StubTelegram());
+        await PlanAsync(provider);
+
+        var rows = await Db.NotificationDispatches.AsNoTracking().Where(row => row.Kind == "reminder")
+            .OrderBy(row => row.TargetLanguage).ToArrayAsync();
+        Assert.Equal(["en", "pl"], rows.Select(row => row.TargetLanguage).ToArray());
+        Assert.Equal(Instant.FromUtc(2026, 11, 2, 7, 0), rows[0].DueAt);
+        Assert.Equal(Instant.FromUtc(2026, 11, 2, 18, 0), rows[1].DueAt);
+        Assert.All(rows, row => Assert.Equal("pending", row.Status));
+
+        // Вимкнення нагадування en (як PATCH з reminder=null) скасовує лише її сьогоднішнє сповіщення.
+        await using (var scope = provider.CreateAsyncScope())
+        {
+            var scoped = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await using var transaction = await scoped.Database.BeginTransactionAsync();
+            scoped.ReminderSchedules.Remove(await scoped.ReminderSchedules.SingleAsync(row => row.TargetLanguage == "en"));
+            await scoped.SaveChangesAsync();
+            await scope.ServiceProvider.GetServices<ILearnerSettingsChangedHandler>()
+                .OfType<ReminderSettingsChangedHandler>().Single()
+                .HandleAsync(new(learner.Id, Clock.GetCurrentInstant(), null!, "en", false), CancellationToken.None);
+            await transaction.CommitAsync();
+        }
+
+        var statuses = await Db.NotificationDispatches.AsNoTracking().Where(row => row.Kind == "reminder")
+            .ToDictionaryAsync(row => row.TargetLanguage!, row => (row.Status, row.Reason));
+        Assert.Equal(("skipped", "reminder_not_scheduled_today"), statuses["en"]);
+        Assert.Equal(("pending", null), statuses["pl"]);
+    }
+
     private async Task<Learner> LearnerAsync(LocalTime? time = null)
     {
         var learner = new Learner
@@ -517,14 +563,15 @@ public sealed class ReminderNotificationsTests(PostgresFixture postgres) : Postg
             OnboardedAt = Clock.GetCurrentInstant(),
             CreatedAt = Clock.GetCurrentInstant()
         };
-        learner.ReminderSchedule = new IdentityReminder
+        learner.ReminderSchedules.Add(new IdentityReminder
         {
             Learner = learner,
             LearnerId = learner.Id,
+            TargetLanguage = "pl",
             LocalTime = time ?? new LocalTime(19, 0),
             DaysOfWeek = 127,
             CreatedAt = Clock.GetCurrentInstant()
-        };
+        });
         Db.Learners.Add(learner);
         await Db.SaveChangesAsync();
         Db.ChangeTracker.Clear();
@@ -644,7 +691,7 @@ public sealed class ReminderNotificationsTests(PostgresFixture postgres) : Postg
         await db.SaveChangesAsync();
         saved.TrySetResult();
         await scope.ServiceProvider.GetServices<ILearnerSettingsChangedHandler>().OfType<ReminderSettingsChangedHandler>().Single()
-            .HandleAsync(new(learnerId, Clock.GetCurrentInstant(), changed.Day), CancellationToken.None);
+            .HandleAsync(new(learnerId, Clock.GetCurrentInstant(), changed.Day, "pl", true), CancellationToken.None);
         await transaction.CommitAsync();
     }
 

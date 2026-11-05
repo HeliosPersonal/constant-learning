@@ -130,7 +130,7 @@ public sealed class ProgressResetIntegrationTests(PostgresFixture postgres) : Po
             CreatedAt = now,
             CourseCompletedAt = now,
             NewWordsAvailableFrom = Instant.FromUtc(2026, 10, 31, 22, 0),
-            ReminderSchedule = new ReminderSchedule { LocalTime = new LocalTime(19, 0), DaysOfWeek = 1, CreatedAt = now }
+            ReminderSchedules = [new ReminderSchedule { TargetLanguage = "pl", LocalTime = new LocalTime(19, 0), DaysOfWeek = 1, CreatedAt = now }]
         };
         Db.Learners.Add(learner);
 

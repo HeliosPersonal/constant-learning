@@ -329,7 +329,7 @@ public sealed class LearnerSettingsTests(PostgresFixture postgres) : PostgresInt
         };
         if (reminder)
         {
-            learner.ReminderSchedule = new ReminderSchedule { LocalTime = new LocalTime(19, 0), DaysOfWeek = 1 };
+            learner.ReminderSchedules.Add(new ReminderSchedule { TargetLanguage = "pl", LocalTime = new LocalTime(19, 0), DaysOfWeek = 1 });
         }
 
         Db.Learners.Add(learner);

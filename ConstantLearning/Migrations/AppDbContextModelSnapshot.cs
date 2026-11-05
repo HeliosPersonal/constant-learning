@@ -1133,6 +1133,11 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("learner_id");
 
+                    b.Property<string>("TargetLanguage")
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("target_language");
+
                     b.Property<Instant>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1153,8 +1158,11 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("xid")
                         .HasColumnName("xmin");
 
-                    b.HasKey("LearnerId")
+                    b.HasKey("LearnerId", "TargetLanguage")
                         .HasName("reminder_schedules_pkey");
+
+                    b.HasIndex("TargetLanguage")
+                        .HasDatabaseName("ix_reminder_schedules_target_language");
 
                     b.ToTable("reminder_schedules", (string)null);
                 });
@@ -1660,6 +1668,11 @@ namespace ConstantLearning.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("status");
 
+                    b.Property<string>("TargetLanguage")
+                        .HasMaxLength(2)
+                        .HasColumnType("character varying(2)")
+                        .HasColumnName("target_language");
+
                     b.Property<uint>("Version")
                         .IsConcurrencyToken()
                         .ValueGeneratedOnAddOrUpdate()
@@ -1675,9 +1688,11 @@ namespace ConstantLearning.Migrations
                     b.HasIndex("Status", "DueAt")
                         .HasDatabaseName("ix_notification_dispatches_status_due");
 
-                    b.HasIndex("RecipientTelegramUserId", "Kind", "LocalDate")
+                    b.HasIndex("RecipientTelegramUserId", "Kind", "LocalDate", "TargetLanguage")
                         .IsUnique()
                         .HasDatabaseName("ux_notification_dispatches_recipient_kind_date");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("RecipientTelegramUserId", "Kind", "LocalDate", "TargetLanguage"), false);
 
                     b.ToTable("notification_dispatches", (string)null);
                 });
@@ -1894,11 +1909,18 @@ namespace ConstantLearning.Migrations
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.ReminderSchedule", b =>
                 {
                     b.HasOne("ConstantLearning.Features.Identity.Data.Learner", "Learner")
-                        .WithOne("ReminderSchedule")
-                        .HasForeignKey("ConstantLearning.Features.Identity.Data.ReminderSchedule", "LearnerId")
+                        .WithMany("ReminderSchedules")
+                        .HasForeignKey("LearnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("reminder_schedules_learner_id_fkey");
+
+                    b.HasOne("ConstantLearning.Features.Identity.Data.TargetLanguage", null)
+                        .WithMany()
+                        .HasForeignKey("TargetLanguage")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("reminder_schedules_target_language_fkey");
 
                     b.Navigation("Learner");
                 });
@@ -2036,7 +2058,7 @@ namespace ConstantLearning.Migrations
 
             modelBuilder.Entity("ConstantLearning.Features.Identity.Data.Learner", b =>
                 {
-                    b.Navigation("ReminderSchedule");
+                    b.Navigation("ReminderSchedules");
                 });
 #pragma warning restore 612, 618
         }

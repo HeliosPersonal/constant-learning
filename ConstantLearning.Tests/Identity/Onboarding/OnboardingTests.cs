@@ -30,7 +30,7 @@ public sealed class OnboardingTests(PostgresFixture postgres) : PostgresIntegrat
         Assert.True(JsonNode.DeepEquals(JsonNode.Parse($$"""
             {"id":"{{json["id"]}}","first_name":"Test User","time_zone":"Europe/Warsaw",
              "time_zone_confirmed":true,"daily_new_words_limit":5,"pending_daily_new_words_limit":null,
-             "reminder":null,"onboarded_at":"2026-10-31T09:00:00Z"}
+             "reminder":null,"onboarded_at":"2026-10-31T09:00:00Z","active_target_language":null}
             """), json));
 
         var learner = await Db.Learners.AsNoTracking().SingleAsync();

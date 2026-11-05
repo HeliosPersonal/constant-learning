@@ -57,7 +57,7 @@ public sealed class ContractAssertTests
     {
         ContractAssert.Response("getCurrentLearner", 200, """
             {"id":"0192f0a0-0000-7000-8000-000000000001","time_zone":"Europe/Warsaw",
-             "time_zone_confirmed":true,"daily_new_words_limit":5,"reminder":null,"onboarded_at":null}
+             "time_zone_confirmed":true,"daily_new_words_limit":5,"reminder":null,"onboarded_at":null,"active_target_language":null}
             """);
         var validate = () => ContractAssert.Response("getCurrentLearner", 200, """
             {"id":"invalid","time_zone":"Europe/Warsaw","time_zone_confirmed":true,

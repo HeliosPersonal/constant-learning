@@ -117,7 +117,7 @@ erDiagram
 | `normalization_profile` | VARCHAR(32) | NULL | посилання на per-language каркас нормалізації/форм; **OQ-5 RESOLVED** — `pl`/`en`/`de`/`nl` кодуються одразу (T07a/T07b), AC-08 застосовна до всіх; NULL лише для ще-не-заведеної мови |
 | `created_at` | TIMESTAMPTZ | NOT NULL DEFAULT now() | |
 
-**Aggregate root:** root (lookup). **PK-деві­ація:** природний ключ `code` замість UUID v7 — дискримінатор посилається всюди як `VARCHAR(2)`; UUID-сурогат змусив би денормалізувати `code` окремо. Прецедент природного ключа — `reminder_schedules(learner_id)` PK у reference. **Seed:** lookup-міграція `ON CONFLICT DO NOTHING` (нижче). **Увімкнення мови** (ADR-0004): `is_enabled=true` **і** наявний approved-контент (AC-02, перевіряє застосунок) **і** підтверджений `normalization_profile` для повної AC-08.
+**Aggregate root:** root (lookup). **PK-деві­ація:** природний ключ `code` замість UUID v7 — дискримінатор посилається всюди як `VARCHAR(2)`; UUID-сурогат змусив би денормалізувати `code` окремо. Прецедент природного ключа — `reminder_schedules(learner_id, target_language)` PK (ADR-0005). **Seed:** lookup-міграція `ON CONFLICT DO NOTHING` (нижче). **Увімкнення мови** (ADR-0004): `is_enabled=true` **і** наявний approved-контент (AC-02, перевіряє застосунок) **і** підтверджений `normalization_profile` для повної AC-08.
 
 ### Агрегат Identity — `learner_language_states` (per-language стан доби, ADR-0002)
 

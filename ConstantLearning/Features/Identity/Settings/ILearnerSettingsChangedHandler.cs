@@ -3,7 +3,10 @@ using NodaTime;
 
 namespace ConstantLearning.Features.Identity.Settings;
 
-public sealed record LearnerSettingsChanged(Guid LearnerId, Instant ChangedAt, LearnerDayPeriod Day);
+/// <param name="TargetLanguage">Активна мова, для якої змінено налаштування доби й нагадування (ADR-0005).</param>
+/// <param name="TimeZoneChanged">Пояс learner-а змінився: нагадування всіх мов перераховуються (пояс глобальний).</param>
+public sealed record LearnerSettingsChanged(Guid LearnerId, Instant ChangedAt, LearnerDayPeriod Day,
+    string TargetLanguage, bool TimeZoneChanged);
 
 /// <summary>Транзакційна точка розширення для перерахунку persistent dispatch rows у T30.</summary>
 public interface ILearnerSettingsChangedHandler

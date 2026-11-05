@@ -37,7 +37,6 @@ internal sealed class LearnerDayStateService(AppDbContext db, ILearnerDayService
         // writer-и активної мови серіалізуються на цьому FOR UPDATE, а неактивні мови learner не пишуть, тож
         // свіжий xmin лишається чинним до commit і дзеркало активної мови не падає на DbUpdateConcurrencyException.
         await db.Entry(learner).ReloadAsync(cancellationToken);
-        await db.Entry(learner).Reference(value => value.ReminderSchedule).LoadAsync(cancellationToken);
 
         var day = days.GetCurrentDay(learner.TimeZone, ReadSnapshot(state));
         if (state.PendingDailyNewWordsLimit.HasValue != state.PendingLimitEffectiveFrom.HasValue)

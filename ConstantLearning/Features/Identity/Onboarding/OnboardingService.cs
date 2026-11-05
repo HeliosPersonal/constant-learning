@@ -12,14 +12,14 @@ namespace ConstantLearning.Features.Identity.Onboarding;
 public sealed class OnboardingService(AppDbContext db, IClock clock, ILearnerDayService learnerDay)
 {
     public async Task<LearnerResponse?> FindAsync(long telegramUserId, CancellationToken cancellationToken) =>
-        await db.Learners.AsNoTracking().Include(learner => learner.ReminderSchedule)
+        await db.Learners.AsNoTracking().Include(learner => learner.ReminderSchedules)
             .SingleOrDefaultAsync(learner => learner.TelegramUserId == telegramUserId, cancellationToken)
             is { } learner ? LearnerResponse.From(learner) : null;
 
     internal async Task<OnboardingResult> CreateAsync(long telegramUserId, string? firstName,
         OnboardingRequest request, CancellationToken cancellationToken)
     {
-        var learner = await db.Learners.Include(value => value.ReminderSchedule)
+        var learner = await db.Learners.Include(value => value.ReminderSchedules)
             .SingleOrDefaultAsync(value => value.TelegramUserId == telegramUserId, cancellationToken);
         if (learner?.OnboardedAt is not null)
         {
@@ -51,21 +51,29 @@ public sealed class OnboardingService(AppDbContext db, IClock clock, ILearnerDay
         learner.TimeZoneConfirmed = !timeZone.UsedFallback;
         learner.DailyNewWordsLimit = request.DailyNewWordsLimit;
         learner.OnboardedAt = now;
+        // Початкове нагадування прив'язане до активної мови (інтерим «pl», як у LearnerDayStateService); ADR-0005.
+        var language = learner.ActiveTargetLanguage ?? "pl";
+        var schedule = learner.ReminderSchedules.SingleOrDefault(value => value.TargetLanguage == language);
         if (request.Reminder is { } reminder)
         {
-            learner.ReminderSchedule ??= new ReminderSchedule
+            if (schedule is null)
             {
-                LearnerId = learner.Id,
-                Learner = learner,
-                CreatedAt = now
-            };
-            learner.ReminderSchedule.LocalTime = reminder.LocalTime;
-            learner.ReminderSchedule.DaysOfWeek = reminder.DaysOfWeek;
+                schedule = new ReminderSchedule
+                {
+                    LearnerId = learner.Id,
+                    TargetLanguage = language,
+                    Learner = learner,
+                    CreatedAt = now
+                };
+                db.ReminderSchedules.Add(schedule);
+            }
+
+            schedule.LocalTime = reminder.LocalTime;
+            schedule.DaysOfWeek = reminder.DaysOfWeek;
         }
-        else if (learner.ReminderSchedule is { } previousReminder)
+        else if (schedule is not null)
         {
-            db.ReminderSchedules.Remove(previousReminder);
-            learner.ReminderSchedule = null;
+            db.ReminderSchedules.Remove(schedule);
         }
 
         try

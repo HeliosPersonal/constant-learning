@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { components } from '../../src/api/schema';
 import { todaySummary } from '../fixtures/today';
 
-const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: { local_time: '19:00', days_of_week: ['mon'] }, onboarded_at: '2026-11-01T09:00:00Z' };
+const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: { local_time: '19:00', days_of_week: ['mon'] }, active_target_language: 'pl', onboarded_at: '2026-11-01T09:00:00Z' };
 const notOnboarded: components['schemas']['Error'] = { code: 'learner.not_onboarded', message: 'Спершу налаштуйте тренер.' };
 
 for (const theme of ['light', 'dark'] as const) {

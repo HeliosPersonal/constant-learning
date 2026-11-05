@@ -3,6 +3,7 @@ using ConstantLearning.Features.Identity.LearnerDays;
 using ConstantLearning.Features.Identity.Learners;
 using ConstantLearning.Features.Learning.Domain.LearnerDay;
 using ConstantLearning.Platform.Persistence;
+using Microsoft.EntityFrameworkCore;
 using NodaTime;
 
 namespace ConstantLearning.Features.Identity.Settings;
@@ -36,6 +37,8 @@ public sealed class LearnerSettingsService(AppDbContext db, ILearnerDayStateServ
         }
 
         var learner = current.Learner;
+        // Налаштування доби й нагадування стосуються активної мови (стан доби визначено нею).
+        var language = current.State.TargetLanguage;
         if (request.DailyNewWordsLimit is { } limit)
         {
             current.State.PendingDailyNewWordsLimit = limit == current.State.DailyNewWordsLimit ? null : limit;
@@ -45,26 +48,34 @@ public sealed class LearnerSettingsService(AppDbContext db, ILearnerDayStateServ
 
         if (request.HasReminder)
         {
+            var schedule = await db.ReminderSchedules.SingleOrDefaultAsync(
+                value => value.LearnerId == learner.Id && value.TargetLanguage == language, cancellationToken);
             if (request.Reminder is { } reminder)
             {
-                learner.ReminderSchedule ??= new ReminderSchedule
+                if (schedule is null)
                 {
-                    LearnerId = learner.Id,
-                    Learner = learner,
-                    CreatedAt = clock.GetCurrentInstant()
-                };
-                learner.ReminderSchedule.LocalTime = reminder.LocalTime;
-                learner.ReminderSchedule.DaysOfWeek = reminder.DaysOfWeek;
+                    schedule = new ReminderSchedule
+                    {
+                        LearnerId = learner.Id,
+                        TargetLanguage = language,
+                        Learner = learner,
+                        CreatedAt = clock.GetCurrentInstant()
+                    };
+                    db.ReminderSchedules.Add(schedule);
+                }
+
+                schedule.LocalTime = reminder.LocalTime;
+                schedule.DaysOfWeek = reminder.DaysOfWeek;
             }
-            else if (learner.ReminderSchedule is { } previous)
+            else if (schedule is not null)
             {
-                db.ReminderSchedules.Remove(previous);
-                learner.ReminderSchedule = null;
+                db.ReminderSchedules.Remove(schedule);
             }
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        var change = new LearnerSettingsChanged(learner.Id, clock.GetCurrentInstant(), current.Day);
+        var change = new LearnerSettingsChanged(learner.Id, clock.GetCurrentInstant(), current.Day, language,
+            request.TimeZone is not null);
         foreach (var handler in handlers)
         {
             await handler.HandleAsync(change, cancellationToken);
@@ -72,7 +83,8 @@ public sealed class LearnerSettingsService(AppDbContext db, ILearnerDayStateServ
 
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
-        return new LearnerSettingsResult(LearnerResponse.From(learner), null);
+        await db.Entry(learner).Collection(value => value.ReminderSchedules).LoadAsync(cancellationToken);
+        return new LearnerSettingsResult(LearnerResponse.From(learner, current.State), null);
     }
 }
 

@@ -2,11 +2,12 @@ import { DAILY_LIMIT_MAX, DAILY_LIMIT_MIN } from '../../components/LimitSlider';
 import { LimitStepper } from '../../components/LimitStepper';
 import { BackButton } from '../../components/BackButton';
 import { useEffect, useRef, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from '../../components/ui';
 import { learnerQueryKey } from '../onboarding/api';
 import { timeZoneOptions } from '../onboarding/timeZone';
 import { SettingsApiError, updateSettings } from './api';
+import { learnerLanguagesQueryKey, listLearnerLanguages } from './language/api';
 import { draftFromLearner, limitLabel, settingsChanges, validateSettings, weekDays, type Learner, type SettingsDraft, type SettingsErrors } from './model';
 import { ThemeChoices } from './ThemeChoices';
 import { ResetProgressSection } from './ResetProgressSection';
@@ -26,6 +27,9 @@ export default function Settings({ learner, onBack, onStart, onOpenEditor }: { l
   const delay = useRef(0);
   const sent = useRef<string>();
   const queryClient = useQueryClient();
+  // Назва активної мови для заголовків груп: ліміт і нагадування належать саме їй (per-language, ADR-0005).
+  const languages = useQuery({ queryKey: learnerLanguagesQueryKey, queryFn: ({ signal }) => listLearnerLanguages(signal), retry: false, refetchOnWindowFocus: false });
+  const activeName = languages.data?.items.find(language => language.is_active)?.display_name_uk;
   const changes = settingsChanges(draft, saved);
   const key = JSON.stringify(changes);
   const validation = touched ? validateSettings(draft, saved) : {};
@@ -95,8 +99,9 @@ export default function Settings({ learner, onBack, onStart, onOpenEditor }: { l
       <fieldset className="settings-fields" disabled={!!blocked}>
         <div className="ios-caption settings-first">Вигляд</div>
         <div className="ios-group"><div className="ios-row"><span>Тема</span><ThemeChoices /></div></div>
+        {!blocked && <LanguageSection />}
 
-        <div className="ios-caption">Навчання</div>
+        <div className="ios-caption">Навчання{activeName ? ` · ${activeName}` : ''}</div>
         <div className="ios-group"><div className="ios-row"><span id="settings-limit-label">Нових слів на день</span>
           <LimitStepper value={draft.limit} onChange={setLimit} labelledBy="settings-limit-label" describedBy="settings-limit-hint" />
         </div></div>
@@ -108,7 +113,7 @@ export default function Settings({ learner, onBack, onStart, onOpenEditor }: { l
         </div>
         {errors.limit && <p className="ios-footnote ios-footnote--error" role="alert">{errors.limit}</p>}
 
-        <div className="ios-caption">Нагадування</div>
+        <div className="ios-caption">Нагадування{activeName ? ` · ${activeName}` : ''}</div>
         <div className="ios-group">
           <label className="ios-row"><span>Нагадувати про заняття</span><input type="checkbox" role="switch" className="ios-switch" checked={draft.reminder} onChange={event => change({ reminder: event.target.checked })} /></label>
           {draft.reminder && <>
@@ -134,7 +139,6 @@ export default function Settings({ learner, onBack, onStart, onOpenEditor }: { l
         {errors.zone && <p className="ios-footnote ios-footnote--error" role="alert">{errors.zone}</p>}
       </fieldset>
     </form>
-    {!blocked && <LanguageSection />}
     {onOpenEditor && !blocked && <>
       <div className="ios-caption">Редактор</div>
       <div className="ios-group"><button type="button" className="ios-row ios-plain" onClick={onOpenEditor}>Редактор словника<span className="ios-value ios-chevron" aria-hidden="true">›</span></button></div>

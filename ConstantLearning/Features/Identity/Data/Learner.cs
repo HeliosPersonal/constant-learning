@@ -25,5 +25,6 @@ public sealed class Learner
     public Instant? OnboardedAt { get; set; }
     public Instant CreatedAt { get; set; }
     public uint Version { get; set; }
-    public ReminderSchedule? ReminderSchedule { get; set; }
+    /// <summary>Нагадування по одному на кожну мову learner-а (ADR-0005).</summary>
+    public List<ReminderSchedule> ReminderSchedules { get; set; } = [];
 }

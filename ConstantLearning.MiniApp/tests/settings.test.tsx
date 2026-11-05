@@ -11,7 +11,7 @@ import { draftFromLearner, settingsChanges, validateSettings, type Learner, type
 import type { ApiErrorBody } from '../src/features/onboarding/api';
 import { parsePrivacyContact } from '../src/features/onboarding/privacy';
 
-const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: { local_time: '19:00', days_of_week: ['mon', 'fri'] }, onboarded_at: '2026-11-01T09:00:00Z' };
+const learner: Learner = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: { local_time: '19:00', days_of_week: ['mon', 'fri'] }, active_target_language: 'pl', onboarded_at: '2026-11-01T09:00:00Z' };
 const notOnboarded: ApiErrorBody = { code: 'learner.not_onboarded', message: 'Спершу налаштуйте тренер.' };
 const SAVED = 'Збережено ✓';
 const clients: ReturnType<typeof createQueryClient>[] = [];

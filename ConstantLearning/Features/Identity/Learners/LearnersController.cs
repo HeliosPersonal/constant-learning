@@ -39,7 +39,9 @@ public sealed class LearnersController(OnboardingService onboarding, ILearnerDay
         }
 
         await transaction.CommitAsync(cancellationToken);
-        return Ok(LearnerResponse.From(current.Learner));
+        // Нагадування читаються для активної мови, тож колекція має бути завантажена перед відповіддю (ADR-0005).
+        await db.Entry(current.Learner).Collection(value => value.ReminderSchedules).LoadAsync(cancellationToken);
+        return Ok(LearnerResponse.From(current.Learner, current.State));
     }
 
     [HttpPost("onboarding", Name = "completeOnboarding")]

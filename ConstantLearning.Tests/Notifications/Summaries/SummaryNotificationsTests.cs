@@ -825,7 +825,7 @@ public sealed class SummaryNotificationsTests(PostgresFixture postgres) : Postgr
         await db.SaveChangesAsync();
         saved?.TrySetResult();
         await scope.ServiceProvider.GetServices<ILearnerSettingsChangedHandler>().OfType<SummarySettingsChangedHandler>().Single().HandleAsync(
-            new LearnerSettingsChanged(learnerId, Clock.GetCurrentInstant(), updated.Day), CancellationToken.None);
+            new LearnerSettingsChanged(learnerId, Clock.GetCurrentInstant(), updated.Day, "pl", true), CancellationToken.None);
         if (commit) await transaction.CommitAsync();
         else await transaction.RollbackAsync();
     }

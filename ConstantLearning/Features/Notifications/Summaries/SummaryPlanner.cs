@@ -86,7 +86,7 @@ public sealed class SummaryPlanner(AppDbContext db, IReportNotificationReader re
         INSERT INTO notification_dispatches
             (id, recipient_telegram_user_id, learner_id, kind, local_date, due_at, status, attempts, created_at)
         VALUES ({Guid.CreateVersion7()}, {telegramId}, {learnerId}, {kind}, {date}, {due}, 'pending', 0, {now})
-        ON CONFLICT (recipient_telegram_user_id, kind, local_date) DO UPDATE SET due_at = EXCLUDED.due_at
+        ON CONFLICT (recipient_telegram_user_id, kind, local_date, target_language) DO UPDATE SET due_at = EXCLUDED.due_at
         WHERE notification_dispatches.status = 'pending' AND notification_dispatches.attempts = 0
             AND notification_dispatches.claimed_at IS NULL
         """, cancellationToken);

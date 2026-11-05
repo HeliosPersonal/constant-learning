@@ -4,7 +4,7 @@ import { todaySummary } from '../fixtures/today';
 
 const firstId = '0192f0a0-0000-7000-8000-0000000000e1';
 const secondId = '0192f0a0-0000-7000-8000-0000000000e2';
-const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: null, onboarded_at: '2026-11-01T09:00:00Z' };
+const learner: components['schemas']['Learner'] = { id: '0192f0a0-0000-7000-8000-000000000001', first_name: 'Тест', time_zone: 'Europe/Warsaw', time_zone_confirmed: true, daily_new_words_limit: 5, pending_daily_new_words_limit: null, reminder: null, active_target_language: 'pl', onboarded_at: '2026-11-01T09:00:00Z' };
 const item: components['schemas']['DictionarySearchItem'] = { entry_id: firstId, lemma_pl: 'urząd', part_of_speech: 'noun', short_meaning_uk: 'державна установа', matched_form: 'urzedzie', word_status: 'review' };
 const results: components['schemas']['DictionarySearchPage'] = { items: [item, { ...item, entry_id: secondId, lemma_pl: 'urządzać', part_of_speech: 'verb', short_meaning_uk: 'влаштовувати', word_status: 'not_started' }], has_next: true, has_prev: false, next_cursor: secondId };
 const card: components['schemas']['DictionaryEntryCard'] = { entry_id: firstId, lemma_pl: 'urząd', part_of_speech: 'noun', gender: 'm', translations_uk: [{ kind: 'canonical', text_uk: 'державна установа' }, { kind: 'local', text_uk: 'ужонд' }], pronunciation_uk: 'ужонд', example_pl: 'Idę do urzędu.', example_uk: 'Я йду до державної установи.', word_status: 'review' };

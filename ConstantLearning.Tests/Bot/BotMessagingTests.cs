@@ -18,7 +18,7 @@ public sealed class BotMessagingTests(PostgresFixture postgres) : PostgresIntegr
         var actor = new Learner { TelegramUserId = 999999999, TimeZone = "Europe/Warsaw", CanMessage = true,
             DailyNewWordsLimit = 3, CreatedAt = Clock.GetCurrentInstant() };
         Db.Learners.AddRange(owner, actor);
-        Db.ReminderSchedules.Add(new ReminderSchedule { LearnerId = owner.Id, Learner = owner,
+        Db.ReminderSchedules.Add(new ReminderSchedule { LearnerId = owner.Id, Learner = owner, TargetLanguage = "pl",
             LocalTime = new NodaTime.LocalTime(19, 0), DaysOfWeek = 127, CreatedAt = Clock.GetCurrentInstant() });
         await Db.SaveChangesAsync();
         await using var app = await BotTestApplication.StartAsync(_postgres.ConnectionString, Clock);
