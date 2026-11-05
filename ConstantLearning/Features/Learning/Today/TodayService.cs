@@ -63,7 +63,7 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
         // слів до повторення й нових слів на сьогодні (ліміт вичерпано або base course завершено).
         var hasActive = session is not null && (session.Status == "active" || session.ResultItemId is not null);
         var newWordsForPlan = limits.NewWordsAvailable
-            && limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) > 0 && !limits.CourseCompleted;
+            && limits.Usage.Remaining(current.State.DailyNewWordsLimit) > 0 && !limits.CourseCompleted;
         var planDone = ExtraEligibility.PlanDone(hasActive, due, newWordsForPlan);
         var answeredToday = (await db.AnswerEvents.AsNoTracking().Where(answer => answer.LearnerId == learnerId
                 && answer.LearnerDay == day).Select(answer => answer.EntryId).Distinct()

@@ -40,8 +40,8 @@ public sealed class ProgressResetService(AppDbContext db, ILearnerDayStateServic
             return ProgressResetOutcome.NotOnboarded;
         }
 
-        var learner = state.Learner;
-        var hadData = learner.CourseCompletedAt is not null || learner.NewWordsAvailableFrom is not null;
+        var languageState = state.State;
+        var hadData = languageState.CourseCompletedAt is not null || languageState.NewWordsAvailableFrom is not null;
         foreach (var handler in ordered)
         {
             hadData |= await handler.HasPendingDataAsync(learnerId, cancellationToken);
@@ -62,9 +62,9 @@ public sealed class ProgressResetService(AppDbContext db, ILearnerDayStateServic
                 await handler.EraseAsync(requested, cancellationToken);
             }
 
-            // Два похідні від прогресу поля learner; решту профілю й налаштувань не чіпаємо (AC-06, AC-07).
-            learner.CourseCompletedAt = null;
-            learner.NewWordsAvailableFrom = null;
+            // Два похідні від прогресу поля стану мови; решту профілю й налаштувань не чіпаємо (AC-06, AC-07).
+            languageState.CourseCompletedAt = null;
+            languageState.NewWordsAvailableFrom = null;
             await db.SaveChangesAsync(cancellationToken);
         }
         catch (OperationCanceledException)

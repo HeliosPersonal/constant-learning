@@ -62,7 +62,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
                         word.DueOn!.Value, word.IntervalDays!.Value, word.ConsecutiveScheduledCorrect,
                         word.ControlPending, word.Lapses, 0.3, word.SchedulerVersion)));
             var composition = SessionComposer.Compose(current.Day.Date, reviews, limits.Course,
-                current.Learner.DailyNewWordsLimit, limits.Usage, limits.NewWordsAvailable);
+                current.State.DailyNewWordsLimit, limits.Usage, limits.NewWordsAvailable);
             session = new LearningSession
             {
                 LearnerId = learnerId,

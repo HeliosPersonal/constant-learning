@@ -69,7 +69,7 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         var isExtra = session.Kind == "extra_word";
         var words = await db.LearnerWords.Where(value => value.LearnerId == learnerId).ToListAsync(cancellationToken);
         var limits = await limitsService.ReadAsync(current, words, course, now, cancellationToken);
-        if (!isExtra && (!limits.NewWordsAvailable || limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) == 0))
+        if (!isExtra && (!limits.NewWordsAvailable || limits.Usage.Remaining(current.State.DailyNewWordsLimit) == 0))
             return Error("new_word.limit_reached", "Нові слова стануть доступні наступної навчальної доби.");
         var word = words.SingleOrDefault(value => value.EntryId == item.EntryId);
         if (word?.FirstShownDay is not null || limits.Course.Single(value => value.EntryId == item.EntryId).IsPresented)
@@ -128,7 +128,7 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         {
             var pending = items.Where(value => value.State == "pending" && value.Kind == "new_word_card")
                 .Select(value => value.EntryId).ToHashSet();
-            if (limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) > pending.Count)
+            if (limits.Usage.Remaining(current.State.DailyNewWordsLimit) > pending.Count)
             {
                 // Заплановані картки резервують свої частки квот і не можуть стати власною заміною.
                 var reserved = limits.Course.Select(value => pending.Contains(value.EntryId)

@@ -30,7 +30,7 @@ internal static class ExtraPlanGate
             && word.FirstShownDay != null && word.IntervalDays > 0 && word.DueOn <= day
             && !attempted.Contains(word.EntryId));
         var newWordsForPlan = limits.NewWordsAvailable
-            && limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) > 0 && !limits.CourseCompleted;
+            && limits.Usage.Remaining(current.State.DailyNewWordsLimit) > 0 && !limits.CourseCompleted;
         return ExtraEligibility.PlanDone(false, due, newWordsForPlan);
     }
 

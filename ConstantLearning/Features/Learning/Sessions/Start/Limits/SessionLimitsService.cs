@@ -25,19 +25,19 @@ public sealed class SessionLimitsService(AppDbContext db)
     {
         RequireTransaction();
         var notices = new List<string>();
-        if (!limits.NewWordsAvailable || limits.Usage.Remaining(current.Learner.DailyNewWordsLimit) == 0)
+        if (!limits.NewWordsAvailable || limits.Usage.Remaining(current.State.DailyNewWordsLimit) == 0)
         {
             notices.Add("new_words_limit_reached");
         }
 
         if (limits.CourseCompleted)
         {
-            current.Learner.CourseCompletedAt ??= now;
+            current.State.CourseCompletedAt ??= now;
             notices.Add("course_completed");
         }
-        else if (current.Learner.CourseCompletedAt is not null)
+        else if (current.State.CourseCompletedAt is not null)
         {
-            current.Learner.CourseCompletedAt = null;
+            current.State.CourseCompletedAt = null;
             notices.Add("course_replenished");
         }
 
@@ -65,7 +65,7 @@ public sealed class SessionLimitsService(AppDbContext db)
             word.Domain == "everyday" ? DomainQuota.Everyday : DomainQuota.Legalization,
             word.Rank, word.CoursePosition, true, presented.Contains(word.EntryId))).ToArray();
         return new SessionLimits(new DailyNewWordUsage(shownToday, knownToday.Count),
-            current.Learner.NewWordsAvailableFrom is null || current.Learner.NewWordsAvailableFrom <= now,
+            current.State.NewWordsAvailableFrom is null || current.State.NewWordsAvailableFrom <= now,
             candidates);
     }
 

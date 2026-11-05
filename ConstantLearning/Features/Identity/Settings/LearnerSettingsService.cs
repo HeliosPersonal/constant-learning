@@ -38,8 +38,9 @@ public sealed class LearnerSettingsService(AppDbContext db, ILearnerDayStateServ
         var learner = current.Learner;
         if (request.DailyNewWordsLimit is { } limit)
         {
-            learner.PendingDailyNewWordsLimit = limit == learner.DailyNewWordsLimit ? null : limit;
-            learner.PendingLimitEffectiveFrom = learner.PendingDailyNewWordsLimit is null ? null : current.Day.EndsAt;
+            current.State.PendingDailyNewWordsLimit = limit == current.State.DailyNewWordsLimit ? null : limit;
+            current.State.PendingLimitEffectiveFrom =
+                current.State.PendingDailyNewWordsLimit is null ? null : current.Day.EndsAt;
         }
 
         if (request.HasReminder)

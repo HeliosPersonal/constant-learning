@@ -34,6 +34,56 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<VerificationJob> VerificationJobs => Set<VerificationJob>();
     public DbSet<NotificationDispatch> NotificationDispatches => Set<NotificationDispatch>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        MirrorActiveLanguageStateToLearner();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        MirrorActiveLanguageStateToLearner();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    // TODO(T10/T13): інтеримне дзеркало стану доби АКТИВНОЇ мови на колонки learners, поки їх ще читають
+    // off-path читачі (ReminderAudienceReader, NotificationAudienceReader, LearnersController, LearnerResponse).
+    // Пишемо learners ЛИШЕ для активної мови (ActiveTargetLanguage ?? "pl"), тож мутації різних мов не
+    // серіалізуються на спільному рядку learner (ADR-0002, T04 DoD #3). Знімається в contract-фазі.
+    private void MirrorActiveLanguageStateToLearner()
+    {
+        var trackedLearners = ChangeTracker.Entries<Learner>()
+            .Where(entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Unchanged)
+            .ToDictionary(entry => entry.Entity.Id, entry => entry.Entity);
+        if (trackedLearners.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<LearnerLanguageState>()
+                     .Where(entry => entry.State is EntityState.Added or EntityState.Modified))
+        {
+            var state = entry.Entity;
+            if (!trackedLearners.TryGetValue(state.LearnerId, out var learner)
+                || (learner.ActiveTargetLanguage ?? "pl") != state.TargetLanguage)
+            {
+                continue;
+            }
+
+            learner.DailyNewWordsLimit = state.DailyNewWordsLimit;
+            learner.PendingDailyNewWordsLimit = state.PendingDailyNewWordsLimit;
+            learner.PendingLimitEffectiveFrom = state.PendingLimitEffectiveFrom;
+            learner.NewWordsAvailableFrom = state.NewWordsAvailableFrom;
+            learner.CourseCompletedAt = state.CourseCompletedAt;
+            learner.CurrentDayDate = state.CurrentDayDate;
+            learner.CurrentDayStartsAt = state.CurrentDayStartsAt;
+            learner.CurrentDayEndsAt = state.CurrentDayEndsAt;
+            learner.CurrentDayOriginalEndsAt = state.CurrentDayOriginalEndsAt;
+            learner.CurrentDayTimeZoneAtStart = state.CurrentDayTimeZoneAtStart;
+        }
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

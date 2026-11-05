@@ -353,8 +353,9 @@ public sealed class NewWordTests(PostgresFixture postgres) : PostgresIntegration
         await using var app = await StartAsync();
         var session = await StartSessionAsync(app);
         Db.ChangeTracker.Clear();
-        var learner = await Db.Learners.SingleAsync();
-        learner.NewWordsAvailableFrom = Clock.GetCurrentInstant() + Duration.FromDays(1);
+        // Авторитет стану доби — рядок learner_language_states (створений під час старту session), не learners.
+        var state = await Db.LearnerLanguageStates.SingleAsync();
+        state.NewWordsAvailableFrom = Clock.GetCurrentInstant() + Duration.FromDays(1);
         await Db.SaveChangesAsync();
         var result = await ActAsync(app, session["id"]!.GetValue<Guid>(), session["current_item"]!["id"]!.GetValue<Guid>(),
             known, HttpStatusCode.Conflict);

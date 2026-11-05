@@ -8,36 +8,53 @@ namespace ConstantLearning.Features.Identity.LearnerDays;
 
 internal sealed class LearnerDayStateService(AppDbContext db, ILearnerDayService days, IClock clock) : ILearnerDayStateService
 {
-    public async Task<LearnerDayState?> GetForUpdateAsync(Guid learnerId, CancellationToken cancellationToken = default)
+    public Task<LearnerDayState?> GetForUpdateAsync(Guid learnerId, CancellationToken cancellationToken = default) =>
+        ResolveForUpdateAsync(learnerId, targetLanguage: null, cancellationToken);
+
+    public Task<LearnerDayState?> GetForUpdateAsync(Guid learnerId, string targetLanguage, CancellationToken cancellationToken = default) =>
+        ResolveForUpdateAsync(learnerId, targetLanguage, cancellationToken);
+
+    private async Task<LearnerDayState?> ResolveForUpdateAsync(Guid learnerId, string? targetLanguage, CancellationToken cancellationToken)
     {
         RequireTransaction();
-        var learner = await db.Learners.FromSqlInterpolated($"""
-            SELECT *, xmin FROM learners WHERE id = {learnerId} AND onboarded_at IS NOT NULL FOR UPDATE
-            """).SingleOrDefaultAsync(cancellationToken);
+
+        // Learner НЕ блокуємо: pin береться лише на рядок (learner_id, target_language), щоб мутації різних
+        // мов не серіалізувалися на спільному рядку learner (ADR-0002, DoD #3). Learner читаємо задля поясу
+        // й активної мови; xmin дає оптимістичну конкурентність під час дзеркалення активної мови (AppDbContext).
+        var learner = await db.Learners
+            .SingleOrDefaultAsync(value => value.Id == learnerId && value.OnboardedAt != null, cancellationToken);
         if (learner is null)
         {
             return null;
         }
 
-        // Оновлюємо агрегат, якщо викликувач уже читав його до отримання блокування.
+        // TODO(T13): активна мова визначатиметься контекстом запиту (setActiveLanguage); доти — інтеримний 'pl'.
+        var language = targetLanguage ?? learner.ActiveTargetLanguage ?? "pl";
+        var state = await LockOrCreateStateAsync(learner, language, cancellationToken);
+
+        // Learner читали ДО блокування рядка мови, тож його xmin міг застаріти, якби конкурентний writer тієї ж
+        // мови закомітив learner між нашим читанням і записом. Перечитуємо вже ПІД блокуванням рядка мови: усі
+        // writer-и активної мови серіалізуються на цьому FOR UPDATE, а неактивні мови learner не пишуть, тож
+        // свіжий xmin лишається чинним до commit і дзеркало активної мови не падає на DbUpdateConcurrencyException.
         await db.Entry(learner).ReloadAsync(cancellationToken);
         await db.Entry(learner).Reference(value => value.ReminderSchedule).LoadAsync(cancellationToken);
-        var day = days.GetCurrentDay(learner.TimeZone, ReadSnapshot(learner));
-        if (learner.PendingDailyNewWordsLimit.HasValue != learner.PendingLimitEffectiveFrom.HasValue)
+
+        var day = days.GetCurrentDay(learner.TimeZone, ReadSnapshot(state));
+        if (state.PendingDailyNewWordsLimit.HasValue != state.PendingLimitEffectiveFrom.HasValue)
         {
             throw new InvalidOperationException("Pending limit і його межа повинні бути задані разом.");
         }
 
-        if (learner.PendingDailyNewWordsLimit is { } limit && learner.PendingLimitEffectiveFrom <= clock.GetCurrentInstant())
+        if (state.PendingDailyNewWordsLimit is { } limit && state.PendingLimitEffectiveFrom <= clock.GetCurrentInstant())
         {
-            learner.DailyNewWordsLimit = limit;
-            learner.PendingDailyNewWordsLimit = null;
-            learner.PendingLimitEffectiveFrom = null;
+            state.DailyNewWordsLimit = limit;
+            state.PendingDailyNewWordsLimit = null;
+            state.PendingLimitEffectiveFrom = null;
         }
 
-        StoreSnapshot(learner, day);
+        StoreSnapshot(state, day);
         await db.SaveChangesAsync(cancellationToken);
-        return new LearnerDayState(learner, day);
+        return new LearnerDayState(learner, state, day);
     }
 
     public LearnerDayState ChangeTimeZone(LearnerDayState current, string timeZone)
@@ -50,42 +67,77 @@ internal sealed class LearnerDayStateService(AppDbContext db, ILearnerDayService
         }
 
         var day = days.GetCurrentDay(resolved.Zone.Id, current.Day);
+        // Пояс лишається глобальним атрибутом learner; стан доби — per-language.
         current.Learner.TimeZone = resolved.Zone.Id;
         current.Learner.TimeZoneConfirmed = true;
-        StoreSnapshot(current.Learner, day);
-        if (current.Learner.PendingDailyNewWordsLimit is not null)
+        StoreSnapshot(current.State, day);
+        if (current.State.PendingDailyNewWordsLimit is not null)
         {
-            current.Learner.PendingLimitEffectiveFrom = day.EndsAt;
+            current.State.PendingLimitEffectiveFrom = day.EndsAt;
         }
 
-        return new LearnerDayState(current.Learner, day);
+        return new LearnerDayState(current.Learner, current.State, day);
     }
 
-    private static LearnerDayPeriod? ReadSnapshot(Learner learner)
+    /// <summary>
+    /// Lock-safe лінива ініціалізація рядка мови (AC-07): <c>FOR UPDATE</c> на неіснуючому рядку не бере
+    /// блокування й повертає 0 рядків. Спершу матеріалізуємо рядок (<c>ON CONFLICT DO NOTHING</c> —
+    /// ідемпотентно й безпечно до конкурентного старту), потім перечитуємо з <c>FOR UPDATE</c>, щоб рядок
+    /// гарантовано існував і утримувався до commit. Існуючий рядок (напр. беклфіл 'pl') береться як є;
+    /// новий — інтеримно засівається поточним станом доби learner, тож для єдиної чинної мови 'pl'
+    /// авторитетність перетікає без втрати (порожня доба learner → коректний «перший день»).
+    /// TODO(T12): startLearnerLanguage створюватиме рядок нової мови з власними дефолтами (свіжа доба,
+    /// стартовий ліміт) ДО першого виклику; тоді цей засів зі стану learner більше не спрацьовує для en/de/nl.
+    /// </summary>
+    private async Task<LearnerLanguageState> LockOrCreateStateAsync(Learner learner, string language,
+        CancellationToken cancellationToken)
     {
-        if (learner.CurrentDayDate is null && learner.CurrentDayStartsAt is null && learner.CurrentDayEndsAt is null
-            && learner.CurrentDayOriginalEndsAt is null && learner.CurrentDayTimeZoneAtStart is null)
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            INSERT INTO learner_language_states (
+                learner_id, target_language, daily_new_words_limit, pending_daily_new_words_limit,
+                pending_limit_effective_from, new_words_available_from, current_day_date,
+                current_day_starts_at, current_day_ends_at, current_day_original_ends_at,
+                current_day_time_zone_at_start, course_completed_at)
+            SELECT
+                id, {language}, daily_new_words_limit, pending_daily_new_words_limit,
+                pending_limit_effective_from, new_words_available_from, current_day_date,
+                current_day_starts_at, current_day_ends_at, current_day_original_ends_at,
+                current_day_time_zone_at_start, course_completed_at
+            FROM learners WHERE id = {learner.Id}
+            ON CONFLICT (learner_id, target_language) DO NOTHING
+            """, cancellationToken);
+        return await db.LearnerLanguageStates.FromSqlInterpolated($"""
+            SELECT *, xmin FROM learner_language_states
+            WHERE learner_id = {learner.Id} AND target_language = {language}
+            FOR UPDATE
+            """).SingleAsync(cancellationToken);
+    }
+
+    private static LearnerDayPeriod? ReadSnapshot(LearnerLanguageState state)
+    {
+        if (state.CurrentDayDate is null && state.CurrentDayStartsAt is null && state.CurrentDayEndsAt is null
+            && state.CurrentDayOriginalEndsAt is null && state.CurrentDayTimeZoneAtStart is null)
         {
             return null;
         }
 
-        if (learner.CurrentDayDate is not { } date || learner.CurrentDayStartsAt is not { } start
-            || learner.CurrentDayEndsAt is not { } end || learner.CurrentDayOriginalEndsAt is not { } originalEnd
-            || string.IsNullOrWhiteSpace(learner.CurrentDayTimeZoneAtStart))
+        if (state.CurrentDayDate is not { } date || state.CurrentDayStartsAt is not { } start
+            || state.CurrentDayEndsAt is not { } end || state.CurrentDayOriginalEndsAt is not { } originalEnd
+            || string.IsNullOrWhiteSpace(state.CurrentDayTimeZoneAtStart))
         {
-            throw new InvalidOperationException("Знімок доби learner має містити всі п'ять полів або жодного.");
+            throw new InvalidOperationException("Знімок доби мови має містити всі п'ять полів або жодного.");
         }
 
-        return new LearnerDayPeriod(date, start, end, learner.CurrentDayTimeZoneAtStart, originalEnd);
+        return new LearnerDayPeriod(date, start, end, state.CurrentDayTimeZoneAtStart, originalEnd);
     }
 
-    private static void StoreSnapshot(Learner learner, LearnerDayPeriod day)
+    private static void StoreSnapshot(LearnerLanguageState state, LearnerDayPeriod day)
     {
-        learner.CurrentDayDate = day.Date;
-        learner.CurrentDayStartsAt = day.StartsAt;
-        learner.CurrentDayEndsAt = day.EndsAt;
-        learner.CurrentDayOriginalEndsAt = day.OriginalEndsAt;
-        learner.CurrentDayTimeZoneAtStart = day.TimeZoneAtStart;
+        state.CurrentDayDate = day.Date;
+        state.CurrentDayStartsAt = day.StartsAt;
+        state.CurrentDayEndsAt = day.EndsAt;
+        state.CurrentDayOriginalEndsAt = day.OriginalEndsAt;
+        state.CurrentDayTimeZoneAtStart = day.TimeZoneAtStart;
     }
 
     private void RequireTransaction()
