@@ -20,6 +20,23 @@ namespace ConstantLearning.Tests.Learning.Stats;
 /// </summary>
 public sealed class LearnedWordsStatsTests(PostgresFixture postgres) : PostgresIntegrationTest(postgres)
 {
+    [Fact]
+    public async Task ActiveLanguageExcludesWordsFromOtherLanguages()
+    {
+        var learner = await SeedLearnerAsync();
+        var course = await SeedCourseAsync(1);
+        AddLearnerWord(learner, course[0], "review", firstShown: Day.PlusDays(-1), dueOn: Day.PlusDays(1));
+        learner.ActiveTargetLanguage = "en";
+        await Db.SaveChangesAsync();
+        await using var app = await StartAsync();
+        using var list = await app.Client.GetAsync(WordsPath);
+        Assert.Empty((await BodyAsync(list))["items"]!.AsArray());
+        using var summary = await app.Client.GetAsync(SummaryPath);
+        Assert.Equal(0, (await BodyAsync(summary))["seen_count"]!.GetValue<int>());
+        using var card = await app.Client.GetAsync($"{WordsPath}/{course[0].Id}");
+        Assert.Equal(HttpStatusCode.NotFound, card.StatusCode);
+    }
+
     private readonly PostgresFixture _postgres = postgres;
     private const long UserId = 950000001;
     private const string WordsPath = "/api/v1/stats/words";

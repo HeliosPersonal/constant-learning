@@ -117,7 +117,7 @@ export function Today({ learner, onOpenSession, onStart, notice, onNoticeShown, 
   }, [today.data, today.isError, blocked, session.isPending, extra.isPending, zone.isPending]);
 
   const startOver = () => { queryClient.setQueryData(learnerQueryKey, null); queryClient.removeQueries({ queryKey: todayQueryKey }); onStart?.(); };
-  const heading = <><h1 id="today-title">Сьогодні</h1><ActiveLanguageBadge learner={learner} /></>;
+  const heading = <header className="language-heading"><h1 id="today-title">Сьогодні</h1><ActiveLanguageBadge learner={learner} /></header>;
   if (today.isPending) return <Card aria-labelledby="today-title">{heading}<div className="loading-state" role="status"><Spinner size="s" /> Збираємо ваш прогрес…</div></Card>;
   if (today.isError) {
     const unauthorized = today.error instanceof TodayApiError && today.error.status === 401;

@@ -103,8 +103,11 @@ public sealed class LearnedWordsStatsService(AppDbContext db, TrainerMetrics met
         if (!await db.Learners.AsNoTracking().AnyAsync(learner => learner.Id == learnerId, ct))
             return (false, []);
 
+        var language = await db.Learners.AsNoTracking().Where(learner => learner.Id == learnerId)
+            .Select(learner => learner.ActiveTargetLanguage).SingleAsync(ct) ?? "pl";
+
         var words = await db.LearnerWords.AsNoTracking()
-            .Where(word => word.LearnerId == learnerId && (word.Status == "review" || word.Status == "recalled"))
+            .Where(word => word.LearnerId == learnerId && word.TargetLanguage == language && (word.Status == "review" || word.Status == "recalled"))
             .Select(word => new
             {
                 word.EntryId,
@@ -120,7 +123,7 @@ public sealed class LearnedWordsStatsService(AppDbContext db, TrainerMetrics met
 
         var entryIds = words.Select(word => word.EntryId).Distinct().ToList();
         var display = await ResolveDisplayAsync(entryIds, ct);
-        var counts = await AggregateCountsAsync(learnerId, ct);
+        var counts = await AggregateCountsAsync(learnerId, language, ct);
 
         var rows = new List<Row>(words.Count);
         foreach (var word in words)
@@ -182,10 +185,10 @@ public sealed class LearnedWordsStatsService(AppDbContext db, TrainerMetrics met
             translationsByVersion.GetValueOrDefault(pair.Value.VersionId, [])));
     }
 
-    private async Task<Dictionary<Guid, Counter>> AggregateCountsAsync(Guid learnerId, CancellationToken ct)
+    private async Task<Dictionary<Guid, Counter>> AggregateCountsAsync(Guid learnerId, string language, CancellationToken ct)
     {
         var events = await db.AnswerEvents.AsNoTracking()
-            .Where(answer => answer.LearnerId == learnerId && GradedKinds.Contains(answer.ExerciseKind))
+            .Where(answer => answer.LearnerId == learnerId && answer.TargetLanguage == language && GradedKinds.Contains(answer.ExerciseKind))
             .Select(answer => new { answer.Id, answer.EntryId, answer.Outcome })
             .ToListAsync(ct);
         if (events.Count == 0) return [];

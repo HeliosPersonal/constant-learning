@@ -41,6 +41,8 @@ export function LanguageSection() {
       queryClient.invalidateQueries({ queryKey: learnerQueryKey }),
       queryClient.invalidateQueries({ queryKey: learnerLanguagesQueryKey }),
     ]);
+    await queryClient.cancelQueries({ queryKey: ['stats'] });
+    queryClient.removeQueries({ queryKey: ['stats'] });
     queryClient.removeQueries({ queryKey: ['session', 'current'] });
   }
 

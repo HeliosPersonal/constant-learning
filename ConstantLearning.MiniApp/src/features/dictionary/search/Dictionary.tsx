@@ -74,10 +74,10 @@ export default function Dictionary({ onBack, onReportMissing, learner }: { onBac
   return <div className="dictionary">
     {!selected && <BackButton className="dictionary-navigation" navLabel="Навігація словника" onBack={onBack}>← До «Сьогодні»</BackButton>}
     {!selected && <>
-      <h1 className="ios-title">Словник</h1>
-      {learner && <ActiveLanguageBadge learner={learner} />}
+      <header className="language-heading"><h1 className="ios-title">Словник</h1>
+      {learner && <ActiveLanguageBadge learner={learner} />}</header>
       <div className="dictionary-search"><label className="sr-only" htmlFor="dictionary-query">Слово для пошуку</label>
-        <input id="dictionary-query" type="search" autoComplete="off" spellCheck={false} maxLength={200} value={rawQuery} onChange={event => changeQuery(event.target.value)} placeholder="Польське слово або переклад" />
+        <input id="dictionary-query" type="search" autoComplete="off" spellCheck={false} maxLength={200} value={rawQuery} onChange={event => changeQuery(event.target.value)} placeholder="Слово або переклад" />
         {rawQuery && <button type="button" className="dictionary-clear ios-plain" aria-label="Очистити" onClick={() => changeQuery('')}>×</button>}</div>
     </>}
     {selected ? <Entry entryId={selected} onBack={closeEntry} onRefresh={refreshSearch} onReport={entry => openReport({ origin: 'card', entry })} /> : <>

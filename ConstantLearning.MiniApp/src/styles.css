@@ -131,3 +131,7 @@ h1[tabindex="-1"]:focus-visible, h2[tabindex="-1"]:focus-visible { outline: none
 @media (max-width: 380px) { .ios-day { width: 32px; height: 32px; } }
 .ios-primary { display: block; width: 100%; min-height: 50px; margin-top: 20px; color: var(--cl-onAccent); background: var(--cl-accent); border: 0; border-radius: 14px; font-size: 17px; font-weight: 600; cursor: pointer; }
 .ios-primary:disabled { opacity: .5; cursor: default; }
+
+.language-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.language-heading h1 { margin: 0; text-align: left; }
+.active-language { color: var(--cl-muted); font-size: 13px; }

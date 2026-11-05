@@ -6,7 +6,7 @@ export type ReportField = components['schemas']['ReportField'];
 export type ReportDraft = { field: ReportField | ''; proposed: string; comment: string };
 export type ReportErrors = Partial<Record<'field' | 'proposed' | 'comment' | 'query' | 'general', string>>;
 export const reportFields: { value: ReportField; label: string }[] = [
-  { value: 'lemma', label: 'Польське слово' }, { value: 'translation', label: 'Переклад' },
+  { value: 'lemma', label: 'Слово' }, { value: 'translation', label: 'Переклад' },
   { value: 'pronunciation', label: 'Транскрипція' }, { value: 'example', label: 'Приклад' },
 ];
 

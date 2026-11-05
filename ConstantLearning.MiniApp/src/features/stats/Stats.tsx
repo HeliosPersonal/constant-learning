@@ -80,9 +80,9 @@ export default function Stats({ onBack, onOpenSession, learner }: { onBack: () =
   const listHeading = useRef<HTMLHeadingElement>(null);
   const submitting = useRef(false);
 
-  const summary = useQuery({ queryKey: ['stats', 'summary'], queryFn: ({ signal }) => getLearnedWordsSummary(signal), retry: false, refetchOnReconnect: false });
+  const summary = useQuery({ queryKey: ['stats', learner?.active_target_language, 'summary'], queryFn: ({ signal }) => getLearnedWordsSummary(signal), retry: false, refetchOnReconnect: false });
   const q = rawQuery.trim();
-  const list = useQuery({ queryKey: ['stats', 'words', tab, sort, q, cursor], queryFn: ({ signal }) => listLearnedWords({ tab, sort, q, cursor }, signal), retry: false, refetchOnReconnect: false });
+  const list = useQuery({ queryKey: ['stats', learner?.active_target_language, 'words', tab, sort, q, cursor], queryFn: ({ signal }) => listLearnedWords({ tab, sort, q, cursor }, signal), retry: false, refetchOnReconnect: false });
 
   const practice = useMutation({
     mutationFn: startExtraPractice, retry: false,
@@ -112,8 +112,8 @@ export default function Stats({ onBack, onOpenSession, learner }: { onBack: () =
   const currentSort = sorts.find(entry => entry.id === sort)?.label;
   return <div className="stats">
     <BackButton className="stats-navigation" navLabel="Навігація статистики" onBack={onBack}>← На головну</BackButton>
-    <h1 className="ios-title" id="stats-title">Мої слова</h1>
-    {learner && <ActiveLanguageBadge learner={learner} />}
+    <header className="language-heading"><h1 className="ios-title" id="stats-title">Мої слова</h1>
+    {learner && <ActiveLanguageBadge learner={learner} />}</header>
     {summary.isPending && <div className="loading-state" role="status"><Spinner size="s" /> Збираємо статистику…</div>}
     {summary.isError && <Card><Result tone="error">{terminalMessage(summary.error) ?? 'Не вдалося завантажити статистику. Спробуйте ще раз.'}</Result>
       {!(summary.error instanceof StatsApiError && [401, 404].includes(summary.error.status)) && <Button size="l" stretched onClick={() => { void summary.refetch(); }}>Спробувати ще раз</Button>}</Card>}
