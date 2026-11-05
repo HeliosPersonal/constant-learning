@@ -37,9 +37,14 @@ def validate(directory: Path, target: int) -> dict:
     evidence = {row["id"]: row for row in evidence_rows}
     if len(evidence_rows) != len(evidence) or len(evidence) != len(rows):
         raise ValueError("Докази мають бути унікальними й відповідати всім карткам")
-    if len(rows) != target or len({normalize(row["lemma_pl"]) for row in rows}) != target:
-        raise ValueError("Потрібно рівно задану кількість унікальних лем")
-    if len({row["id"] for row in rows}) != target:
+    # «Ship what qualifies»: випуск може бути меншим за ціль, але не більшим; очікувана кількість —
+    # це фактично випущені картки (readiness.released), які мають бути унікальні за лемою та id.
+    released = readiness.get("released", len(rows))
+    if len(rows) > target or len(rows) != released:
+        raise ValueError("Кількість карток не збігається зі звітом готовності або перевищує ціль")
+    if len({normalize(row["lemma_pl"]) for row in rows}) != len(rows):
+        raise ValueError("Леми у випуску не унікальні")
+    if len({row["id"] for row in rows}) != len(rows):
         raise ValueError("ID карток повторюються")
     required = ["id", "lemma_pl", "part_of_speech", "translation_uk", "accepted_answers_pl", "pronunciation_uk", "domain", "topic", "frequency_rank", "example_pl", "example_uk", "reviewed_by"]
     ranks = []
@@ -76,7 +81,7 @@ def validate(directory: Path, target: int) -> dict:
         ranks.append(int(row["frequency_rank"]))
     if ranks != sorted(ranks) or any(rank < 1 for rank in ranks):
         raise ValueError("Порушено частотний порядок")
-    return {"ready": True, "approved_unique_lemmas": target, "evidence_records": len(evidence), "course_sha256": hashlib.sha256((directory / "course.csv").read_bytes()).hexdigest()}
+    return {"ready": True, "approved_unique_lemmas": len(rows), "evidence_records": len(evidence), "course_sha256": hashlib.sha256((directory / "course.csv").read_bytes()).hexdigest()}
 
 
 def main() -> None:

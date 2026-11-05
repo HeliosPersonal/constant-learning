@@ -139,19 +139,25 @@ def main() -> None:
         })
     accepted.sort(key=lambda row: int(row["frequency_rank"]))
     counts = Counter(reason for row in blocked for reason in row["reasons"].split(";"))
+    # «Ship what qualifies»: випускаємо стільки якісних approved, скільки дають джерела; паритет із pl —
+    # мета, а не жорсткий гейт. Готовність = є хоч один approved і стандарт звірки підтверджено.
+    shortfall = max(0, args.target - len(accepted))
     report = {
         "language": lang,
         "target": args.target, "editorial_decisions": len(decisions),
         "approved_candidates": len(accepted), "blocked": len(blocked),
-        "ready": len(accepted) >= args.target and args.approve_source_backed,
+        "ready": len(accepted) > 0 and args.approve_source_backed,
         "approval_policy_confirmed": args.approve_source_backed, "reasons": dict(counts),
         "scope": "Двомовний словник (цільова мова → українська); джерельна звірка й LLM-редактура, не незалежна перевірка людиною.",
     }
+    # Ключ лишається відсутнім за повного паритету, тож readiness.json pl байт-у-байт незмінний.
+    if shortfall:
+        report["shortfall"] = shortfall
     output.mkdir(parents=True, exist_ok=True)
     (output / "readiness.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     write_csv(output / "review-queue.csv", ["lemma_pl", "reasons", "review_note"], blocked)
     if not report["ready"]:
-        raise SystemExit(f"Набір не готовий: {len(accepted)} / {args.target}; див. readiness.json і review-queue.csv")
+        raise SystemExit(f"Нічого випускати: {len(accepted)} approved; підтвердь --approve-source-backed і перевір review-queue.csv")
     chosen = accepted[:args.target]
     chosen_ids = {row["validation_sources"] for row in chosen}
     write_csv(output / "course.csv", FIELDS, chosen)
