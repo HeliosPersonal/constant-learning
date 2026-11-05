@@ -1,0 +1,37 @@
+{
+  "retrieved_on": "2026-11-05",
+  "approval_method": "Джерельна звірка Wiktionary + LLM-редактура (генерація та перехресна перевірка агентами); стандарт «source-backed» окремо погоджено користувачем",
+  "editorial_model": "claude-opus-4.8 (агенти робочого процесу Claude Code: генерація + перехресна перевірка)",
+  "sources": [
+    {
+      "name": "nlwiktionary.jsonl.gz",
+      "url": "https://kaikki.org/nlwiktionary/raw-wiktextract-data.jsonl.gz",
+      "sha256": "1657c961242ca63ce276b1259445be6930ad1c98fd4005fea52c4e55de675c56",
+      "size_bytes": 134749724,
+      "license": "CC-BY-SA-4.0"
+    },
+    {
+      "name": "nl_50k.txt",
+      "url": "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/nl/nl_50k.txt",
+      "sha256": "099bd0c27b514d54284360ad9ce2b4ef7b6903b22e848b67ab10f6aa2adb4baa",
+      "size_bytes": 650762,
+      "license": "CC-BY-SA-4.0 (HermitDave FrequencyWords, OpenSubtitles 2018)"
+    }
+  ],
+  "extraction_metadata": "Структуровані дані вилучено з дампу nlwiktionary інструментом wiktextract (Kaikki).",
+  "candidate_limit": 8000,
+  "selection_method": "За спаданням частотності HermitDave (OpenSubtitles 2018); однословна лема, пов’язаний український переклад, IPA й приклад ужитку (звірка значення за збігом токенів глоси, з відкотом на порядковий номер значення); потім редакторське рішення щодо значення й природності",
+  "release": {
+    "editorial_decisions": 383,
+    "approved_unique_lemmas": 351,
+    "blocked": 32,
+    "spares": 0,
+    "released": 351,
+    "shortfall": 1649,
+    "frequency_rank_min": 1,
+    "frequency_rank_max": 49696,
+    "course_csv_sha256": "f9b13acd5e2ee11346186ebd1bbd924f497f15b769511d65773506d60d822eee",
+    "evidence_jsonl_sha256": "343395fb133431f654012b00a552865dbc2d0f80bffdbe5c9bfbfc0f258b23f2",
+    "independent_human_review": false
+  }
+}

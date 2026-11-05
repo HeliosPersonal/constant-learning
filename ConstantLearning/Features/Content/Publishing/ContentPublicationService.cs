@@ -106,10 +106,19 @@ public sealed class ContentPublicationService(AppDbContext db, IPublicationProje
         var entries = await db.DictionaryEntries.Include(entry => entry.PublishedVersion)
             .Where(entry => entry.PublishedVersionId != null && entry.PublishedVersion!.ValidationStatus == "approved")
             .ToListAsync(cancellationToken);
-        var everyday = new Queue<DictionaryEntry>(entries.Where(entry => entry.Domain == "everyday")
+        // Порядок курсу — per-language (ADR-0003, AC-06): кожна target language нумерується з 1
+        // у власному порядку; мови не змішуються в одній наскрізній нумерації.
+        foreach (var language in entries.GroupBy(entry => entry.TargetLanguage))
+            AssignCoursePositions(language);
+    }
+
+    // Переплітає everyday/legalization цієї мови за частотним/утилітарним рангом і присвоює course_position з 1.
+    private static void AssignCoursePositions(IEnumerable<DictionaryEntry> languageEntries)
+    {
+        var everyday = new Queue<DictionaryEntry>(languageEntries.Where(entry => entry.Domain == "everyday")
             .OrderBy(entry => entry.PublishedVersion!.FrequencyRank ?? int.MaxValue)
             .ThenBy(entry => entry.ExternalId, StringComparer.Ordinal));
-        var legalization = new Queue<DictionaryEntry>(entries.Where(entry => entry.Domain == "legalization")
+        var legalization = new Queue<DictionaryEntry>(languageEntries.Where(entry => entry.Domain == "legalization")
             .OrderBy(entry => entry.PublishedVersion!.UtilityRank ?? int.MaxValue)
             .ThenBy(entry => entry.ExternalId, StringComparer.Ordinal));
         var everydayTotal = everyday.Count;

@@ -16,21 +16,55 @@ namespace ConstantLearning.Tests.Content.Import;
 public sealed class DictionaryImportIntegrationTests(PostgresFixture postgres) : PostgresIntegrationTest(postgres)
 {
     private readonly PostgresFixture _postgres = postgres;
-    [DockerFact]
-    public async Task PackagedRelease_ImportsTwoThousandAndRepeatsWithoutNewVersions()
-    {
-        var first = await Importer(Db).ImportPackagedAsync();
-        var second = await Importer(Db).ImportPackagedAsync();
+    // Очікувані розміри випусків, що постачаються в Resources\Dictionary (pl — корінь, решта — підтеки <lang>\).
+    private static readonly IReadOnlyDictionary<string, int> PackagedCourseSizes =
+        new Dictionary<string, int> { ["pl"] = 2000, ["nl"] = 351, ["de"] = 925, ["en"] = 1082 };
 
-        first.Should().Be(new DictionaryImportResult(2000, 2000, 0, 2000, 0));
-        second.Should().Be(new DictionaryImportResult(0, 0, 2000, 0, 0));
-        (await Db.EntryVersions.CountAsync()).Should().Be(2000);
-        (await Db.PublicationLog.CountAsync()).Should().Be(2000);
-        var entries = await Db.DictionaryEntries.AsNoTracking().OrderBy(entry => entry.CoursePosition).ToListAsync();
-        entries.Select(entry => entry.CoursePosition).Should().Equal(Enumerable.Range(1, 2000).Select(value => (int?)value));
-        entries.Should().OnlyContain(entry => entry.PublishedVersionId != null && entry.Id.Version == 7);
-        (await Db.ValidationEvidence.CountAsync()).Should().BeGreaterThanOrEqualTo(12000);
-        (await Db.VersionTranslations.CountAsync()).Should().BeGreaterThanOrEqualTo(2000);
+    [DockerFact]
+    public async Task PackagedRelease_ImportsEveryLanguagePerLanguageOrderedAndEnabled()
+    {
+        var total = PackagedCourseSizes.Values.Sum();
+        try
+        {
+            var first = await Importer(Db).ImportPackagedAsync();
+            var second = await Importer(Db).ImportPackagedAsync();
+
+            first.Should().Be(new DictionaryImportResult(total, total, 0, total, 0));
+            second.Should().Be(new DictionaryImportResult(0, 0, total, 0, 0));
+            (await Db.EntryVersions.CountAsync()).Should().Be(total);
+            (await Db.PublicationLog.CountAsync()).Should().Be(total);
+
+            var entries = await Db.DictionaryEntries.AsNoTracking().ToListAsync();
+            entries.Should().HaveCount(total);
+            entries.Should().OnlyContain(entry => entry.PublishedVersionId != null && entry.Id.Version == 7);
+            foreach (var (language, size) in PackagedCourseSizes)
+            {
+                entries.Count(entry => entry.TargetLanguage == language).Should().Be(size);
+                // Ядро ADR-0003/AC-06: кожна мова впорядкована власним course_position з 1..N, без змішування мов.
+                entries.Where(entry => entry.TargetLanguage == language)
+                    .Select(entry => entry.CoursePosition).OrderBy(position => position)
+                    .Should().Equal(Enumerable.Range(1, size).Select(value => (int?)value),
+                        "мова {0} має власну наскрізну нумерацію курсу (AC-06)", language);
+            }
+
+            // Валідний імпорт зі схваленим контентом вмикає кожну нову мову (OQ-7); pl уже була ввімкнена.
+            var enabled = await Db.TargetLanguages.AsNoTracking().Where(language => language.IsEnabled)
+                .Select(language => language.Code).ToListAsync();
+            enabled.Should().Contain(PackagedCourseSizes.Keys);
+
+            (await Db.ValidationEvidence.CountAsync()).Should().BeGreaterThanOrEqualTo(total * 6);
+            (await Db.VersionTranslations.CountAsync()).Should().BeGreaterThanOrEqualTo(total);
+        }
+        finally
+        {
+            // target_languages переживає ResetAsync — повертаємо нові мови у вимкнений стан, щоб не впливати на інші тести.
+            foreach (var code in new[] { "nl", "de", "en" })
+            {
+                var language = await Db.TargetLanguages.SingleAsync(item => item.Code == code);
+                language.IsEnabled = false;
+            }
+            await Db.SaveChangesAsync();
+        }
     }
 
     [DockerFact]

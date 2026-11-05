@@ -75,6 +75,11 @@ public sealed class PostgresFixture : IAsyncLifetime
             await using var cleanup = new NpgsqlCommand(truncate, connection);
             await cleanup.ExecuteNonQueryAsync();
         }
+        // target_languages не очищується (reference-seed), але is_enabled тепер мутабельний: пакетний імпорт
+        // вмикає en/de/nl (OQ-7). Повертаємо прапорець до seed-базису, щоб стан не протікав між тестами.
+        await using var restore = new NpgsqlCommand(
+            "UPDATE target_languages SET is_enabled = FALSE WHERE code IN ('en', 'de', 'nl')", connection);
+        await restore.ExecuteNonQueryAsync();
     }
 
     public async Task DisposeAsync()

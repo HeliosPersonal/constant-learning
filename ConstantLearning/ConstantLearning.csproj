@@ -47,6 +47,12 @@
       <Content Include="..\docs\dictionary\course.csv;..\docs\dictionary\evidence.jsonl;..\docs\dictionary\readiness.json;..\docs\dictionary\sources-manifest.json"
                Link="Resources\Dictionary\%(Filename)%(Extension)"
                CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+      <!-- Нові цільові мови: кожна в підкаталозі docs\dictionary\<lang>\ → Resources\Dictionary\<lang>\.
+           Корінь (pl) виключено — його копіює правило вище байт-у-байт; review-queue.csv не постачаємо (імпортер його не читає). -->
+      <Content Include="..\docs\dictionary\**\course.csv;..\docs\dictionary\**\evidence.jsonl;..\docs\dictionary\**\readiness.json;..\docs\dictionary\**\sources-manifest.json"
+               Exclude="..\docs\dictionary\course.csv;..\docs\dictionary\evidence.jsonl;..\docs\dictionary\readiness.json;..\docs\dictionary\sources-manifest.json"
+               Link="Resources\Dictionary\%(RecursiveDir)%(Filename)%(Extension)"
+               CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
       <Folder Include="Migrations\" />
     </ItemGroup>
 

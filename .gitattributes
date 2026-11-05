@@ -1,3 +1,4 @@
 # Побайтові SHA-256 випуску вимагають збереження вихідних кінців рядків.
-docs/dictionary/course.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
-docs/dictionary/evidence.jsonl -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Шаблон із ** покриває і корінь (pl), і підтеки цільових мов (en/de/nl).
+docs/dictionary/**/course.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+docs/dictionary/**/evidence.jsonl -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

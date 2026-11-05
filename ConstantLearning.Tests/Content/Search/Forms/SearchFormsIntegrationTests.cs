@@ -261,8 +261,11 @@ public sealed class SearchFormsIntegrationTests(PostgresFixture postgres) : Post
     }
 
     [DockerFact]
-    public async Task PackagedPolimorf_InitializesExistingTwoThousandEntriesAndRepeatsWithoutChanges()
+    public async Task PackagedPolimorf_InitializesEveryPublishedEntryAndRepeatsWithoutChanges()
     {
+        // Пакет тепер містить усі цільові мови (pl + en/de/nl); польська морфологія та індикатор
+        // «без морфології» лишаються pl-специфічними, а лічильники версій/журналу — на весь пакет.
+        const int packagedTotal = 2000 + 351 + 925 + 1082;
         var import = new DictionaryImportService(Db, new DictionaryImportReader(),
             new ContentPublicationService(Db, new NoOpPublicationProjection(), Clock), Clock,
             NullLogger<DictionaryImportService>.Instance);
@@ -275,8 +278,8 @@ public sealed class SearchFormsIntegrationTests(PostgresFixture postgres) : Post
             .Should().BeEquivalentTo("siebie", "związany");
         await Maintenance.InitializeAsync();
         (await Db.SearchForms.CountAsync()).Should().Be(count);
-        (await Db.EntryVersions.CountAsync()).Should().Be(2000);
-        (await Db.PublicationLog.CountAsync()).Should().Be(2000);
+        (await Db.EntryVersions.CountAsync()).Should().Be(packagedTotal);
+        (await Db.PublicationLog.CountAsync()).Should().Be(packagedTotal);
     }
 
     [Fact]
