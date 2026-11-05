@@ -41,6 +41,8 @@ spec:
             - secretRef:
                 name: constant-learning-infisical
           startupProbe:
+            # Даємо застосунку час на звичайну ініціалізацію до першої перевірки.
+            initialDelaySeconds: 10
             httpGet:
               path: /api/telegram/health
               port: 8888
