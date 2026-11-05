@@ -11,7 +11,7 @@ namespace ConstantLearning.Tests.Infrastructure;
 
 public static class ContractAssert
 {
-    private static readonly Lazy<JsonNode> OpenApi = new(ReadOpenApi);
+    private static readonly Lazy<IReadOnlyList<JsonNode>> OpenApiDocuments = new(ReadOpenApiDocuments);
     private static readonly Lazy<IReadOnlyDictionary<string, JsonObject>> EventSchemas = new(ReadEventSchemas);
 
     public static async Task ResponseAsync(string operationId, HttpResponseMessage response)
@@ -23,11 +23,7 @@ public static class ContractAssert
 
     public static void Response(string operationId, int statusCode, string? json, string? mediaType = "application/json")
     {
-        var document = OpenApi.Value;
-        var operation = document["paths"]!.AsObject().SelectMany(path => path.Value!.AsObject())
-            .Select(method => method.Value)
-            .SingleOrDefault(value => value is JsonObject && value["operationId"]?.GetValue<string>() == operationId)
-            ?? throw new XunitException($"Операцію {operationId} не описано в OpenAPI.");
+        var (document, operation) = FindOperation(operationId);
         var response = operation["responses"]?[statusCode.ToString(CultureInfo.InvariantCulture)]
                        ?? throw new XunitException($"Статус {statusCode} операції {operationId} не описано в OpenAPI.");
         response = Resolve(document, response);
@@ -92,9 +88,36 @@ public static class ContractAssert
             ?? throw new XunitException($"Не знайдено посилання {path}."));
     }
 
-    private static JsonNode ReadOpenApi()
+    // Операція може жити в будь-якому з кількох контрактів фіч (кожен Contracts/**/openapi.yaml);
+    // шукаємо її за operationId по всіх документах і повертаємо документ-власник для резолву $ref.
+    private static (JsonNode Document, JsonObject Operation) FindOperation(string operationId)
     {
-        using var reader = File.OpenText(ContractPath("openapi.yaml"));
+        foreach (var document in OpenApiDocuments.Value)
+        {
+            var operation = document["paths"]!.AsObject().SelectMany(path => path.Value!.AsObject())
+                .Select(method => method.Value)
+                .SingleOrDefault(value => value is JsonObject && value["operationId"]?.GetValue<string>() == operationId);
+            if (operation is JsonObject match)
+            {
+                return (document, match);
+            }
+        }
+
+        throw new XunitException($"Операцію {operationId} не описано в OpenAPI.");
+    }
+
+    private static IReadOnlyList<JsonNode> ReadOpenApiDocuments()
+    {
+        var directory = Path.Combine(AppContext.BaseDirectory, "Contracts");
+        return Directory.EnumerateFiles(directory, "openapi.yaml", SearchOption.AllDirectories)
+            .OrderBy(path => path, StringComparer.Ordinal)
+            .Select(ReadOpenApi)
+            .ToArray();
+    }
+
+    private static JsonNode ReadOpenApi(string path)
+    {
+        using var reader = File.OpenText(path);
         var yaml = new YamlStream();
         yaml.Load(reader);
         return ToJson(yaml.Documents.Single().RootNode)!;

@@ -8,7 +8,7 @@ files_hint:
   - "ConstantLearning/Features/Identity/"
 owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "todo"
+status: "done"
 ---
 
 # T11 — `listTargetLanguages` + `listLearnerLanguages` + реєстр помилок
@@ -33,8 +33,8 @@ US-01 потребує списку мов для вибору; екрани п�
 
 ## Definition of Done
 
-- [ ] Обидві операції віддають форму з `openapi.yaml` (contract-тест зелений на прикладах).
-- [ ] `available` обчислюється згідно T06; `pl` available, disabled/без контенту — ні.
-- [ ] 4 нові `language.*` коди в реєстрі, кожен відповідає `^[a-z_]+\.[a-z_]+$` і рядку контракту; 1 код = 1 визначення.
-- [ ] Тести: 200 happy, 401 `auth.invalid_init_data`, 404 `learner.not_onboarded`; дані лише свого learner (AC-10).
-- [ ] PR ≤500 LOC.
+- [x] Обидві операції віддають форму з `openapi.yaml` (contract-тест зелений на прикладах).
+- [x] `available` обчислюється згідно T06; `pl` available, disabled/без контенту — ні.
+- [x] 4 нові `language.*` коди в реєстрі, кожен відповідає `^[a-z_]+\.[a-z_]+$` і рядку контракту; 1 код = 1 визначення.
+- [x] Тести: 200 happy, 401 `auth.invalid_init_data`, 404 `learner.not_onboarded`; дані лише свого learner (AC-10).
+- [x] PR ≤500 LOC.

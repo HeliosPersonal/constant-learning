@@ -29,4 +29,8 @@ public sealed record ReminderResponse(
 
 public sealed record IdentityError(
     [property: JsonPropertyName("code")] string Code,
-    [property: JsonPropertyName("message")] string Message);
+    [property: JsonPropertyName("message")] string Message)
+{
+    /// <summary>Онбординг ще не завершено — єдине визначення коду <c>learner.not_onboarded</c> (рядок = контракт).</summary>
+    public static IdentityError NotOnboarded() => new("learner.not_onboarded", "Спершу налаштуйте тренер.");
+}

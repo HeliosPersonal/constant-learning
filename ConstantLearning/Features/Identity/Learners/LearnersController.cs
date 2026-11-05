@@ -23,7 +23,7 @@ public sealed class LearnersController(OnboardingService onboarding, ILearnerDay
     {
         if (User.GetLearnerId() is not { } learnerId)
         {
-            return NotFound(new IdentityError("learner.not_onboarded", "Спершу налаштуйте тренер."));
+            return NotFound(IdentityError.NotOnboarded());
         }
 
         return await ReadCurrentLearnerAsync(learnerId, cancellationToken);
@@ -35,7 +35,7 @@ public sealed class LearnersController(OnboardingService onboarding, ILearnerDay
         var current = await learnerDays.GetForUpdateAsync(learnerId, cancellationToken);
         if (current is null)
         {
-            return NotFound(new IdentityError("learner.not_onboarded", "Спершу налаштуйте тренер."));
+            return NotFound(IdentityError.NotOnboarded());
         }
 
         await transaction.CommitAsync(cancellationToken);

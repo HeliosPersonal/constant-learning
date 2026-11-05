@@ -42,6 +42,7 @@
   <ItemGroup>
     <None Include="..\docs\features\personal-trainer-mvp\contracts\openapi.yaml" Link="Contracts\openapi.yaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\docs\features\personal-trainer-mvp\contracts\events.md" Link="Contracts\events.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\docs\features\multi-target-languages\contracts\openapi.yaml" Link="Contracts\multi-target-languages\openapi.yaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

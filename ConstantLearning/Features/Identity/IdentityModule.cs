@@ -25,6 +25,7 @@ public static class IdentityModule
         services.AddScoped<IReporterAliasService, ReporterAliasService>();
         services.AddScoped<ILearnerDayStateService, LearnerDayStateService>();
         services.AddScoped<ITargetLanguageCatalog, TargetLanguageCatalog>();
+        services.AddScoped<ILanguageDirectory, LanguageDirectory>();
         services.AddScoped<LearnerSettingsService>();
         services.AddScoped<ProgressResetService>();
         services.AddSingleton<IProgressResetMetrics, TrainerProgressResetMetrics>();
