@@ -121,7 +121,7 @@ public sealed class LearnerLanguageStateMigrationTests(PostgresFixture postgres)
                         WHERE table_name = 'learners' AND column_name = 'active_target_language')::text,
                     'error') AS "Value"
                 """).SingleAsync();
-            reverted.Should().Be("False:False", "відкат T03 має прибрати таблицю та колонку active_target_language");
+            reverted.Should().Be("false:false", "відкат T03 має прибрати таблицю та колонку active_target_language");
         }
         finally
         {

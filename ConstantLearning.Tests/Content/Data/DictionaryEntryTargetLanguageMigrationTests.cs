@@ -95,7 +95,7 @@ public sealed class DictionaryEntryTargetLanguageMigrationTests(PostgresFixture 
                     || ':' || (EXISTS(SELECT 1 FROM pg_indexes
                         WHERE indexname = 'ux_dictionary_entries_lang_external_id'))::text AS "Value"
                 """).SingleAsync();
-            reverted.Should().Be("False:True:True:False",
+            reverted.Should().Be("false:true:true:false",
                 "відкат T05 має прибрати target_language й мовні індекси та відновити глобальні");
         }
         finally

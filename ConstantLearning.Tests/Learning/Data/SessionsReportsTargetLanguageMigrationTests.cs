@@ -121,7 +121,7 @@ public sealed class SessionsReportsTargetLanguageMigrationTests(PostgresFixture 
                     || ':' || (EXISTS(SELECT 1 FROM pg_indexes
                         WHERE indexname = 'ux_learning_sessions_one_active_lang'))::text AS "Value"
                 """).SingleAsync();
-            reverted.Should().Be("False:False:True:False",
+            reverted.Should().Be("false:false:true:false",
                 "відкат T09 має прибрати target_language й мовні індекси та відновити глобальний UNIQUE активної session");
         }
         finally

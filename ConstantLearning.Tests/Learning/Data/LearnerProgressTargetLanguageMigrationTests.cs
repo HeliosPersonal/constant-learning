@@ -142,7 +142,7 @@ public sealed class LearnerProgressTargetLanguageMigrationTests(PostgresFixture 
                     || ':' || (EXISTS(SELECT 1 FROM pg_constraint
                         WHERE conname = 'answer_events_target_language_fkey'))::text AS "Value"
                 """).SingleAsync();
-            reverted.Should().Be("False:False:False:False",
+            reverted.Should().Be("false:false:false:false",
                 "відкат T08 має прибрати target_language, мовні індекси та FK з обох таблиць");
         }
         finally

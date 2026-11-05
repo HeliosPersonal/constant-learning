@@ -2,13 +2,14 @@ using ConstantLearning.Features.Identity.Languages;
 using ConstantLearning.Tests.Fixtures;
 using ConstantLearning.Tests.Infrastructure;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace ConstantLearning.Tests.Identity.Languages;
 
 public sealed class TargetLanguageCatalogTests(PostgresFixture postgres) : PostgresIntegrationTest(postgres)
 {
-    private ITargetLanguageCatalog Catalog => Services.GetRequiredService<ITargetLanguageCatalog>();
+    // Інтеграційні тести конструюють сервіси модуля напряму (як-от DictionaryImportService): оснастка
+    // CreateServices реєструє лише AppDbContext/IClock, а не AddIdentity (той тягне AddAuthentication).
+    private ITargetLanguageCatalog Catalog => new TargetLanguageCatalog(Db);
 
     [DockerFact]
     public async Task List_ReturnsSeededLanguagesInSortOrder()

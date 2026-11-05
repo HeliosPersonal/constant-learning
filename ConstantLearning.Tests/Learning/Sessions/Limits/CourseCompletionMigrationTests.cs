@@ -43,10 +43,13 @@ public sealed class CourseCompletionMigrationTests(PostgresFixture postgres) : P
             var after = await ReadColumnsAsync(db);
             Assert.Equal(new[] { "course_completed_at:timestamptz:YES:-" }, after.Except(before));
             Assert.Equal(constraints, await ReadConstraintsAsync(db));
-            var learner = await db.Learners.AsNoTracking().SingleAsync();
-            Assert.Equal(learnerId, learner.Id);
-            Assert.Equal(5, learner.DailyNewWordsLimit);
-            Assert.Null(learner.CourseCompletedAt);
+            // Читаємо сирим SQL, а не через сутність Learner: на цій версії схеми ще немає колонки
+            // active_target_language (її додає пізніша міграція CreateTargetLanguages), тож запит сутності впав би.
+            var persisted = await db.Database.SqlQueryRaw<string>("""
+                SELECT id::text || ':' || daily_new_words_limit::text || ':' || COALESCE(course_completed_at::text, '-') AS "Value"
+                FROM learners
+                """).SingleAsync();
+            Assert.Equal($"{learnerId}:5:-", persisted);
             Assert.False(db.Database.HasPendingModelChanges());
 
             await migrator.MigrateAsync("PersistCurrentLearnerDay");

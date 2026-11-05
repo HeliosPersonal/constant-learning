@@ -59,7 +59,7 @@ public sealed class TargetLanguageMigrationTests(PostgresFixture postgres) : Pos
                 SELECT code || ':' || is_enabled || ':' || normalization_profile AS "Value"
                 FROM target_languages ORDER BY sort_order
                 """).ToListAsync();
-            seeded.Should().Equal("pl:True:pl", "en:False:en", "de:False:de", "nl:False:nl");
+            seeded.Should().Equal("pl:true:pl", "en:false:en", "de:false:de", "nl:false:nl");
 
             await migrator.MigrateAsync("SetKindNotNullOnLearningSessions");
 
