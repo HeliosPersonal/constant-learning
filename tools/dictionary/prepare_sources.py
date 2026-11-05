@@ -17,6 +17,36 @@ from languages import config
 EXCLUDED_POS = {"proper-noun", "name", "abbrev", "character", "phrase", "punct", "symbol", "suffix", "prefix"}
 EXCLUDED_TAGS = {"vulgar", "obsolete", "archaic", "offensive"}
 
+# Тіло класу для однословного українського перекладу (кирилиця з наголосом, дефісом, апострофом).
+UK_WORD = "[а-яіїєґА-ЯІЇЄҐ́ ’'-]+"
+
+# Службові слова en/nl прибираємо перед звіркою глос, щоб «the/of/de/het» не роздували знаменник збігу.
+GLOSS_STOPWORDS = {
+    "a", "an", "the", "to", "of", "or", "and", "in", "on", "at", "by", "with", "for", "as", "is",
+    "are", "be", "this", "that", "it", "its", "from", "any", "some", "such", "used", "especially",
+    "de", "het", "een", "en", "van", "te", "op", "met", "voor", "zijn", "dat", "die", "aan", "als",
+    "om", "naar", "bij", "uit", "door", "niet", "wordt",
+}
+
+
+def gloss_tokens(text: str) -> set[str]:
+    """Значущі токени глоси (латиниця з діакритикою), без службових слів і однолітерних."""
+    return {token for token in re.findall("[a-zà-ÿ]+", (text or "").lower()) if len(token) > 1 and token not in GLOSS_STOPWORDS}
+
+
+def gloss_overlap(translation_sense: str, sense: dict) -> float:
+    """Частка токенів позначки перекладу, що присутні в глосі значення (0..1)."""
+    wanted = gloss_tokens(translation_sense)
+    if not wanted:
+        return 0.0
+    available = gloss_tokens(" ".join((sense.get("glosses") or []) + (sense.get("raw_glosses") or [])))
+    return len(wanted & available) / len(wanted)
+
+
+def good_examples(sense: dict) -> list[str]:
+    """Короткі придатні приклади значення (3–10 слів, без розмітки)."""
+    return [example["text"] for example in sense.get("examples", []) if example.get("text") and 3 <= len(example["text"].split()) <= 10 and not re.search(r"[<>\[\]{}]", example["text"])]
+
 
 def checksum(path: Path) -> str:
     with path.open("rb") as stream:
@@ -68,10 +98,11 @@ def main() -> None:
     settings = config(lang)
     lemma_pattern = settings["lemma_regex"]
     gender_map = settings["gender_map"]
+    sense_link = settings["sense_link"]
     args.cache.mkdir(parents=True, exist_ok=True)
     dictionary = args.cache / (settings["kaikki_slug"] + ".jsonl.gz")
     frequency = args.cache / settings["freq_filename"]
-    download("https://kaikki.org/" + settings["kaikki_slug"] + "/raw-wiktextract-data.jsonl.gz", dictionary)
+    download(settings["kaikki_url"], dictionary)
     download(settings["freq_url"], frequency)
     fingerprints = {"wiktionary": checksum(dictionary), "frequency": checksum(frequency)}
     for name in fingerprints:
@@ -98,22 +129,45 @@ def main() -> None:
             ipa = [sound["ipa"] for sound in entry.get("sounds", []) if sound.get("ipa") and not {"Slavic-alphabet", "plural"}.intersection(sound.get("tags", []))]
             if not ipa:
                 continue
-            for sense in entry.get("senses", []):
+            chosen = None
+            for order, sense in enumerate(entry.get("senses", []), start=1):
                 if sense.get("form_of") or (EXCLUDED_TAGS | {"figuratively", "slang"}).intersection(sense.get("tags", [])):
                     continue
-                translations = [translation["word"].replace("́", "") for translation in entry.get("translations", []) if translation.get("lang_code") == "uk" and translation.get("sense_index") and translation["sense_index"] == sense.get("sense_index") and re.fullmatch("[а-яіїєґА-ЯІЇЄҐ́ ’'-]+", translation.get("word", ""))]
-                examples = [example["text"] for example in sense.get("examples", []) if example.get("text") and 3 <= len(example["text"].split()) <= 10 and not re.search(r"[<>\[\]{}]", example["text"])]
+                if sense_link == "index":
+                    # pl/de: точний збіг рядка sense_index між перекладом і значенням.
+                    translations = [translation["word"].replace("́", "") for translation in entry.get("translations", []) if translation.get("lang_code") == "uk" and translation.get("sense_index") and translation["sense_index"] == sense.get("sense_index") and re.fullmatch(UK_WORD, translation.get("word", ""))]
+                    sense_value = sense.get("sense_index")
+                else:
+                    # en/nl: збіг за токенами глоси; порядковий номер значення як sense_index у доказі.
+                    translations = [translation["word"].replace("́", "") for translation in entry.get("translations", []) if translation.get("lang_code") == "uk" and re.fullmatch(UK_WORD, translation.get("word", "")) and gloss_overlap(translation.get("sense"), sense) >= 0.5]
+                    sense_value = str(order)
+                examples = good_examples(sense)
                 if not translations or not examples or word in selected:
                     continue
+                chosen = (sense, sense_value, translations, examples[0])
+                break
+            if chosen is None and sense_link == "gloss" and word not in selected:
+                # Відкіт: жодне значення не збіглося за глосою — беремо перше придатне значення
+                # (з прикладом) і всі українські переклади слова; редактура обере коректний.
+                fallback = [translation["word"].replace("́", "") for translation in entry.get("translations", []) if translation.get("lang_code") == "uk" and re.fullmatch(UK_WORD, translation.get("word", ""))]
+                if fallback:
+                    for order, sense in enumerate(entry.get("senses", []), start=1):
+                        if sense.get("form_of") or (EXCLUDED_TAGS | {"figuratively", "slang"}).intersection(sense.get("tags", [])):
+                            continue
+                        examples = good_examples(sense)
+                        if examples:
+                            chosen = (sense, str(order), fallback, examples[0])
+                            break
+            if chosen is not None and word not in selected:
+                sense, sense_value, translations, usage_example = chosen
                 selected[word] = {
                     "lemma": word, "frequency_rank": rank[word], "pos": entry["pos"], "tags": tags,
                     "gender": next((value for key, value in gender_map if key in tags), ""),
-                    "sense": sense.get("sense_index"), "gloss": " ".join(sense.get("glosses", [""])[0].split()[:8]),
-                    "translation_candidates": list(dict.fromkeys(translations))[:2], "ipa": ipa[0], "usage_example": examples[0],
+                    "sense": sense_value, "gloss": " ".join((sense.get("glosses") or [""])[0].split()[:8]),
+                    "translation_candidates": list(dict.fromkeys(translations))[:2], "ipa": ipa[0], "usage_example": usage_example,
                     "source_url": "https://" + settings["wiktionary_host"] + "/wiki/" + urllib.parse.quote(word),
                     "source_record_sha256": hashlib.sha256(line.encode("utf-8")).hexdigest(),
                 }
-                break
     rows = sorted(selected.values(), key=lambda row: row["frequency_rank"])
     (args.cache / "all-source-supported.jsonl").write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows), encoding="utf-8")
     (args.cache / "source-fingerprints.json").write_text(json.dumps(fingerprints, indent=2) + "\n", encoding="utf-8")

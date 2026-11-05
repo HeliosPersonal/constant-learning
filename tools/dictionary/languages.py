@@ -12,6 +12,11 @@ from __future__ import annotations
 # Частотні списки HermitDave FrequencyWords: формат «слово частота», уже за спаданням, без заголовка.
 _HERMITDAVE = "https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/{lang}/{lang}_50k.txt"
 
+# Kaikki публікує повний дамп кожного видання за шаблоном /<slug>/raw-wiktextract-data.jsonl.gz,
+# але англійське видання має власний маршрут (/enwiktionary/ віддає 404): беремо вже відфільтрований
+# за мовою файл /dictionary/English/…, де lang_code=="en".
+_KAIKKI_RAW = "https://kaikki.org/{slug}/raw-wiktextract-data.jsonl.gz"
+
 LANGUAGES: dict[str, dict] = {
     "pl": {
         "wiktionary_host": "pl.wiktionary.org",
@@ -21,6 +26,9 @@ LANGUAGES: dict[str, dict] = {
         # Відображення тегів роду Wiktionary у код; порядок визначає пріоритет для next().
         "gender_map": [("masculine", "m"), ("feminine", "f"), ("neuter", "n")],
         "kaikki_slug": "plwiktionary",
+        "kaikki_url": _KAIKKI_RAW.format(slug="plwiktionary"),
+        # plwiktionary пов'язує переклад зі значенням через збіг рядка sense_index (висока точність).
+        "sense_link": "index",
         "freq_url": "https://raw.githubusercontent.com/ipipan/kwjp100-varia/main/freqlists/kwjp100-slowa-lemma-all.csv.gz",
         "freq_format": "kwjp",
         "freq_filename": "kwjp-lemmas.csv.gz",
@@ -44,6 +52,11 @@ LANGUAGES: dict[str, dict] = {
         "noun_genders": set(),
         "gender_map": [],
         "kaikki_slug": "enwiktionary",
+        # Англійське видання не має маршруту /enwiktionary/: беремо відфільтрований English-дамп.
+        "kaikki_url": "https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.jsonl.gz",
+        # enwiktionary не має sense_index; пов'язуємо переклад зі значенням за збігом глоси (gloss),
+        # з відкотом на порядковий номер значення, якщо глоса не збіглася.
+        "sense_link": "gloss",
         "freq_url": _HERMITDAVE.format(lang="en"),
         "freq_format": "hermitdave",
         "freq_filename": "en_50k.txt",
@@ -59,6 +72,9 @@ LANGUAGES: dict[str, dict] = {
         "noun_genders": {"m", "f", "n", "pl"},
         "gender_map": [("masculine", "m"), ("feminine", "f"), ("neuter", "n")],
         "kaikki_slug": "dewiktionary",
+        "kaikki_url": _KAIKKI_RAW.format(slug="dewiktionary"),
+        # dewiktionary, як і pl, пов'язує переклад зі значенням через збіг рядка sense_index.
+        "sense_link": "index",
         "freq_url": _HERMITDAVE.format(lang="de"),
         "freq_format": "hermitdave",
         "freq_filename": "de_50k.txt",
@@ -75,6 +91,10 @@ LANGUAGES: dict[str, dict] = {
         "noun_genders": {"c", "n", "pl"},
         "gender_map": [("common-gender", "c"), ("masculine", "c"), ("feminine", "c"), ("neuter", "n")],
         "kaikki_slug": "nlwiktionary",
+        "kaikki_url": _KAIKKI_RAW.format(slug="nlwiktionary"),
+        # nlwiktionary не має sense_index на боці значення; пов'язуємо за збігом глоси (gloss),
+        # з відкотом на порядковий номер значення.
+        "sense_link": "gloss",
         "freq_url": _HERMITDAVE.format(lang="nl"),
         "freq_format": "hermitdave",
         "freq_filename": "nl_50k.txt",
