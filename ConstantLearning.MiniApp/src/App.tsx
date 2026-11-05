@@ -30,9 +30,9 @@ export function App({ onNavigateToToday, privacyContact, onReportMissing, onOpen
       renderLearner={learner => route === '/session'
         ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо заняття…</div>}><SessionRoute initialSession={openedSession} onBusy={value => { sessionBusy.current = value; }} onToday={notice => { setOpenedSession(undefined); setTodayNotice(notice); go('/today'); }} /></Suspense>
         : route === '/dictionary'
-        ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо словник…</div>}><Dictionary onBack={() => go('/today')} onReportMissing={onReportMissing} /></Suspense>
+        ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо словник…</div>}><Dictionary learner={learner} onBack={() => go('/today')} onReportMissing={onReportMissing} /></Suspense>
         : route === '/stats'
-        ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо ваші слова…</div>}><Stats onBack={() => go('/today')} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} /></Suspense>
+        ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо ваші слова…</div>}><Stats learner={learner} onBack={() => go('/today')} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} /></Suspense>
         : route === '/settings'
         ? <Suspense fallback={<div className="loading-state" role="status"><Spinner size="s" /> Відкриваємо налаштування…</div>}><SettingsScreen learner={learner} onBack={notice => { setTodayNotice(notice); go('/today'); }} onStart={() => go('/')} onOpenEditor={() => go('/editor')} /></Suspense>
         : <><Today learner={learner} notice={todayNotice} onNoticeShown={() => setTodayNotice(undefined)} onOpenSession={value => { setOpenedSession(value); onOpenSession?.(value); go('/session'); }} onStart={() => go('/')} /><nav className="ios-group" aria-label="Основна навігація">{navigation.map(([path, label]) => <button key={path} type="button" className="ios-row ios-plain" onClick={() => go(path)}>{label}<span className="ios-value ios-chevron" aria-hidden="true">›</span></button>)}</nav></>} />}

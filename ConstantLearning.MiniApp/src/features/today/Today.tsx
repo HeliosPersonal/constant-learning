@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../components/ui';
+import { ActiveLanguageBadge } from '../../components/ActiveLanguageBadge';
 import { learnerQueryKey, type Learner } from '../onboarding/api';
 import { detectTimeZone, isTimeZone } from '../onboarding/timeZone';
 import { SettingsApiError, updateSettings } from '../settings/api';
@@ -116,7 +117,7 @@ export function Today({ learner, onOpenSession, onStart, notice, onNoticeShown, 
   }, [today.data, today.isError, blocked, session.isPending, extra.isPending, zone.isPending]);
 
   const startOver = () => { queryClient.setQueryData(learnerQueryKey, null); queryClient.removeQueries({ queryKey: todayQueryKey }); onStart?.(); };
-  const heading = <h1 id="today-title">Сьогодні</h1>;
+  const heading = <><h1 id="today-title">Сьогодні</h1><ActiveLanguageBadge learner={learner} /></>;
   if (today.isPending) return <Card aria-labelledby="today-title">{heading}<div className="loading-state" role="status"><Spinner size="s" /> Збираємо ваш прогрес…</div></Card>;
   if (today.isError) {
     const unauthorized = today.error instanceof TodayApiError && today.error.status === 401;

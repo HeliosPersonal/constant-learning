@@ -1,6 +1,8 @@
 /* Головний екран: центрований підсумок дня, одна головна цифра й дві другорядні. */
 .today { text-align: center; }
 .today h1 { margin-top: 0; }
+.active-language { display: flex; justify-content: center; margin: 8px 0 4px; }
+.active-language > span { display: inline-flex; align-items: center; min-height: 30px; padding: 3px 12px; border: 1px solid var(--cl-border); border-radius: 999px; color: var(--cl-accent); background: color-mix(in srgb, var(--cl-accent) 10%, var(--cl-surface)); font-size: 13px; line-height: 20px; font-weight: 600; }
 .today-date { margin-bottom: 8px; }
 .today-statistics { display: grid; grid-template-columns: 1fr 1fr; margin: 24px 0; }
 .today-statistics > div { display: flex; flex-direction: column-reverse; justify-content: flex-end; padding: 16px 8px 0; }

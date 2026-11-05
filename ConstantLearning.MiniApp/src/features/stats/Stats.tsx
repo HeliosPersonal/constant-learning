@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { BackButton } from '../../components/BackButton';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button, Card, Result, Spinner } from '../../components/ui';
+import { ActiveLanguageBadge } from '../../components/ActiveLanguageBadge';
+import type { Learner } from '../onboarding/api';
 import { startExtraPractice, TodayApiError, type SessionResponse } from '../today/api';
 import { getLearnedWordCard, getLearnedWordsSummary, listLearnedWords, StatsApiError, type LearnedWordCard, type StatsCursor, type StatsSort, type StatsTab } from './api';
 import './stats.css';
@@ -68,7 +70,7 @@ function WordStats({ stat }: { stat: { shown_count: number; correct_count: numbe
   </dl>;
 }
 
-export default function Stats({ onBack, onOpenSession }: { onBack: () => void; onOpenSession?: (session: SessionResponse) => void }) {
+export default function Stats({ onBack, onOpenSession, learner }: { onBack: () => void; onOpenSession?: (session: SessionResponse) => void; learner?: Learner }) {
   const [tab, setTab] = useState<StatsTab>('all');
   const [sort, setSort] = useState<StatsSort>('recent');
   const [rawQuery, setRawQuery] = useState('');
@@ -111,6 +113,7 @@ export default function Stats({ onBack, onOpenSession }: { onBack: () => void; o
   return <div className="stats">
     <BackButton className="stats-navigation" navLabel="Навігація статистики" onBack={onBack}>← На головну</BackButton>
     <h1 className="ios-title" id="stats-title">Мої слова</h1>
+    {learner && <ActiveLanguageBadge learner={learner} />}
     {summary.isPending && <div className="loading-state" role="status"><Spinner size="s" /> Збираємо статистику…</div>}
     {summary.isError && <Card><Result tone="error">{terminalMessage(summary.error) ?? 'Не вдалося завантажити статистику. Спробуйте ще раз.'}</Result>
       {!(summary.error instanceof StatsApiError && [401, 404].includes(summary.error.status)) && <Button size="l" stretched onClick={() => { void summary.refetch(); }}>Спробувати ще раз</Button>}</Card>}

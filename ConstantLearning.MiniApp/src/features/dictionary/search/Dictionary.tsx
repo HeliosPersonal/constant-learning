@@ -1,6 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { BackButton } from '../../../components/BackButton';
+import { ActiveLanguageBadge } from '../../../components/ActiveLanguageBadge';
 import { Button, Card, Result, Spinner } from '../../../components/ui';
+import type { Learner } from '../../onboarding/api';
 import { DictionaryApiError, getDictionaryEntry, searchDictionary, type EntryCard, type MissingWordReportRequest, type SearchCursor } from './api';
 import { useDictionaryResource } from './useDictionaryResource';
 import type { ReportContext } from '../report/model';
@@ -54,7 +56,7 @@ function Entry({ entryId, onBack, onRefresh, onReport }: { entryId: string; onBa
   </section>;
 }
 
-export default function Dictionary({ onBack, onReportMissing }: { onBack: () => void; onReportMissing?: (request: MissingWordReportRequest) => void }) {
+export default function Dictionary({ onBack, onReportMissing, learner }: { onBack: () => void; onReportMissing?: (request: MissingWordReportRequest) => void; learner?: Learner }) {
   const [rawQuery, setRawQuery] = useState('');
   const [cursor, setCursor] = useState<SearchCursor>({});
   const [attempt, setAttempt] = useState(0);
@@ -73,6 +75,7 @@ export default function Dictionary({ onBack, onReportMissing }: { onBack: () => 
     {!selected && <BackButton className="dictionary-navigation" navLabel="Навігація словника" onBack={onBack}>← До «Сьогодні»</BackButton>}
     {!selected && <>
       <h1 className="ios-title">Словник</h1>
+      {learner && <ActiveLanguageBadge learner={learner} />}
       <div className="dictionary-search"><label className="sr-only" htmlFor="dictionary-query">Слово для пошуку</label>
         <input id="dictionary-query" type="search" autoComplete="off" spellCheck={false} maxLength={200} value={rawQuery} onChange={event => changeQuery(event.target.value)} placeholder="Польське слово або переклад" />
         {rawQuery && <button type="button" className="dictionary-clear ios-plain" aria-label="Очистити" onClick={() => changeQuery('')}>×</button>}</div>
