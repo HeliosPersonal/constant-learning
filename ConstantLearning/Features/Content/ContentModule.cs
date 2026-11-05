@@ -1,3 +1,4 @@
+using ConstantLearning.Features.Content.Availability;
 using ConstantLearning.Features.Content.Course;
 using ConstantLearning.Features.Content.Learning;
 using ConstantLearning.Features.Content.Editor.Queue;
@@ -28,6 +29,7 @@ public static class ContentModule
         services.AddReferenceSources();
         services.AddDictionarySearch();
         services.AddPublishedCourseReader();
+        services.AddContentAvailability();
         services.AddAnswerContentReader();
         services.AddContentReports();
         services.AddContentVerification();

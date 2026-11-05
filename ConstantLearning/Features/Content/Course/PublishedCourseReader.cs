@@ -88,11 +88,19 @@ internal sealed class PublishedVersionCache
 
 internal sealed class PublishedCourseReader(AppDbContext db, PublishedVersionCache cache) : IPublishedCourseReader
 {
-    public async Task<IReadOnlyList<PublishedCourseWord>> ReadAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<PublishedCourseWord>> ReadAsync(CancellationToken cancellationToken = default) =>
+        ReadInternalAsync(targetLanguage: null, cancellationToken);
+
+    public Task<IReadOnlyList<PublishedCourseWord>> ReadAsync(string targetLanguage, CancellationToken cancellationToken = default) =>
+        ReadInternalAsync(targetLanguage, cancellationToken);
+
+    private async Task<IReadOnlyList<PublishedCourseWord>> ReadInternalAsync(string? targetLanguage, CancellationToken cancellationToken)
     {
         var entries = await db.DictionaryEntries.AsNoTracking()
             .Where(entry => entry.CoursePosition != null && entry.PublishedVersion != null
                 && entry.PublishedVersion.EntryId == entry.Id && entry.PublishedVersion.ValidationStatus == "approved")
+            // null → усі мови (lookup/прогрів); задана мова → власний course_position цієї мови (T06, AC-06).
+            .Where(entry => targetLanguage == null || entry.TargetLanguage == targetLanguage)
             .Select(entry => new { entry.Id, entry.Domain, Position = entry.CoursePosition!.Value, VersionId = entry.PublishedVersionId!.Value })
             .ToArrayAsync(cancellationToken);
         var payloads = await cache.ReadAsync(db, entries.Select(entry => entry.VersionId).Distinct().ToArray(), cancellationToken);

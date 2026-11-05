@@ -29,7 +29,7 @@ public sealed class ContinueSessionService(AppDbContext db, ILearnerDayStateServ
             return (409, null, expired);
         }
         if (session.ResultItemId == itemId) session.ResultItemId = null;
-        var published = await course.ReadAsync(ct);
+        var published = await course.ReadAsync(day!.State.TargetLanguage, ct);
         var next = SessionViewBuilder.PrepareNextItem(session, items!, published.ToDictionary(w => w.EntryId), now);
         var words = await db.LearnerWords.AsNoTracking().Where(w => w.LearnerId == learnerId).ToArrayAsync(ct);
         var state = await limits.ReadAsync(day!, words, published, now, ct);

@@ -46,7 +46,7 @@ public sealed class StartExtraPracticeService(AppDbContext db, ILearnerDayStateS
         var day = current.Day.Date;
         var session = await SessionResultView.FindOpenAsync(db, learnerId, now, ct)
             ?? await boundary.GetActiveAsync(learnerId, now, ct);
-        var course = await courseReader.ReadAsync(ct);
+        var course = await courseReader.ReadAsync(current.State.TargetLanguage, ct);
         var published = course.ToDictionary(word => word.EntryId);
 
         if (session is not null)

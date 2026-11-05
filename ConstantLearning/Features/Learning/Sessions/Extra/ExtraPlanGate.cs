@@ -42,8 +42,4 @@ internal static class ExtraPlanGate
             && (session.Kind == "extra_word" || session.Kind == "extra_practice") && session.CreatedAt >= since, ct);
         return recent >= RateLimitPerMinute;
     }
-
-    public static async Task<Dictionary<Guid, PublishedCourseWord>> PublishedAsync(
-        IPublishedCourseReader courseReader, CancellationToken ct) =>
-        (await courseReader.ReadAsync(ct)).ToDictionary(word => word.EntryId);
 }

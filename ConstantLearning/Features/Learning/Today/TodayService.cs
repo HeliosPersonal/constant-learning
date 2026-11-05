@@ -26,7 +26,7 @@ public sealed class TodayService(AppDbContext db, ILearnerDayStateService learne
         var day = current.Day.Date;
         var session = await SessionResultView.FindOpenAsync(db, learnerId, now, cancellationToken)
             ?? await boundary.GetActiveAsync(learnerId, now, cancellationToken);
-        var course = await courseReader.ReadAsync(cancellationToken);
+        var course = await courseReader.ReadAsync(current.State.TargetLanguage, cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
         if (session is not null)
         {

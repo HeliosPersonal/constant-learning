@@ -53,7 +53,7 @@ public sealed class NewWordService(AppDbContext db, ILearnerDayStateService lear
         if (session.Status != "active") return Error("new_word.session_inactive", "Заняття вже закрито.");
         if (item.Kind != "new_word_card") return Error("new_word.invalid_item_kind", "Ця картка очікує відповіді на вправу.");
 
-        var course = await courseReader.ReadAsync(cancellationToken);
+        var course = await courseReader.ReadAsync(current.State.TargetLanguage, cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
         var items = await db.SessionItems.Where(value => value.SessionId == session.Id)
             .OrderBy(value => value.Position).ToListAsync(cancellationToken);

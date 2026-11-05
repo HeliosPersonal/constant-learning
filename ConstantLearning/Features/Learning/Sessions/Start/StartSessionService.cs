@@ -39,7 +39,7 @@ public sealed class StartSessionService(AppDbContext db, ILearnerDayStateService
             session = null;
         }
 
-        var course = await courseReader.ReadAsync(cancellationToken);
+        var course = await courseReader.ReadAsync(current.State.TargetLanguage, cancellationToken);
         var published = course.ToDictionary(word => word.EntryId);
         var words = await db.LearnerWords.AsNoTracking().Where(word => word.LearnerId == learnerId)
             .ToArrayAsync(cancellationToken);

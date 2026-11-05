@@ -26,7 +26,7 @@ public sealed class CurrentSessionService(AppDbContext db, ILearnerDayStateServi
         SessionResponse? response = null;
         if (session is not null)
         {
-            var course = await courseReader.ReadAsync(cancellationToken);
+            var course = await courseReader.ReadAsync(current.State.TargetLanguage, cancellationToken);
             var items = await db.SessionItems.Where(item => item.SessionId == session.Id)
                 .OrderBy(item => item.Position).ToArrayAsync(cancellationToken);
             var next = SessionViewBuilder.PrepareNextItem(session, items,

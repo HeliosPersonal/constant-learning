@@ -29,7 +29,11 @@ internal sealed class ReminderLearningReader(AppDbContext db, IPublishedCourseRe
         var lastAnswer = today.Select(answer => (Instant?)answer.AnsweredAt).Append(lastCard).Max();
         if (completed) return new(true, false, lastAnswer);
 
-        var course = await courseReader.ReadAsync(cancellationToken);
+        // Нагадування рахуємо для активної мови learner (T06): base course іншої мови не має впливати
+        // на «є що робити сьогодні». TODO(T13): активна мова визначатиметься через setActiveLanguage.
+        var activeLanguage = await db.Learners.AsNoTracking().Where(learner => learner.Id == learnerId)
+            .Select(learner => learner.ActiveTargetLanguage).SingleOrDefaultAsync(cancellationToken) ?? "pl";
+        var course = await courseReader.ReadAsync(activeLanguage, cancellationToken);
         var published = course.Select(word => word.EntryId).ToHashSet();
         // Незавершені вправи вже розпочатої session теж залишаються роботою, навіть коли квота нових слів вичерпана.
         var pending = await db.SessionItems.AsNoTracking().Where(item => item.Session.LearnerId == learnerId
