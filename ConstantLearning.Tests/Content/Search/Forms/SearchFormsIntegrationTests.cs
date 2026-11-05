@@ -265,7 +265,7 @@ public sealed class SearchFormsIntegrationTests(PostgresFixture postgres) : Post
     {
         // Пакет тепер містить усі цільові мови (pl + en/de/nl); польська морфологія та індикатор
         // «без морфології» лишаються pl-специфічними, а лічильники версій/журналу — на весь пакет.
-        const int packagedTotal = 2000 + 351 + 925 + 1082;
+        const int packagedTotal = 2000 + 2000 + 2000 + 2000;
         var import = new DictionaryImportService(Db, new DictionaryImportReader(),
             new ContentPublicationService(Db, new NoOpPublicationProjection(), Clock), Clock,
             NullLogger<DictionaryImportService>.Instance);

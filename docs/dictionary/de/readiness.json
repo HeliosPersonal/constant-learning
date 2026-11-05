@@ -1,16 +1,18 @@
 {
   "language": "de",
   "target": 2000,
-  "editorial_decisions": 925,
-  "approved_candidates": 925,
-  "blocked": 0,
+  "editorial_decisions": 2116,
+  "approved_candidates": 2109,
+  "blocked": 7,
   "ready": true,
   "approval_policy_confirmed": true,
-  "reasons": {},
+  "reasons": {
+    "unknown_part_of_speech": 5,
+    "latin_in_pronunciation": 2
+  },
   "scope": "Двомовний словник (цільова мова → українська); джерельна звірка й LLM-редактура, не незалежна перевірка людиною.",
-  "shortfall": 1075,
-  "released": 925,
-  "spares": 0,
-  "course_sha256": "9aa8ce2b68c2317279d52fffc70d59aab9d42fbc4b11011a4bfb5051f289a53c",
-  "evidence_sha256": "8d9f05990c1ee3ab58b8692fa9cf01425d494a686bfb77a35296b86880b63b11"
+  "released": 2000,
+  "spares": 109,
+  "course_sha256": "0347d9c39c2e09f718886ddf16c6ea9949f6afabe24d11c845b7da69154879c7",
+  "evidence_sha256": "fd93022d64b3296db3e75e8da936f34217e1aaa901d4f0c7684e5365e1dbef4d"
 }

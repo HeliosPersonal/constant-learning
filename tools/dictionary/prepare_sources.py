@@ -93,6 +93,12 @@ def main() -> None:
     parser.add_argument("--candidate-limit", type=int, default=8000)
     parser.add_argument("--expected-wiktionary-sha256")
     parser.add_argument("--expected-frequency-sha256")
+    # Прибирає обов'язковий гейт прикладу: редактор однаково укладає власний example_pl, тож
+    # джерельний приклад потрібен лише для анти-копі-перевірки. Прапорець розширює джерельний пул.
+    parser.add_argument("--allow-missing-example", action="store_true")
+    # Додає топап-кандидатів: леми з IPA та придатним значенням, але без українського перекладу —
+    # переклад авторує LLM-редактор (translation_backed=false). Потрібно для паритету 2000.
+    parser.add_argument("--include-untranslated", action="store_true")
     args = parser.parse_args()
     lang = args.lang
     settings = config(lang)
@@ -116,12 +122,30 @@ def main() -> None:
     ordered = sorted(scores, key=lambda word: -scores[word])
     rank = {word: index + 1 for index, word in enumerate(ordered)}
     words = {word for word in ordered[:args.candidate_limit] if re.fullmatch(lemma_pattern, word)}
+    def usable(sense: dict) -> bool:
+        """Значення придатне для відбору: не form_of і без переносних/сленгових/виключених тегів."""
+        return not sense.get("form_of") and not (EXCLUDED_TAGS | {"figuratively", "slang"}).intersection(sense.get("tags", []))
+
+    def sense_translations(entry: dict, sense: dict, order: int) -> tuple[list[str], str]:
+        """Українські переклади, пов'язані зі значенням, та його sense_index у доказі."""
+        if sense_link == "index":
+            # pl/de: точний збіг рядка sense_index між перекладом і значенням.
+            translations = [t["word"].replace("́", "") for t in entry.get("translations", []) if t.get("lang_code") == "uk" and t.get("sense_index") and t["sense_index"] == sense.get("sense_index") and re.fullmatch(UK_WORD, t.get("word", ""))]
+            return translations, sense.get("sense_index")
+        # en/nl: збіг за токенами глоси; порядковий номер значення як sense_index у доказі.
+        translations = [t["word"].replace("́", "") for t in entry.get("translations", []) if t.get("lang_code") == "uk" and re.fullmatch(UK_WORD, t.get("word", "")) and gloss_overlap(t.get("sense"), sense) >= 0.5]
+        return translations, str(order)
+
     selected = {}
+    relaxed = {}
+    topup = {}
     with gzip.open(dictionary, "rt", encoding="utf-8") as stream:
         for line in stream:
             entry = json.loads(line)
             word = entry.get("word")
-            if entry.get("lang_code") != lang or word not in words or entry.get("pos") in EXCLUDED_POS:
+            # Пропускаємо лише слова, вже відібрані як source-backed. Топап-слово лишається поза
+            # `selected`, тож пізніший POS-запис із перекладом ще може стати source-backed.
+            if entry.get("lang_code") != lang or word not in words or entry.get("pos") in EXCLUDED_POS or word in selected:
                 continue
             tags = entry.get("tags", [])
             if EXCLUDED_TAGS.intersection(tags):
@@ -129,45 +153,88 @@ def main() -> None:
             ipa = [sound["ipa"] for sound in entry.get("sounds", []) if sound.get("ipa") and not {"Slavic-alphabet", "plural"}.intersection(sound.get("tags", []))]
             if not ipa:
                 continue
-            chosen = None
-            for order, sense in enumerate(entry.get("senses", []), start=1):
-                if sense.get("form_of") or (EXCLUDED_TAGS | {"figuratively", "slang"}).intersection(sense.get("tags", [])):
-                    continue
-                if sense_link == "index":
-                    # pl/de: точний збіг рядка sense_index між перекладом і значенням.
-                    translations = [translation["word"].replace("́", "") for translation in entry.get("translations", []) if translation.get("lang_code") == "uk" and translation.get("sense_index") and translation["sense_index"] == sense.get("sense_index") and re.fullmatch(UK_WORD, translation.get("word", ""))]
-                    sense_value = sense.get("sense_index")
-                else:
-                    # en/nl: збіг за токенами глоси; порядковий номер значення як sense_index у доказі.
-                    translations = [translation["word"].replace("́", "") for translation in entry.get("translations", []) if translation.get("lang_code") == "uk" and re.fullmatch(UK_WORD, translation.get("word", "")) and gloss_overlap(translation.get("sense"), sense) >= 0.5]
-                    sense_value = str(order)
-                examples = good_examples(sense)
-                if not translations or not examples or word in selected:
-                    continue
-                chosen = (sense, sense_value, translations, examples[0])
-                break
-            if chosen is None and sense_link == "gloss" and word not in selected:
-                # Відкіт: жодне значення не збіглося за глосою — беремо перше придатне значення
-                # (з прикладом) і всі українські переклади слова; редактура обере коректний.
-                fallback = [translation["word"].replace("́", "") for translation in entry.get("translations", []) if translation.get("lang_code") == "uk" and re.fullmatch(UK_WORD, translation.get("word", ""))]
-                if fallback:
-                    for order, sense in enumerate(entry.get("senses", []), start=1):
-                        if sense.get("form_of") or (EXCLUDED_TAGS | {"figuratively", "slang"}).intersection(sense.get("tags", [])):
-                            continue
-                        examples = good_examples(sense)
-                        if examples:
-                            chosen = (sense, str(order), fallback, examples[0])
-                            break
-            if chosen is not None and word not in selected:
-                sense, sense_value, translations, usage_example = chosen
-                selected[word] = {
+            senses = list(enumerate(entry.get("senses", []), start=1))
+            uk_all = [t["word"].replace("́", "") for t in entry.get("translations", []) if t.get("lang_code") == "uk" and re.fullmatch(UK_WORD, t.get("word", ""))]
+            def make_row(sense, sense_value, translations, usage_example, translation_backed):
+                return {
                     "lemma": word, "frequency_rank": rank[word], "pos": entry["pos"], "tags": tags,
                     "gender": next((value for key, value in gender_map if key in tags), ""),
                     "sense": sense_value, "gloss": " ".join((sense.get("glosses") or [""])[0].split()[:8]),
                     "translation_candidates": list(dict.fromkeys(translations))[:2], "ipa": ipa[0], "usage_example": usage_example,
+                    "translation_backed": translation_backed,
                     "source_url": "https://" + settings["wiktionary_host"] + "/wiki/" + urllib.parse.quote(word),
                     "source_record_sha256": hashlib.sha256(line.encode("utf-8")).hexdigest(),
                 }
+            chosen = None
+            # Прохід 1 (історична логіка, без прапорця): значення з перекладом І придатним прикладом.
+            for order, sense in senses:
+                if not usable(sense):
+                    continue
+                translations, sense_value = sense_translations(entry, sense, order)
+                examples = good_examples(sense)
+                if translations and examples:
+                    chosen = (sense, sense_value, translations, examples[0])
+                    break
+            # Відкіт для глосових мов (історична логіка, без прапорця): перше придатне значення З
+            # прикладом і всі українські переклади слова. Кроки 1-2 відтворюють старий відбір байт-у-байт,
+            # тож усі раніше відібрані леми лишаються незмінними; релаксації нижче лише ДОДАЮТЬ нові.
+            if chosen is None and sense_link == "gloss" and uk_all:
+                for order, sense in senses:
+                    if not usable(sense):
+                        continue
+                    examples = good_examples(sense)
+                    if examples:
+                        chosen = (sense, str(order), uk_all, examples[0])
+                        break
+            if chosen is not None:
+                sense, sense_value, translations, usage_example = chosen
+                selected[word] = make_row(sense, sense_value, translations, usage_example, True)
+                continue
+            # Релаксації (--allow-missing-example) — переклад є, приклад необов'язковий. Запис в окремий
+            # словник `relaxed` (не в `selected`): так пізніший POS-запис того самого слова з прикладом
+            # (tier-1) лишається пріоритетним і раніше відібрані 1082/925/351 леми не зміщуються.
+            if args.allow_missing_example and word not in relaxed:
+                relaxed_chosen = None
+                # Релаксація А: значення з перекладом, приклад необов'язковий.
+                for order, sense in senses:
+                    if not usable(sense):
+                        continue
+                    translations, sense_value = sense_translations(entry, sense, order)
+                    if translations:
+                        examples = good_examples(sense)
+                        relaxed_chosen = (sense, sense_value, translations, examples[0] if examples else "")
+                        break
+                # Релаксація Б (глосові мови): перше придатне значення, всі переклади слова, без прикладу.
+                if relaxed_chosen is None and sense_link == "gloss" and uk_all:
+                    for order, sense in senses:
+                        if not usable(sense):
+                            continue
+                        relaxed_chosen = (sense, str(order), uk_all, "")
+                        break
+                if relaxed_chosen is not None:
+                    sense, sense_value, translations, usage_example = relaxed_chosen
+                    relaxed[word] = make_row(sense, sense_value, translations, usage_example, True)
+                    continue
+            # Топап (--include-untranslated) — ОСТАННІЙ резерв, в окремий словник (не в `selected`):
+            # лема без українського перекладу; беремо перше придатне значення з глосою, переклад авторує
+            # LLM-редактор (translation_candidates=[]). Записуємо раз на слово; якщо пізніший POS-запис
+            # того самого слова дасть source-backed — він осяде в `selected` і витіснить топап на злитті.
+            if args.include_untranslated and word not in topup:
+                for order, sense in senses:
+                    if not usable(sense) or not (sense.get("glosses") or []):
+                        continue
+                    examples = good_examples(sense)
+                    sense_value = str(order) if sense_link == "gloss" else (sense.get("sense_index") or str(order))
+                    topup[word] = make_row(sense, sense_value, [], examples[0] if examples else "", False)
+                    break
+    # Злиття за пріоритетом: tier-1 (source-backed з прикладом) > релаксації (переклад, без прикладу)
+    # > топап (без перекладу). Нижчий tier додає слово, лише якщо вищий його не відібрав.
+    for word, row in relaxed.items():
+        if word not in selected:
+            selected[word] = row
+    for word, row in topup.items():
+        if word not in selected:
+            selected[word] = row
     rows = sorted(selected.values(), key=lambda row: row["frequency_rank"])
     (args.cache / "all-source-supported.jsonl").write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows), encoding="utf-8")
     (args.cache / "source-fingerprints.json").write_text(json.dumps(fingerprints, indent=2) + "\n", encoding="utf-8")

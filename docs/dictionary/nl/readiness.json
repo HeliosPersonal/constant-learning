@@ -1,18 +1,19 @@
 {
   "language": "nl",
   "target": 2000,
-  "editorial_decisions": 383,
-  "approved_candidates": 351,
-  "blocked": 32,
+  "editorial_decisions": 2382,
+  "approved_candidates": 2153,
+  "blocked": 229,
   "ready": true,
   "approval_policy_confirmed": true,
   "reasons": {
-    "missing_noun_gender": 32
+    "missing_noun_gender": 222,
+    "unknown_part_of_speech": 4,
+    "editorial_rejected": 3
   },
   "scope": "Двомовний словник (цільова мова → українська); джерельна звірка й LLM-редактура, не незалежна перевірка людиною.",
-  "shortfall": 1649,
-  "released": 351,
-  "spares": 0,
-  "course_sha256": "f9b13acd5e2ee11346186ebd1bbd924f497f15b769511d65773506d60d822eee",
-  "evidence_sha256": "343395fb133431f654012b00a552865dbc2d0f80bffdbe5c9bfbfc0f258b23f2"
+  "released": 2000,
+  "spares": 153,
+  "course_sha256": "f1af4956340bacd3ef3bdcb08ead449e2958555f03ad33d765685a0fe258b16e",
+  "evidence_sha256": "702b4a8ca9d4897451ca23307ec8d085de79deec182f5fe42fa47d9224ffdcdb"
 }

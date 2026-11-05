@@ -18,7 +18,7 @@ public sealed class DictionaryImportIntegrationTests(PostgresFixture postgres) :
     private readonly PostgresFixture _postgres = postgres;
     // Очікувані розміри випусків, що постачаються в Resources\Dictionary (pl — корінь, решта — підтеки <lang>\).
     private static readonly IReadOnlyDictionary<string, int> PackagedCourseSizes =
-        new Dictionary<string, int> { ["pl"] = 2000, ["nl"] = 351, ["de"] = 925, ["en"] = 1082 };
+        new Dictionary<string, int> { ["pl"] = 2000, ["nl"] = 2000, ["de"] = 2000, ["en"] = 2000 };
 
     [DockerFact]
     public async Task PackagedRelease_ImportsEveryLanguagePerLanguageOrderedAndEnabled()

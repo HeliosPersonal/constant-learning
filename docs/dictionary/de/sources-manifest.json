@@ -22,16 +22,16 @@
   "candidate_limit": 8000,
   "selection_method": "За спаданням частотності HermitDave (OpenSubtitles 2018); однословна лема, пов’язаний український переклад, IPA й приклад ужитку (звірка значення за точним збігом рядка sense_index (як у pl)); потім редакторське рішення щодо значення й природності",
   "release": {
-    "editorial_decisions": 925,
-    "approved_unique_lemmas": 925,
-    "blocked": 0,
-    "spares": 0,
-    "released": 925,
-    "shortfall": 1075,
+    "editorial_decisions": 2116,
+    "approved_unique_lemmas": 2109,
+    "blocked": 7,
+    "spares": 109,
+    "released": 2000,
+    "shortfall": 0,
     "frequency_rank_min": 1,
     "frequency_rank_max": 49906,
-    "course_csv_sha256": "9aa8ce2b68c2317279d52fffc70d59aab9d42fbc4b11011a4bfb5051f289a53c",
-    "evidence_jsonl_sha256": "8d9f05990c1ee3ab58b8692fa9cf01425d494a686bfb77a35296b86880b63b11",
+    "course_csv_sha256": "0347d9c39c2e09f718886ddf16c6ea9949f6afabe24d11c845b7da69154879c7",
+    "evidence_jsonl_sha256": "fd93022d64b3296db3e75e8da936f34217e1aaa901d4f0c7684e5365e1dbef4d",
     "independent_human_review": false
   }
 }

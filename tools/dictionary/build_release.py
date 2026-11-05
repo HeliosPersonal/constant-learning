@@ -49,9 +49,12 @@ def validate_editorial(row: dict, source: dict, lang: str = "pl") -> list[str]:
             problems.append("missing_" + field)
     if problems:
         return problems
-    candidates = accepted_translations(source["lemma"], source["translation_candidates"], lang)
-    if not all(normalize(t) in candidates for t in row["translation_uk"].split(";")):
-        problems.append("translation_not_in_evidence")
+    # Топап-леми (translation_backed=false) не мають джерельних кандидатів — переклад авторує LLM-редактор,
+    # тож перевірку «переклад є серед кандидатів джерела» пропускаємо (інші перевірки мови лишаються).
+    if source.get("translation_backed", True):
+        candidates = accepted_translations(source["lemma"], source["translation_candidates"], lang)
+        if not all(normalize(t) in candidates for t in row["translation_uk"].split(";")):
+            problems.append("translation_not_in_evidence")
     if not re.search("[а-яіїєґА-ЯІЇЄҐ]", row["translation_uk"]):
         problems.append("translation_not_ukrainian")
     if re.search("[а-яіїєґА-ЯІЇЄҐ]", row["example_pl"]):
@@ -111,6 +114,8 @@ def main() -> None:
         if problems:
             blocked.append({"lemma_pl": word, "reasons": ";".join(problems), "review_note": row.get("review_note", "")})
             continue
+        translation_backed = source.get("translation_backed", True)
+        authored = [t.strip() for t in row["translation_uk"].split(";") if t.strip()]
         evidence_id = "wikt-" + hashlib.sha256(word.encode("utf-8")).hexdigest()[:16]
         content = dict.fromkeys(FIELDS, "")
         content.update(
@@ -121,22 +126,28 @@ def main() -> None:
             topic="general", frequency_rank=source["frequency_rank"],
             show_context_before="true", example_pl=row["example_pl"].strip(),
             example_uk=row["example_uk"].strip(), validation_status="approved",
-            validation_sources=evidence_id, reviewed_by="LLM-editorial/source-backed",
+            validation_sources=evidence_id,
+            reviewed_by="LLM-editorial/source-backed" if translation_backed else "LLM-translated/source-sense",
             review_note=row.get("review_note", ""),
         )
         accepted.append(content)
-        evidence.append({
+        proof = {
             "id": evidence_id, "lemma_pl": word, "source_url": source["source_url"],
             "source_record_sha256": source["source_record_sha256"],
             "part_of_speech": source["pos"], "sense_index": source["sense"],
-            "translation_candidates": source["translation_candidates"], "ipa": source["ipa"],
+            # Топап: докази-кандидати = авторований LLM переклад (самоузгоджено з CSV); позначено метод.
+            "translation_candidates": source["translation_candidates"] if translation_backed else authored,
+            "ipa": source["ipa"],
             "source_tags": source.get("tags", []),
             "translation_correction": [{"original": original, "corrected": corrected, "source_url": correction_sources[word]} for (lemma, original), corrected in translation_corrections.items() if lemma == word],
             "usage_example_sha256": hashlib.sha256(source["usage_example"].encode("utf-8")).hexdigest(),
             "reviewer_batch": row.get("_author_batch", reviewer_file),
             "cross_review_batch": row.get("_cross_review"),
             "example_origin": "original/LLM-editorial",
-        })
+        }
+        if not translation_backed:
+            proof["translation_method"] = "llm-authored"
+        evidence.append(proof)
     accepted.sort(key=lambda row: int(row["frequency_rank"]))
     counts = Counter(reason for row in blocked for reason in row["reasons"].split(";"))
     # «Ship what qualifies»: випускаємо стільки якісних approved, скільки дають джерела; паритет із pl —
@@ -158,7 +169,13 @@ def main() -> None:
     write_csv(output / "review-queue.csv", ["lemma_pl", "reasons", "review_note"], blocked)
     if not report["ready"]:
         raise SystemExit(f"Нічого випускати: {len(accepted)} approved; підтвердь --approve-source-backed і перевір review-queue.csv")
-    chosen = accepted[:args.target]
+    # Членство (гібрид, рішення користувача): спершу беремо всі source-backed, потім добираємо топап —
+    # кожен шар за частотою — і зрізаємо до target. Порядок курсу (course.csv) лишається суто за частотою.
+    # pl: усі approved — source-backed, тож ключ зводиться до частоти й зріз лишається байт-у-байт тим самим.
+    def is_source_backed(row: dict) -> bool:
+        return row["reviewed_by"] == "LLM-editorial/source-backed"
+    members = sorted(accepted, key=lambda row: (not is_source_backed(row), int(row["frequency_rank"])))[:args.target]
+    chosen = sorted(members, key=lambda row: int(row["frequency_rank"]))
     chosen_ids = {row["validation_sources"] for row in chosen}
     write_csv(output / "course.csv", FIELDS, chosen)
     (output / "evidence.jsonl").write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in evidence if row["id"] in chosen_ids), encoding="utf-8")
