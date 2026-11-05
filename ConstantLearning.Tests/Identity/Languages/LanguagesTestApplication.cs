@@ -8,6 +8,8 @@ using ConstantLearning.Tests.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,7 +23,8 @@ internal sealed class LanguagesTestApplication(WebApplication app, HttpClient cl
 {
     public HttpClient Client { get; } = client;
 
-    public static async Task<LanguagesTestApplication> StartAsync(string connectionString, IClock clock)
+    public static async Task<LanguagesTestApplication> StartAsync(string connectionString, IClock clock,
+        IInterceptor? interceptor = null)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -36,6 +39,11 @@ internal sealed class LanguagesTestApplication(WebApplication app, HttpClient cl
         builder.Services.AddIdentity(builder.Configuration);
         builder.Services.AddLearning();
         builder.Services.AddContent();
+        if (interceptor is not null)
+        {
+            builder.Services.AddDbContext<AppDbContext>(options => options.AddInterceptors(interceptor));
+        }
+
         builder.Services.AddControllers().AddApplicationPart(typeof(LearnersController).Assembly);
         var application = builder.Build();
         application.UseRouting();
