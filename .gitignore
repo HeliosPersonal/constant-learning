@@ -12,7 +12,11 @@ riderModule.iml
 
 # Локальні словникові знімки й кеш Python-інструментів.
 .dictionary-cache/
+.cache-dict*/
 __pycache__/
+
+# Локальні налаштування редактора.
+.vscode/
 
 # Згенеровані файли та локальні результати перевірок Mini App.
 ConstantLearning.MiniApp/node_modules/
