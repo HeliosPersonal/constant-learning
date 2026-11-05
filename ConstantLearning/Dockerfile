@@ -12,7 +12,7 @@ WORKDIR /src
 COPY ConstantLearning/ConstantLearning.csproj ConstantLearning/
 RUN dotnet restore ConstantLearning/ConstantLearning.csproj
 COPY ConstantLearning/ ConstantLearning/
-COPY docs/dictionary/course.csv docs/dictionary/evidence.jsonl docs/dictionary/readiness.json docs/dictionary/sources-manifest.json docs/dictionary/
+COPY docs/dictionary/ docs/dictionary/
 COPY --from=miniapp /src/ConstantLearning/wwwroot/ ConstantLearning/wwwroot/
 RUN dotnet publish ConstantLearning/ConstantLearning.csproj --no-restore -c Release -o /app/publish /p:UseAppHost=false
 
