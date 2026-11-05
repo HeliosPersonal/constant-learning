@@ -1,5 +1,5 @@
 ---
-status: Draft
+status: Done
 owner: "Viacheslav Melnichenko"
 updated_at: "2026-11-05"
 ---
@@ -34,7 +34,7 @@ updated_at: "2026-11-05"
 | [T14](./T14-editor-queue-by-language.md) | `listEditorQueueByLanguage` + прив'язка report до мови | app | Viacheslav Melnichenko | M | [T09](./T09-migrate-sessions-reports.md), [T11](./T11-read-apis-error-registry.md) | done |
 | [T15](./T15-ui-language-switcher.md) | SPA: вибір/перемикання мови + порожній стан | ui | Viacheslav Melnichenko | L | [T13](./T13-set-active-scope-existing.md) | done |
 | [T16](./T16-ui-editor-queue-by-language.md) | SPA: черга content reports редактора за мовою | ui | Viacheslav Melnichenko | M | [T14](./T14-editor-queue-by-language.md) | done |
-| [T17](./T17-isolation-contract-e2e-load.md) | Наскрізна ізоляція / контракт / e2e / навантаження | tests | Viacheslav Melnichenko | L | [T02](./T02-test-fixtures.md), [T13](./T13-set-active-scope-existing.md), [T14](./T14-editor-queue-by-language.md), [T15](./T15-ui-language-switcher.md), [T16](./T16-ui-editor-queue-by-language.md) | todo |
+| [T17](./T17-isolation-contract-e2e-load.md) | Наскрізна ізоляція / контракт / e2e / навантаження | tests | Viacheslav Melnichenko | L | [T02](./T02-test-fixtures.md), [T13](./T13-set-active-scope-existing.md), [T14](./T14-editor-queue-by-language.md), [T15](./T15-ui-language-switcher.md), [T16](./T16-ui-editor-queue-by-language.md) | done |
 
 ## Відкриті питання — усі закрито (OQ-7 resolved 2026-11-05)
 

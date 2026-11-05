@@ -120,6 +120,49 @@ using (var scope = factory.Services.CreateScope())
         db.ChangeTracker.Clear();
     }
     await File.WriteAllTextAsync("/results/extra-cohort.txt", "100 learners 940000001..940000100 (план дня виконано); 940000001..50 extra-word, 940000051..100 extra-practice");
+    // Когорта для навантажувального тесту перемикання мови (T17 multi-target-languages): en увімкнено як
+    // тестову мову (у проді лишається вимкненою до готовності контенту, OQ-7), засіяно en base course і
+    // 50 learner, що ведуть pl (активна) + en з непорожнім обліком у кожній. language-switch.js бʼє цю
+    // когорту. Межі [PRD §6](../../docs/features/multi-target-languages/PRD.md#6-non-functional-requirements):
+    // p95 перемикання активної мови ≤ 1500 ms, p95 відкриття «Сьогодні» ≤ 1500 ms.
+    var english = await db.Set<TargetLanguage>().SingleAsync(l => l.Code == "en");
+    english.IsEnabled = true;
+    await db.SaveChangesAsync();
+    db.ChangeTracker.Clear();
+    var enEntries = new List<DictionaryEntry>();
+    var enVersions = new List<EntryVersion>();
+    for (var i = 1; i <= 200; i++)
+    {
+        var lemma = "worten" + Suffix(i);
+        var entry = new DictionaryEntry { ExternalId = $"load-en-{i}", TargetLanguage = "en", Domain = "everyday", CoursePosition = i, CreatedAt = now };
+        var version = new EntryVersion { Entry = entry, LemmaPl = lemma, PartOfSpeech = "noun", PronunciationUk = "слово", ExamplePl = $"The {lemma}.", ExampleUk = "Це слово.", ValidationStatus = "approved", CreatedByKind = "import", ContentHash = new string('b', 64), FrequencyRank = i, CreatedAt = now };
+        db.EntryVersions.Add(version);
+        db.VersionTranslations.Add(new() { VersionId = version.Id, Kind = "canonical", TextUk = $"слово en {i}", Position = 0 });
+        db.VersionAcceptedAnswers.Add(new() { VersionId = version.Id, TextPl = lemma, IsCanonical = true });
+        enEntries.Add(entry);
+        enVersions.Add(version);
+    }
+    await db.SaveChangesAsync();
+    for (var i = 0; i < enEntries.Count; i++)
+    {
+        enEntries[i].PublishedVersionId = enVersions[i].Id;
+        db.SearchForms.Add(new SearchForm { EntryId = enEntries[i].Id, VersionId = enVersions[i].Id, Lang = "en", FormDisplay = enVersions[i].LemmaPl, FormFolded = enVersions[i].LemmaPl, IsLemma = true, CreatedAt = now });
+    }
+    await db.SaveChangesAsync();
+    db.ChangeTracker.Clear();
+    day = now.InZone(DateTimeZone.Utc).Date;
+    for (var i = 1; i <= 50; i++)
+    {
+        var learner = new Learner { TelegramUserId = 950000000 + i, TimeZone = "UTC", TimeZoneConfirmed = true, DailyNewWordsLimit = 3, ActiveTargetLanguage = "pl", OnboardedAt = now, CreatedAt = now };
+        db.Learners.Add(learner);
+        db.Set<LearnerLanguageState>().Add(new LearnerLanguageState { LearnerId = learner.Id, TargetLanguage = "pl", DailyNewWordsLimit = 3, CreatedAt = now });
+        db.Set<LearnerLanguageState>().Add(new LearnerLanguageState { LearnerId = learner.Id, TargetLanguage = "en", DailyNewWordsLimit = 3, CreatedAt = now });
+        foreach (var (entry, index) in entries.Take(200).Select((entry, index) => (entry, index))) db.LearnerWords.Add(new LearnerWord { LearnerId = learner.Id, EntryId = entry.Id, TargetLanguage = "pl", Status = "review", FirstShownDay = index < 3 ? day : day.PlusDays(-10), DueOn = index < 3 ? day.PlusDays(1) : day, IntervalDays = index < 3 ? 1 : 2, ModelState = "{\"forgetting_rate\":0.3}", SchedulerVersion = "memorize-v1", CreatedAt = now });
+        foreach (var (entry, index) in enEntries.Take(200).Select((entry, index) => (entry, index))) db.LearnerWords.Add(new LearnerWord { LearnerId = learner.Id, EntryId = entry.Id, TargetLanguage = "en", Status = "review", FirstShownDay = index < 3 ? day : day.PlusDays(-10), DueOn = index < 3 ? day.PlusDays(1) : day, IntervalDays = index < 3 ? 1 : 2, ModelState = "{\"forgetting_rate\":0.3}", SchedulerVersion = "memorize-v1", CreatedAt = now });
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+    }
+    await File.WriteAllTextAsync("/results/language-cohort.txt", "50 learners 950000001..950000050 (pl active + en), 200 words each language");
     await db.Database.ExecuteSqlRawAsync("ANALYZE dictionary_entries; ANALYZE entry_versions; ANALYZE version_translations; ANALYZE version_accepted_answers; ANALYZE search_forms; ANALYZE learners; ANALYZE learner_words; ANALYZE session_items; ANALYZE answer_events; ANALYZE content_reports; ANALYZE reminder_schedules; ANALYZE notification_dispatches;");
     await scope.ServiceProvider.GetRequiredService<IPublishedCourseReader>().ReadAsync();
     await File.WriteAllTextAsync("/results/reminder-due.txt", due.ToString());

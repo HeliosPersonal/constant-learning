@@ -107,3 +107,20 @@ Copy-Item tests/load/results/run/metrics-latest.prom tests/load/results/run/extr
 ```
 
 Звіт: p95 зі `extra-summary.json` (`metrics.extra_word_duration["p(95)"]` і `metrics.extra_practice_duration["p(95)"]`) та серверні гістограми зі `extra-metrics-after.prom` зберігаються в каталог прогону. CI, як і для T49, лише завантажує збережені результати — повний прогін із Docker і k6 виконується на локальному стенді.
+
+## Перемикання мови (T17)
+
+Окремий сценарій [`language-switch.js`](language-switch.js) відповідає [T17](../../docs/features/multi-target-languages/tasks/T17-isolation-contract-e2e-load.md). Seed LoadHost вмикає `en` як тестову мову (у проді `en` лишається вимкненою до готовності контенту, OQ-7), засіває 200 опублікованих approved записів `en` та когорту з 50 learner (`950000001..950000050`), кожен веде дві мови — `pl` (активна) і `en` — з непорожнім обліком у кожній (200 слів на мову, по 3 нові й решта придатні до повторення). Кожна ітерація перемикає активну мову `pl→en`, відкриває «Сьогодні» нової мови, перемикає `en→pl` і знову відкриває «Сьогодні» — обидва перемикання й обидва відкриття вимірюються. Межі [PRD §6](../../docs/features/multi-target-languages/PRD.md#6-non-functional-requirements): p95 перемикання активної мови ≤ 1 500 ms, p95 відкриття «Сьогодні» ≤ 1 500 ms.
+
+Сценарій тримає 50 постійних VU протягом 2 хвилин (`sleep(1)` на ітерацію). Пороги `lang_switch_duration: p(95)<1500`, `lang_today_duration: p(95)<1500` і `lang_switch_failures: count==0` у самому сценарії — це gate: k6 завершується ненульовим кодом, якщо p95 перевищено або хоча б одна відповідь не 200. Ізоляцію (0 відповідей, зарахованих не своїй мові) перевіряють integration-тести (`TodayLanguageIsolationTests`, `ProgressIsolationTests`), а не цей сценарій латентності. Запускайте окремо від профілю T49 та інших сценаріїв на свіжому seed.
+
+```powershell
+Copy-Item tests/load/results/run/metrics-latest.prom tests/load/results/run/language-metrics-before.prom
+docker run --rm --name constant-learning-load-language --network constant-learning-load-local `
+  -e BASE_URL=http://constant-learning-load-app:8888 -v "${PWD}/tests/load:/scripts" `
+  -v "${PWD}/tests/load/results/run:/results" grafana/k6:0.57.0 run `
+  --summary-export=/results/language-summary.json /scripts/language-switch.js
+Copy-Item tests/load/results/run/metrics-latest.prom tests/load/results/run/language-metrics-after.prom
+```
+
+Звіт: p95 зі `language-summary.json` (`metrics.lang_switch_duration["p(95)"]` і `metrics.lang_today_duration["p(95)"]`) зберігається в каталог прогону. CI, як і для T49, лише завантажує збережені результати — повний прогін із Docker і k6 виконується на локальному стенді pre-pilot.
