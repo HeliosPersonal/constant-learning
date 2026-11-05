@@ -9,7 +9,7 @@ files_hint:
   - "ConstantLearning.Tests/Integration/"
 owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "todo"
+status: "done"
 ---
 
 # T02 — Per-language фікстури й оснастка ізоляційних тестів
@@ -36,8 +36,28 @@ status: "todo"
 
 ## Definition of Done
 
-- [ ] Фабрики компілюються й застосовані мінімум в одному smoke-тесті на кожну (learner, entry, report).
-- [ ] Integration-база — PostgreSQL 16 testcontainer; жодного мокнутого DbContext.
-- [ ] Фіксований годинник інжектується; тести детерміновані (повторний прогін — той самий результат).
-- [ ] PII guard: немає реальних імен/контактів; лише `Test User`, `*@example.test`, id `900000000+`.
-- [ ] PR ≤500 LOC.
+- [x] Фабрики компілюються й застосовані мінімум в одному smoke-тесті на кожну (learner, entry, report).
+- [x] Integration-база — PostgreSQL 16 testcontainer; жодного мокнутого DbContext.
+- [x] Фіксований годинник інжектується; тести детерміновані (повторний прогін — той самий результат).
+- [x] PII guard: немає реальних імен/контактів; лише `Test User`, `*@example.test`, id `900000000+`.
+- [x] PR ≤500 LOC.
+
+## Нотатки реалізації
+
+- **EF-фабрики, викликач персистить (прецедент T01 `TargetLanguageFixtures.NewEnabledLanguage`).** Нові
+  per-language фабрики повертають справжні EF-сутності; транзакцію/порядок save тримає тест (важливо для
+  `ILearnerDayStateService.GetForUpdateAsync`, якому потрібна відкрита транзакція). Без параметра `AppDbContext`.
+- **Легасі DTO-фабрики лишилися.** `ContentFixtures.NewPublishedEntry(lemmaPl, …)`/`NewContentReport(LearnerData, …)`
+  із `personal-trainer-mvp` досі вживають 6 тест-файлів — не чіпав. Нові EF-методи додані як перевантаження:
+  `NewPublishedEntry(targetLanguage, lemmaPl, coursePosition, …)` розрізняється обовʼязковим `int coursePosition`,
+  `NewContentReport(Learner, DictionaryEntry?, targetLanguage, …)` — типом першого аргументу (`Learner` vs DTO
+  `LearnerData`). Збіг імен із [data-model.md §Test fixtures](../data-model.md) збережено.
+- **`NewLearnerStudying` повертає пару `StudyingLearner(Learner, LearnerLanguageState)`** — навігації між ними
+  немає, тож викликач додає обидві сутності. Рішення щодо форми (перевантаження vs рядок-пара) ухвалено
+  голосуванням 3 агентів (одностайно EF+пара; 2/3 за перевантаження зі збереженням імен зі спеки).
+- **Опублікований запис — дволанцюговий save.** Через цикл FK `dictionary_entries ⇄ entry_versions` фабрика
+  НЕ виставляє `PublishedVersionId`; smoke-тест зберігає граф, лінкує published-версію, зберігає ще раз
+  (ідіома repo `PublishedCourseLanguageTests`).
+- **Smoke-тести** — `Fixtures/PerLanguageFixtureTests.cs` поверх `PostgresIntegrationTest` (реальний
+  testcontainer, `FakeClock`): learner+state, published entry, content report, плюс ізоляція «два learner / дві мови».
+  Коди мов (pl/en) переживають reset (seed `target_languages`) — фабрики ними лише користуються.
