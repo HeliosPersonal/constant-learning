@@ -9,6 +9,8 @@ RUN npm run generate:tokens && npx vite build
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
+# Central Package Management: версії пакетів живуть у корені, без нього restore падає.
+COPY Directory.Packages.props ./
 COPY ConstantLearning/ConstantLearning.csproj ConstantLearning/
 RUN dotnet restore ConstantLearning/ConstantLearning.csproj
 COPY ConstantLearning/ ConstantLearning/
