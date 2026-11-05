@@ -90,6 +90,22 @@
 - **OQ-9 RESOLVED:** роль content editor **єдина для всіх мов** — `listEditorQueueByLanguage` **без per-language authz** (жодної перевірки «редактор саме цієї мови»). Загальний `403 editor.role_required` за роллю **лишається** в контракті — його успадковано від reference EditorQueue й він перевіряє наявність ролі, а не мову.
 - **Лишається — борг SAD §11:** перейменування `lemma_pl` → `lemma`. Контракт уже вживає мово-нейтральне `lemma` в `EditorQueueItem`; злиття з reference вимагатиме узгодження імені поля.
 
+## Integration merge into reference contract (T15, 2026-11-05)
+
+T15 — перший споживач мовних ендпоінтів у SPA; SPA генерує типи (`ConstantLearning.MiniApp/src/api/schema.d.ts`)
+з **reference-контракту** `docs/features/personal-trainer-mvp/contracts/openapi.yaml`, тож дельту цієї фічі
+злито туди (крок, передбачений вище: «зливається в reference-контракт на інтеграції»). Виконано:
+
+- **Версія reference-контракту:** `0.5.0` → `0.6.0` (з явним записом у CHANGELOG — за правилом «info.version bumps only with explicit CHANGELOG line»).
+- **Мовні шляхи (additive):** `GET /api/v1/languages` (`listTargetLanguages`), `GET`+`POST /api/v1/learners/me/languages` (`listLearnerLanguages`/`startLearnerLanguage`), `PUT /api/v1/learners/me/active-language` (`setActiveLanguage`) — скопійовано verbatim із фіча-контракту; тег `languages`.
+- **Схеми (8):** `TargetLanguageCode`, `TargetLanguage`, `TargetLanguageCatalog`, `LearnerLanguage`, `LearnerLanguages`, `StartLanguageRequest`, `SetActiveLanguageRequest`, `ActiveLanguage`.
+- **Телеметрія:** `ClientTiming.metric` enum `[today_ready_ms]` → `[today_ready_ms, language_switch_ms]` (окрема гістограма `trainer_language_switch_ms`, NFR ≤1500 ms). Бек: `TrainerMetrics.RecordLanguageSwitch` + маршрутизація в `ClientTimingController`.
+- **Валідація:** backend `ContractAssert` у тестах валідує відповіді проти reference-контракту; телеметричний тест (`ReportClientTiming_RecordsLanguageSwitchMetricSeparately`) проходить після злиття.
+
+**Відкладено до T16:** злиття черги редактора (`listEditorQueueByLanguage`, `EditorQueueItem`,
+`EditorQueuePage`, `ReportField`) у reference-контракт — коли SPA-споживач (T16) її потребуватиме;
+тоді ж узгодити борг SAD §11 (`lemma_pl` → `lemma`).
+
 ## Lint / mock
 
 - `spectral lint docs/features/multi-target-languages/contracts/openapi.yaml` — **не виконано в цьому середовищі** (немає Node/Python на PATH). Проведено ручну перевірку: усі 12 `$ref` схем і 3 `$ref` responses резолвляться; 0 заборонених токенів (`nullable: true`, `additionalProperties: true` на відповідях); 5 унікальних `operationId`; конверт помилки `{code, message, details?}` на кожному 4xx. **Запустити `spectral lint` у середовищі з Node перед merge** (той самий gate, що проходив reference-контракт).

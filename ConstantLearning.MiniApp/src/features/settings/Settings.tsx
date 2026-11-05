@@ -10,6 +10,7 @@ import { SettingsApiError, updateSettings } from './api';
 import { draftFromLearner, limitLabel, settingsChanges, validateSettings, weekDays, type Learner, type SettingsDraft, type SettingsErrors } from './model';
 import { ThemeChoices } from './ThemeChoices';
 import { ResetProgressSection } from './ResetProgressSection';
+import { LanguageSection } from './language/LanguageSection';
 import './settings.css';
 
 const SAVED_VISIBLE_MS = 2000;
@@ -133,6 +134,7 @@ export default function Settings({ learner, onBack, onStart, onOpenEditor }: { l
         {errors.zone && <p className="ios-footnote ios-footnote--error" role="alert">{errors.zone}</p>}
       </fieldset>
     </form>
+    {!blocked && <LanguageSection />}
     {onOpenEditor && !blocked && <>
       <div className="ios-caption">Редактор</div>
       <div className="ios-group"><button type="button" className="ios-row ios-plain" onClick={onOpenEditor}>Редактор словника<span className="ios-value ios-chevron" aria-hidden="true">›</span></button></div>

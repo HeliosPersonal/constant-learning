@@ -16,10 +16,20 @@ const notOnboarded: ApiErrorBody = { code: 'learner.not_onboarded', message: 'С
 const SAVED = 'Збережено ✓';
 const clients: ReturnType<typeof createQueryClient>[] = [];
 function json(body: Learner | ApiErrorBody | typeof todaySummary | { content_editor: boolean }, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
+// Settings тепер містить <LanguageSection>, що на монтуванні вантажить каталог мов і мови learner-а.
+// Ці запити маршрутизуємо тут на порожні відповіді, щоб тести темпу/нагадувань бачили лише свій PATCH.
 function mockFetch(handler: (request: Request) => Response | Promise<Response>) {
-  const fetcher = vi.fn<typeof fetch>().mockImplementation(request => Promise.resolve(handler(request as Request)));
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(request => {
+    const path = new URL((request as Request).url).pathname;
+    if (path === '/api/v1/languages') return Promise.resolve(json({ items: [] } as never));
+    if (path === '/api/v1/learners/me/languages') return Promise.resolve(json({ active_target_language: null, items: [] } as never));
+    if (path === '/api/v1/telemetry/client-timings') return Promise.resolve(new Response(null, { status: 204 }));
+    return Promise.resolve(handler(request as Request));
+  });
   vi.stubGlobal('fetch', fetcher); return fetcher;
 }
+// Запити збереження налаштувань — лише PATCH; мовні GET-и не рахуються.
+const patches = (fetcher: ReturnType<typeof mockFetch>) => fetcher.mock.calls.filter(call => (call[0] as Request).method === 'PATCH');
 function mount(element: React.ReactNode) {
   const client = createQueryClient(); clients.push(client);
   render(<QueryClientProvider client={client}><ThemeProvider>{element}</ThemeProvider></QueryClientProvider>);
@@ -53,9 +63,9 @@ describe('AC-44: чинний і відкладений темп', () => {
     const fetcher = mockFetch(async request => { body = await request.json() as SettingsUpdate; return json(updated); });
     const { client } = form(); chooseLimit(10); fireEvent.change(screen.getByLabelText('Часовий пояс'), { target: { value: 'Europe/Kyiv' } });
     await saved();
-    expect(body).toEqual({ daily_new_words_limit: 10, time_zone: 'Europe/Kyiv' }); expect(fetcher).toHaveBeenCalledOnce();
-    expect((fetcher.mock.calls[0][0] as Request).method).toBe('PATCH');
-    expect((fetcher.mock.calls[0][0] as Request).url).toBe(`${window.location.origin}/api/v1/learners/me/settings`);
+    expect(body).toEqual({ daily_new_words_limit: 10, time_zone: 'Europe/Kyiv' }); expect(patches(fetcher)).toHaveLength(1);
+    expect((patches(fetcher)[0][0] as Request).method).toBe('PATCH');
+    expect((patches(fetcher)[0][0] as Request).url).toBe(`${window.location.origin}/api/v1/learners/me/settings`);
     expect(screen.getByText('Сьогодні:', { exact: false })).toHaveTextContent('5 нових слів');
     expect(screen.getByText('З наступної доби:', { exact: false })).toHaveTextContent('10 нових слів');
     expect(client.getQueryData(['current-learner'])).toEqual(updated);
@@ -75,7 +85,7 @@ describe('AC-44: чинний і відкладений темп', () => {
   it('кілька швидких натискань дають один запит', async () => {
     const fetcher = mockFetch(() => json({ ...learner, pending_daily_new_words_limit: 8 })); form();
     for (let i = 0; i < 3; i++) fireEvent.click(screen.getByRole('button', { name: 'Більше' }));
-    await saved(); expect(fetcher).toHaveBeenCalledOnce();
+    await saved(); expect(patches(fetcher)).toHaveLength(1);
   });
 });
 describe('AC-27 і AC-45: валідація', () => {
@@ -91,14 +101,14 @@ describe('AC-27 і AC-45: валідація', () => {
   });
   it('нагадування без днів не надсилає PATCH', async () => {
     const fetcher = mockFetch(() => json(learner)); form(); fireEvent.click(screen.getByLabelText('Понеділок')); fireEvent.click(screen.getByLabelText('П’ятниця'));
-    expect(screen.getByText('Виберіть хоча б один день або вимкніть нагадування.')).toBeVisible(); await settle(); expect(fetcher).not.toHaveBeenCalled();
+    expect(screen.getByText('Виберіть хоча б один день або вимкніть нагадування.')).toBeVisible(); await settle(); expect(patches(fetcher)).toHaveLength(0);
   });
   it('непідтверджений пояс потребує ручного підтвердження перед нагадуванням', async () => {
     let body: SettingsUpdate | undefined;
     const profile: Learner = { ...learner, time_zone_confirmed: false, reminder: null };
     const fetcher = mockFetch(async request => { body = await request.json() as SettingsUpdate; return json(learner); }); form(profile);
     fireEvent.click(screen.getByLabelText('Нагадувати про заняття')); fireEvent.click(screen.getByLabelText('Понеділок'));
-    expect(screen.getByText('Виберіть і підтвердьте часовий пояс.')).toBeVisible(); await settle(); expect(fetcher).not.toHaveBeenCalled();
+    expect(screen.getByText('Виберіть і підтвердьте часовий пояс.')).toBeVisible(); await settle(); expect(patches(fetcher)).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: 'Підтвердити часовий пояс' }));
     await saved(); expect(body).toEqual({ time_zone: 'Europe/Warsaw', reminder: { local_time: '19:00', days_of_week: ['mon'] } });
   });
@@ -109,7 +119,7 @@ describe('AC-27 і AC-45: валідація', () => {
   });
   it('невірний час не надсилається на сервер', async () => {
     const fetcher = mockFetch(() => json(learner)); form(); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '' } });
-    expect(screen.getByText('Виберіть коректний час нагадування.')).toBeVisible(); await settle(); expect(fetcher).not.toHaveBeenCalled();
+    expect(screen.getByText('Виберіть коректний час нагадування.')).toBeVisible(); await settle(); expect(patches(fetcher)).toHaveLength(0);
   });
   it.each([
     ['settings.invalid_limit', 'Доступно від 1 до 10 нових слів на день.'],
@@ -129,7 +139,7 @@ describe('AC-58: локальна тема, форма та кеш занятт�
     const session = { currentItemId: 'card-1', draftAnswer: 'spokój' }; client.setQueryData(['session', 'active'], session);
     fireEvent.click(screen.getByRole('radio', { name: /Темна/ }));
     expect(document.documentElement.dataset.theme).toBe('dark'); expect(localStorage.getItem(THEME_KEY)).toBe('dark'); expect(client.getQueryData(['session', 'active'])).toBe(session);
-    await settle(); expect(fetcher).not.toHaveBeenCalled();
+    await settle(); expect(patches(fetcher)).toHaveLength(0);
   });
   it('тема не скидає незбережене введення', () => {
     mockFetch(() => json(learner)); form(); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '21:15' } }); chooseLimit(3);
@@ -154,27 +164,27 @@ describe('Помилки й повторні дії', () => {
   it('поки запит виконується, дублікатів немає, а поля й тема лишаються доступними', async () => {
     let resolve!: (response: Response) => void;
     const fetcher = mockFetch(() => new Promise<Response>(complete => { resolve = complete; })); form(); chooseLimit(10);
-    await waitFor(() => expect(fetcher).toHaveBeenCalledOnce(), { timeout: 3000 });
+    await waitFor(() => expect(patches(fetcher)).toHaveLength(1), { timeout: 3000 });
     expect(screen.getByRole('form', { name: 'Налаштування профілю' })).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByRole('radio', { name: /Темна/ })).toBeEnabled(); expect(screen.getByRole('button', { name: 'Менше' })).toBeEnabled();
-    await act(async () => { resolve(json({ ...learner, pending_daily_new_words_limit: 10 })); }); await saved(); expect(fetcher).toHaveBeenCalledOnce();
+    await act(async () => { resolve(json({ ...learner, pending_daily_new_words_limit: 10 })); }); await saved(); expect(patches(fetcher)).toHaveLength(1);
   });
   it('мережева помилка зберігає змінені значення та дозволяє лише свідомий повтор', async () => {
     let attempts = 0;
     const fetcher = mockFetch(() => { if (++attempts === 1) throw new TypeError('Недоступна мережа'); return json({ ...learner, pending_daily_new_words_limit: 3 }); }); form(); chooseLimit(3); fireEvent.change(screen.getByLabelText('Час нагадування'), { target: { value: '20:00' } });
-    await screen.findByText(/Ваші зміни залишилися на екрані/, {}, { timeout: 3000 }); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:00'); expect(limitValue()).toBe(3); expect(fetcher).toHaveBeenCalledOnce();
-    await settle(); expect(fetcher).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole('button', { name: 'Повторити' })); await saved(); expect(fetcher).toHaveBeenCalledTimes(2);
+    await screen.findByText(/Ваші зміни залишилися на екрані/, {}, { timeout: 3000 }); expect(screen.getByLabelText('Час нагадування')).toHaveValue('20:00'); expect(limitValue()).toBe(3); expect(patches(fetcher)).toHaveLength(1);
+    await settle(); expect(patches(fetcher)).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Повторити' })); await saved(); expect(patches(fetcher)).toHaveLength(2);
   });
   it('PATCH 401 просить повернутися до Telegram без автоматичного повтору', async () => {
     const fetcher = mockFetch(() => json({ code: 'auth.invalid_init_data', message: 'Доступ заборонено.' }, 401)); form(); chooseLimit(3);
     await screen.findByText('Відкрийте тренер знову в Telegram, щоб продовжити.', {}, { timeout: 3000 }); expect(screen.getByRole('button', { name: 'Більше' })).toBeDisabled();
-    await settle(); expect(fetcher).toHaveBeenCalledOnce();
+    await settle(); expect(patches(fetcher)).toHaveLength(1);
   });
   it('PATCH 404 дає явний перехід до початку без циклу й автоматичного онбордингу', async () => {
     const fetcher = mockFetch(() => json(notOnboarded, 404)); const { start } = form(); chooseLimit(3);
     await screen.findByText('Спершу налаштуйте тренер.', {}, { timeout: 3000 }); expect(start).not.toHaveBeenCalled(); expect(screen.getByRole('button', { name: 'Більше' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'До початку' })); expect(start).toHaveBeenCalledOnce(); expect(fetcher).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'До початку' })); expect(start).toHaveBeenCalledOnce(); expect(patches(fetcher)).toHaveLength(1);
   });
 });
 

@@ -16,10 +16,21 @@ const session: SessionResponse = { id: 'session', learner_day: '2026-11-02', end
 
 const clients: ReturnType<typeof createQueryClient>[] = [];
 function json(body: unknown, status = 200) { return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } }); }
+// Settings тепер містить <LanguageSection>, що на монтуванні вантажить мови — маршрутизуємо ці GET-и
+// на порожні відповіді, щоб тести скидання прогресу рахували лише свій POST reset.
 function mockFetch(handler: (request: Request) => Response | Promise<Response>) {
-  const fetcher = vi.fn<typeof fetch>().mockImplementation(request => Promise.resolve(handler(request as Request)));
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(request => {
+    const path = new URL((request as Request).url).pathname;
+    if (path === '/api/v1/languages') return Promise.resolve(json({ items: [] }));
+    if (path === '/api/v1/learners/me/languages') return Promise.resolve(json({ active_target_language: null, items: [] }));
+    if (path === '/api/v1/telemetry/client-timings') return Promise.resolve(new Response(null, { status: 204 }));
+    return Promise.resolve(handler(request as Request));
+  });
   vi.stubGlobal('fetch', fetcher); return fetcher;
 }
+// Скидання прогресу — лише POST на /progress/reset; мовні GET-и не рахуються.
+const resets = (fetcher: ReturnType<typeof mockFetch>) => fetcher.mock.calls
+  .filter(call => (call[0] as Request).method === 'POST' && new URL((call[0] as Request).url).pathname === '/api/v1/learners/me/progress/reset');
 function mountSettings() {
   const back = vi.fn(); const start = vi.fn(); const client = createQueryClient(); clients.push(client);
   render(<QueryClientProvider client={client}><ThemeProvider><Settings learner={learner} onBack={back} onStart={start} /></ThemeProvider></QueryClientProvider>);
@@ -41,7 +52,7 @@ describe('AC-02: діалог підтвердження скидання', () =
     expect(within(dialog).getByText('Цю дію не можна скасувати.')).toBeVisible();
     expect(within(dialog).getByRole('button', { name: 'Скасувати' })).toBeVisible();
     expect(within(dialog).getByRole('button', { name: 'Стерти прогрес' })).toBeVisible();
-    expect(fetcher).not.toHaveBeenCalled();
+    expect(resets(fetcher)).toHaveLength(0);
   });
 });
 
@@ -51,7 +62,7 @@ describe('AC-03: відмова від скидання', () => {
     const dialog = openResetDialog();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Скасувати' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(fetcher).not.toHaveBeenCalled(); expect(back).not.toHaveBeenCalled();
+    expect(resets(fetcher)).toHaveLength(0); expect(back).not.toHaveBeenCalled();
     expect(screen.getByRole('form', { name: 'Налаштування профілю' })).toBeVisible();
   });
 });
@@ -63,7 +74,7 @@ describe('AC-01/AC-09: підтверджене скидання', () => {
     const dialog = openResetDialog();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Стерти прогрес' }));
     await waitFor(() => expect(back).toHaveBeenCalledWith('Прогрес скинуто. Починаємо з чистого аркуша.'));
-    const request = fetcher.mock.calls[0][0] as Request;
+    const request = resets(fetcher)[0][0] as Request;
     expect(request.method).toBe('POST'); expect(request.url).toBe(`${window.location.origin}/api/v1/learners/me/progress/reset`);
     expect(client.getQueryState(learnerQueryKey)?.isInvalidated).toBe(true);
     expect(client.getQueryState(todayQueryKey)?.isInvalidated).toBe(true);
