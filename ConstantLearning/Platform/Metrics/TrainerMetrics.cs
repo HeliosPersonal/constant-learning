@@ -6,6 +6,8 @@ namespace ConstantLearning.Platform.Metrics;
 public sealed class TrainerMetrics
 {
     private readonly TimingHistogram _todayReady = new("trainer_today_ready_ms", "Час відкриття екрана Сьогодні в клієнті.");
+    private readonly TimingHistogram _languageSwitch = new("trainer_language_switch_ms",
+        "Час перемикання активної мови в клієнті (NFR ≤1500 ms).");
     private readonly TimingHistogram _answer = new("trainer_answer_duration_ms", "Час HTTP-запиту оцінки відповіді.");
     private readonly TimingHistogram _search = new("trainer_dictionary_search_duration_ms", "Час HTTP-запиту пошуку в словнику.");
     private readonly LabeledCounter _progressReset = new("trainer_progress_reset_total",
@@ -20,6 +22,8 @@ public sealed class TrainerMetrics
         "Тривалість запиту статистики вивчених слів.");
 
     public void RecordTodayReady(int milliseconds) => _todayReady.Record(milliseconds);
+
+    public void RecordLanguageSwitch(int milliseconds) => _languageSwitch.Record(milliseconds);
 
     public void RecordAnswer(TimeSpan duration) => _answer.Record(duration.TotalMilliseconds);
 
@@ -39,6 +43,7 @@ public sealed class TrainerMetrics
     {
         var output = new StringBuilder();
         _todayReady.AppendTo(output);
+        _languageSwitch.AppendTo(output);
         _answer.AppendTo(output);
         _search.AppendTo(output);
         _progressReset.AppendTo(output);

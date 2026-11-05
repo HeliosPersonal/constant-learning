@@ -63,6 +63,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/languages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Каталог target languages для вибору (multi-target-languages US-01)
+         * @description Повертає мови у порядку sort_order. `available` = true, лише коли мова увімкнена
+         *     (is_enabled) І має щонайменше один схвалений запис словника — лише такі learner може
+         *     почати (AC-01, AC-02). Набір обмежений (≈4 мови), тож повертається повним списком без
+         *     курсорної пагінації. Доступно до завершення онбордингу — learner бачить вибір мов одразу.
+         */
+        get: operations["listTargetLanguages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/learners/me/languages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Мови, які learner вивчає, і активна (multi-target-languages US-02, US-03)
+         * @description Повертає рядки learner_language_states цього learner — кожна мова, яку він веде, з
+         *     окремим обліком, і яка з них активна (active_target_language). Прогрес іншого learner
+         *     недоступний (AC-10). Порожній список items означає, що learner ще не почав жодної мови.
+         */
+        get: operations["listLearnerLanguages"];
+        put?: never;
+        /**
+         * Почати вивчати мову (multi-target-languages US-01)
+         * @description Починає вести вказану мову для learner окремо — створює рядок learner_language_states з
+         *     власним станом доби й обліком нових слів і робить мову активною (AC-01, flow 1). Якщо
+         *     learner уже вивчає цю мову, повертає її без змін (200) — повтор через застаріле
+         *     посилання, другу вкладку чи повторне натискання безпечний і не веде мову вдруге (AC-12,
+         *     flow 4). Природний ключ ідемпотентності — (learner, target_language), тож окремий
+         *     Idempotency-Key не потрібен.
+         */
+        post: operations["startLearnerLanguage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/learners/me/active-language": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Перемкнути активну мову (multi-target-languages US-02)
+         * @description Робить вказану мову активною: екран «Сьогодні», заняття, словник і налаштування
+         *     показують її стан, а облік решти мов лишається незмінним і доступним після зворотного
+         *     перемикання (AC-03, flow 1). Незавершена session попередньої мови лишається доступною
+         *     для продовження в межах доби своєї мови (AC-04). Перемикати можна лише мову, яку learner
+         *     уже вивчає — почати нову слід через POST /learners/me/languages. Повтор на вже активній
+         *     мові безпечний (200).
+         */
+        put: operations["setActiveLanguage"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/learners/me/settings": {
         parameters: {
             query?: never;
@@ -548,7 +627,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Клієнтська метрика часу відкриття «Сьогодні» (PRD §6, SAD §7) */
+        /** Клієнтські метрики часу — відкриття «Сьогодні» й перемикання мови (PRD §6, SAD §7) */
         post: operations["reportClientTiming"];
         delete?: never;
         options?: never;
@@ -636,6 +715,53 @@ export interface components {
         LearnerAccess: {
             /** @description true, якщо Telegram id користувача є в списку редакторів контенту */
             content_editor: boolean;
+        };
+        /**
+         * @description target_languages.code (VARCHAR(2)) — ISO-639-1 код; збігається з search_forms.lang/morph_forms.lang
+         * @example en
+         */
+        TargetLanguageCode: string;
+        /** @description Елемент каталогу мов (target_languages, ADR-0004). normalization_profile не експонується — внутрішнє рішення коду (OQ-5). */
+        TargetLanguage: {
+            code: components["schemas"]["TargetLanguageCode"];
+            /** @description target_languages.display_name_uk (VARCHAR(64)) — укр. назва мови */
+            display_name_uk: string;
+            /** @description target_languages.is_enabled — адмін-перемикач доступності мови */
+            is_enabled: boolean;
+            /** @description target_languages.sort_order (SMALLINT) — порядок у списку */
+            sort_order: number;
+            /** @description обчислюється сервером — is_enabled І наявний схвалений контент; лише такі мови learner може почати (AC-01, AC-02) */
+            available: boolean;
+        };
+        /** @description Повний каталог мов без пагінації (обмежений набір — девіація від курсорного дефолту). */
+        TargetLanguageCatalog: {
+            items: components["schemas"]["TargetLanguage"][];
+        };
+        /** @description Мова, яку learner вивчає (рядок learner_language_states). */
+        LearnerLanguage: {
+            target_language: components["schemas"]["TargetLanguageCode"];
+            display_name_uk: string;
+            /** @description true, якщо це learners.active_target_language */
+            is_active: boolean;
+            /**
+             * Format: date-time
+             * @description learner_language_states.created_at — момент старту мови learner-ом
+             */
+            started_at: string;
+        };
+        LearnerLanguages: {
+            /** @description learners.active_target_language; null, якщо learner ще не обрав мову */
+            active_target_language: components["schemas"]["TargetLanguageCode"] | null;
+            items: components["schemas"]["LearnerLanguage"][];
+        };
+        StartLanguageRequest: {
+            target_language: components["schemas"]["TargetLanguageCode"];
+        };
+        SetActiveLanguageRequest: {
+            target_language: components["schemas"]["TargetLanguageCode"];
+        };
+        ActiveLanguage: {
+            active_target_language: components["schemas"]["TargetLanguageCode"];
         };
         /**
          * @description learner_words.status; «Ще не вчив» / «На повторення» / «Вже пригадую»
@@ -1026,7 +1152,7 @@ export interface components {
         };
         ClientTiming: {
             /** @enum {string} */
-            metric: "today_ready_ms";
+            metric: "today_ready_ms" | "language_switch_ms";
             value_ms: number;
         };
     };
@@ -1283,6 +1409,233 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listTargetLanguages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Повний каталог мов */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "code": "pl",
+                     *           "display_name_uk": "Польська",
+                     *           "is_enabled": true,
+                     *           "sort_order": 1,
+                     *           "available": true
+                     *         },
+                     *         {
+                     *           "code": "en",
+                     *           "display_name_uk": "Англійська",
+                     *           "is_enabled": false,
+                     *           "sort_order": 2,
+                     *           "available": false
+                     *         },
+                     *         {
+                     *           "code": "de",
+                     *           "display_name_uk": "Німецька",
+                     *           "is_enabled": false,
+                     *           "sort_order": 3,
+                     *           "available": false
+                     *         },
+                     *         {
+                     *           "code": "nl",
+                     *           "display_name_uk": "Нідерландська",
+                     *           "is_enabled": false,
+                     *           "sort_order": 4,
+                     *           "available": false
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TargetLanguageCatalog"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    listLearnerLanguages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Мови learner та активна мова */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active_target_language": "en",
+                     *       "items": [
+                     *         {
+                     *           "target_language": "pl",
+                     *           "display_name_uk": "Польська",
+                     *           "is_active": false,
+                     *           "started_at": "2026-10-20T09:00:00Z"
+                     *         },
+                     *         {
+                     *           "target_language": "en",
+                     *           "display_name_uk": "Англійська",
+                     *           "is_active": true,
+                     *           "started_at": "2026-11-01T09:00:00Z"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LearnerLanguages"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["LearnerNotOnboarded"];
+        };
+    };
+    startLearnerLanguage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "target_language": "en"
+                 *     }
+                 */
+                "application/json": components["schemas"]["StartLanguageRequest"];
+            };
+        };
+        responses: {
+            /** @description learner уже вивчає цю мову — повернуто наявний стан без змін (AC-12) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "target_language": "en",
+                     *       "display_name_uk": "Англійська",
+                     *       "is_active": true,
+                     *       "started_at": "2026-11-01T09:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LearnerLanguage"];
+                };
+            };
+            /** @description Мову почато, вона стала активною (AC-01) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "target_language": "en",
+                     *       "display_name_uk": "Англійська",
+                     *       "is_active": true,
+                     *       "started_at": "2026-11-04T09:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LearnerLanguage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Такої мови немає в каталозі (невідомий код) */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "language.unknown",
+                     *       "message": "Такої мови немає."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /**
+             * @description Мова недоступна для старту — вимкнена або без схваленого контенту; активна мова
+             *     лишається без змін (AC-02, flow 3). Або конкурентний запис з іншої вкладки
+             *     відхилено за оптимістичною конкурентністю — повторіть на свіжому стані (flow 4, OQ-4).
+             */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    setActiveLanguage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "target_language": "pl"
+                 *     }
+                 */
+                "application/json": components["schemas"]["SetActiveLanguageRequest"];
+            };
+        };
+        responses: {
+            /** @description Активну мову перемкнено (або вже була активна) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active_target_language": "pl"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ActiveLanguage"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["LearnerNotOnboarded"];
+            /**
+             * @description learner ще не вивчає цю мову — її не можна зробити активною без старту (AC-03). Або
+             *     конкурентне перемикання відхилено за оптимістичною конкурентністю (flow 4, OQ-4).
+             */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     updateLearnerSettings: {

@@ -20,11 +20,19 @@
 #   0.5.0 — додано GET /api/v1/learners/me/access (getLearnerAccess) зі схемою LearnerAccess:
 #           чи має поточний користувач роль content editor (Mini App показує вхід до редактора лише
 #           редакторам). Нових таблиць немає, зворотно сумісне доповнення.
+#   0.6.0 — фіча multi-target-languages (злиття керування мовами в reference-контракт на інтеграції,
+#           api-sync-report.md §B.5): додано GET /api/v1/languages (listTargetLanguages),
+#           GET|POST /api/v1/learners/me/languages (listLearnerLanguages, startLearnerLanguage),
+#           PUT /api/v1/learners/me/active-language (setActiveLanguage) зі схемами TargetLanguageCode,
+#           TargetLanguage, TargetLanguageCatalog, LearnerLanguage, LearnerLanguages, StartLanguageRequest,
+#           SetActiveLanguageRequest, ActiveLanguage. Додано значення language_switch_ms в enum ClientTiming.metric
+#           (клієнтська телеметрія p95 перемикання мови, NFR ≤1500 ms). Зворотно сумісне доповнення
+#           (лише нові шляхи, схеми й значення enum). Черга редактора за мовою — окремо в T16.
 openapi: 3.1.0
 
 info:
   title: personal-trainer-mvp API
-  version: 0.5.0
+  version: 0.6.0
   description: |
     API персонального тренера польських слів для україномовних learner. Mini App у Telegram
     використовує його для онбордингу, щоденних session з вправами пригадування, екрана «Сьогодні»,
@@ -45,6 +53,7 @@ security:
 
 tags:
   - name: learner
+  - name: languages
   - name: learning
   - name: dictionary
   - name: content-reports
@@ -159,6 +168,164 @@ paths:
               example:
                 content_editor: false
         "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/languages:
+    get:
+      tags: [languages]
+      summary: Каталог target languages для вибору (multi-target-languages US-01)
+      operationId: listTargetLanguages
+      description: |
+        Повертає мови у порядку sort_order. `available` = true, лише коли мова увімкнена
+        (is_enabled) І має щонайменше один схвалений запис словника — лише такі learner може
+        почати (AC-01, AC-02). Набір обмежений (≈4 мови), тож повертається повним списком без
+        курсорної пагінації. Доступно до завершення онбордингу — learner бачить вибір мов одразу.
+      responses:
+        "200":
+          description: Повний каталог мов
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TargetLanguageCatalog" }
+              example:
+                items:
+                  - { code: pl, display_name_uk: Польська, is_enabled: true, sort_order: 1, available: true }
+                  - { code: en, display_name_uk: Англійська, is_enabled: false, sort_order: 2, available: false }
+                  - { code: de, display_name_uk: Німецька, is_enabled: false, sort_order: 3, available: false }
+                  - { code: nl, display_name_uk: Нідерландська, is_enabled: false, sort_order: 4, available: false }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+
+  /api/v1/learners/me/languages:
+    get:
+      tags: [languages]
+      summary: Мови, які learner вивчає, і активна (multi-target-languages US-02, US-03)
+      operationId: listLearnerLanguages
+      description: |
+        Повертає рядки learner_language_states цього learner — кожна мова, яку він веде, з
+        окремим обліком, і яка з них активна (active_target_language). Прогрес іншого learner
+        недоступний (AC-10). Порожній список items означає, що learner ще не почав жодної мови.
+      responses:
+        "200":
+          description: Мови learner та активна мова
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerLanguages" }
+              example:
+                active_target_language: en
+                items:
+                  - { target_language: pl, display_name_uk: Польська, is_active: false, started_at: "2026-10-20T09:00:00Z" }
+                  - { target_language: en, display_name_uk: Англійська, is_active: true, started_at: "2026-11-01T09:00:00Z" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/LearnerNotOnboarded" }
+    post:
+      tags: [languages]
+      summary: Почати вивчати мову (multi-target-languages US-01)
+      operationId: startLearnerLanguage
+      description: |
+        Починає вести вказану мову для learner окремо — створює рядок learner_language_states з
+        власним станом доби й обліком нових слів і робить мову активною (AC-01, flow 1). Якщо
+        learner уже вивчає цю мову, повертає її без змін (200) — повтор через застаріле
+        посилання, другу вкладку чи повторне натискання безпечний і не веде мову вдруге (AC-12,
+        flow 4). Природний ключ ідемпотентності — (learner, target_language), тож окремий
+        Idempotency-Key не потрібен.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StartLanguageRequest" }
+            example:
+              target_language: en
+      responses:
+        "200":
+          description: learner уже вивчає цю мову — повернуто наявний стан без змін (AC-12)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerLanguage" }
+              example:
+                target_language: en
+                display_name_uk: Англійська
+                is_active: true
+                started_at: "2026-11-01T09:00:00Z"
+        "201":
+          description: Мову почато, вона стала активною (AC-01)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LearnerLanguage" }
+              example:
+                target_language: en
+                display_name_uk: Англійська
+                is_active: true
+                started_at: "2026-11-04T09:00:00Z"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404":
+          description: Такої мови немає в каталозі (невідомий код)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              example:
+                code: language.unknown
+                message: Такої мови немає.
+        "409":
+          description: |
+            Мова недоступна для старту — вимкнена або без схваленого контенту; активна мова
+            лишається без змін (AC-02, flow 3). Або конкурентний запис з іншої вкладки
+            відхилено за оптимістичною конкурентністю — повторіть на свіжому стані (flow 4, OQ-4).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                not_available:
+                  value:
+                    code: language.not_available
+                    message: Ця мова поки недоступна.
+                concurrent_update:
+                  value:
+                    code: language.concurrent_update
+                    message: Стан змінився — повторіть спробу.
+
+  /api/v1/learners/me/active-language:
+    put:
+      tags: [languages]
+      summary: Перемкнути активну мову (multi-target-languages US-02)
+      operationId: setActiveLanguage
+      description: |
+        Робить вказану мову активною: екран «Сьогодні», заняття, словник і налаштування
+        показують її стан, а облік решти мов лишається незмінним і доступним після зворотного
+        перемикання (AC-03, flow 1). Незавершена session попередньої мови лишається доступною
+        для продовження в межах доби своєї мови (AC-04). Перемикати можна лише мову, яку learner
+        уже вивчає — почати нову слід через POST /learners/me/languages. Повтор на вже активній
+        мові безпечний (200).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SetActiveLanguageRequest" }
+            example:
+              target_language: pl
+      responses:
+        "200":
+          description: Активну мову перемкнено (або вже була активна)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ActiveLanguage" }
+              example:
+                active_target_language: pl
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/LearnerNotOnboarded" }
+        "409":
+          description: |
+            learner ще не вивчає цю мову — її не можна зробити активною без старту (AC-03). Або
+            конкурентне перемикання відхилено за оптимістичною конкурентністю (flow 4, OQ-4).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+              examples:
+                not_studying:
+                  value:
+                    code: language.not_studying
+                    message: Спершу почніть вивчати цю мову.
+                concurrent_update:
+                  value:
+                    code: language.concurrent_update
+                    message: Стан змінився — повторіть спробу.
 
   /api/v1/learners/me/settings:
     patch:
@@ -1198,7 +1365,7 @@ paths:
   /api/v1/telemetry/client-timings:
     post:
       tags: [telemetry]
-      summary: Клієнтська метрика часу відкриття «Сьогодні» (PRD §6, SAD §7)
+      summary: Клієнтські метрики часу — відкриття «Сьогодні» й перемикання мови (PRD §6, SAD §7)
       operationId: reportClientTiming
       requestBody:
         required: true
@@ -1449,6 +1616,97 @@ components:
       additionalProperties: false
       properties:
         content_editor: { type: boolean, description: "true, якщо Telegram id користувача є в списку редакторів контенту" }
+
+    TargetLanguageCode:
+      type: string
+      pattern: "^[a-z]{2}$"
+      maxLength: 2
+      description: target_languages.code (VARCHAR(2)) — ISO-639-1 код; збігається з search_forms.lang/morph_forms.lang
+      example: en
+
+    TargetLanguage:
+      type: object
+      required: [code, display_name_uk, is_enabled, sort_order, available]
+      additionalProperties: false
+      description: Елемент каталогу мов (target_languages, ADR-0004). normalization_profile не експонується — внутрішнє рішення коду (OQ-5).
+      properties:
+        code: { $ref: "#/components/schemas/TargetLanguageCode" }
+        display_name_uk:
+          type: string
+          maxLength: 64
+          description: target_languages.display_name_uk (VARCHAR(64)) — укр. назва мови
+        is_enabled:
+          type: boolean
+          description: target_languages.is_enabled — адмін-перемикач доступності мови
+        sort_order:
+          type: integer
+          minimum: 0
+          maximum: 32767
+          description: target_languages.sort_order (SMALLINT) — порядок у списку
+        available:
+          type: boolean
+          description: обчислюється сервером — is_enabled І наявний схвалений контент; лише такі мови learner може почати (AC-01, AC-02)
+
+    TargetLanguageCatalog:
+      type: object
+      required: [items]
+      additionalProperties: false
+      description: Повний каталог мов без пагінації (обмежений набір — девіація від курсорного дефолту).
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/TargetLanguage" }
+
+    LearnerLanguage:
+      type: object
+      required: [target_language, display_name_uk, is_active, started_at]
+      additionalProperties: false
+      description: Мова, яку learner вивчає (рядок learner_language_states).
+      properties:
+        target_language: { $ref: "#/components/schemas/TargetLanguageCode" }
+        display_name_uk: { type: string, maxLength: 64 }
+        is_active:
+          type: boolean
+          description: true, якщо це learners.active_target_language
+        started_at:
+          type: string
+          format: date-time
+          description: learner_language_states.created_at — момент старту мови learner-ом
+
+    LearnerLanguages:
+      type: object
+      required: [active_target_language, items]
+      additionalProperties: false
+      properties:
+        active_target_language:
+          oneOf:
+            - $ref: "#/components/schemas/TargetLanguageCode"
+            - type: "null"
+          description: learners.active_target_language; null, якщо learner ще не обрав мову
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/LearnerLanguage" }
+
+    StartLanguageRequest:
+      type: object
+      required: [target_language]
+      additionalProperties: false
+      properties:
+        target_language: { $ref: "#/components/schemas/TargetLanguageCode" }
+
+    SetActiveLanguageRequest:
+      type: object
+      required: [target_language]
+      additionalProperties: false
+      properties:
+        target_language: { $ref: "#/components/schemas/TargetLanguageCode" }
+
+    ActiveLanguage:
+      type: object
+      required: [active_target_language]
+      additionalProperties: false
+      properties:
+        active_target_language: { $ref: "#/components/schemas/TargetLanguageCode" }
 
     WordStatus:
       type: string
@@ -1938,5 +2196,5 @@ components:
       required: [metric, value_ms]
       additionalProperties: false
       properties:
-        metric: { type: string, enum: [today_ready_ms] }
+        metric: { type: string, enum: [today_ready_ms, language_switch_ms] }
         value_ms: { type: integer, minimum: 0, maximum: 60000 }

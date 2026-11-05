@@ -65,6 +65,22 @@ public class ClientTimingControllerTests
     }
 
     [Fact]
+    public async Task ReportClientTiming_RecordsLanguageSwitchMetricSeparately()
+    {
+        await using var application = await MetricsTestApplication.StartAsync();
+        application.Client.DefaultRequestHeaders.Authorization = new("tma", "private-init-data");
+
+        using var response = await PostAsync(application.Client, """{"metric":"language_switch_ms","value_ms":620}""");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        await ContractAssert.ResponseAsync("reportClientTiming", response);
+        var metrics = await application.Client.GetStringAsync("/metrics");
+        metrics.Should().Contain("trainer_language_switch_ms_count 1\n").And.Contain("trainer_language_switch_ms_sum 620\n");
+        // Перемикання мови не підмішується в метрику відкриття «Сьогодні» — гістограми окремі.
+        metrics.Should().Contain("trainer_today_ready_ms_count 0\n");
+    }
+
+    [Fact]
     public async Task ReportClientTiming_RequiresAuthenticationBeforeRecording()
     {
         await using var application = await MetricsTestApplication.StartAsync();

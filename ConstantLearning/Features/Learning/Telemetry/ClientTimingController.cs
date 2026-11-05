@@ -22,12 +22,23 @@ public sealed class ClientTimingController(TrainerMetrics metrics) : ControllerB
         try
         {
             using var document = await JsonDocument.ParseAsync(Request.Body, cancellationToken: cancellationToken);
-            if (!TryReadTiming(document.RootElement, out var milliseconds))
+            if (!TryReadTiming(document.RootElement, out var metric, out var milliseconds))
             {
                 return InvalidMetric();
             }
 
-            metrics.RecordTodayReady(milliseconds);
+            switch (metric)
+            {
+                case "today_ready_ms":
+                    metrics.RecordTodayReady(milliseconds);
+                    break;
+                case "language_switch_ms":
+                    metrics.RecordLanguageSwitch(milliseconds);
+                    break;
+                default:
+                    return InvalidMetric();
+            }
+
             return NoContent();
         }
         catch (JsonException)
@@ -36,8 +47,9 @@ public sealed class ClientTimingController(TrainerMetrics metrics) : ControllerB
         }
     }
 
-    private static bool TryReadTiming(JsonElement root, out int milliseconds)
+    private static bool TryReadTiming(JsonElement root, out string metricName, out int milliseconds)
     {
+        metricName = "";
         milliseconds = 0;
         if (root.ValueKind != JsonValueKind.Object)
         {
@@ -48,7 +60,7 @@ public sealed class ClientTimingController(TrainerMetrics metrics) : ControllerB
         if (properties.Length != 2
             || !root.TryGetProperty("metric", out var metric)
             || metric.ValueKind != JsonValueKind.String
-            || metric.GetString() != "today_ready_ms"
+            || metric.GetString() is not { } name
             || !root.TryGetProperty("value_ms", out var value)
             || value.ValueKind != JsonValueKind.Number
             || !TryReadMilliseconds(value.GetRawText(), out milliseconds))
@@ -56,6 +68,7 @@ public sealed class ClientTimingController(TrainerMetrics metrics) : ControllerB
             return false;
         }
 
+        metricName = name;
         return true;
     }
 
