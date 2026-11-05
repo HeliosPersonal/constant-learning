@@ -11,7 +11,8 @@ namespace ConstantLearning.Features.Identity.Languages;
 [Route("api/v1/learners/me")]
 public sealed class LearnerLanguagesController(
     ILanguageDirectory directory,
-    StartLearnerLanguageService starter) : ControllerBase
+    StartLearnerLanguageService starter,
+    SetActiveLanguageService switcher) : ControllerBase
 {
     // Мови цього learner і активна мова; дані лише власника (AC-10) — learner визначається з initData, не з URL.
     [HttpGet("languages", Name = "listLearnerLanguages")]
@@ -65,6 +66,42 @@ public sealed class LearnerLanguagesController(
             StartLanguageOutcome.NotAvailable => Conflict(LanguageErrors.NotAvailable()),
             StartLanguageOutcome.ConcurrentUpdate => Conflict(LanguageErrors.ConcurrentUpdate()),
             _ => throw new InvalidOperationException($"Необроблена гілка старту мови: {result.Outcome}.")
+        };
+    }
+
+    // Перемикання активної мови (US-02): лише вже вивчувану; невідомий/невивчений код → 409 language.not_studying
+    // (existence-hiding, без 404). Повтор на вже активній мові безпечний (200). Невалідне тіло → теж not_studying.
+    [HttpPut("active-language", Name = "setActiveLanguage")]
+    [ProducesResponseType<ActiveLanguageView>(StatusCodes.Status200OK)]
+    [ProducesResponseType<IdentityError>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<IdentityError>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<LanguageError>(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> SetActiveLanguage(CancellationToken cancellationToken)
+    {
+        if (User.GetLearnerId() is not { } learnerId)
+        {
+            return NotFound(IdentityError.NotOnboarded());
+        }
+
+        SetActiveLanguageRequest? request;
+        try
+        {
+            request = await JsonSerializer.DeserializeAsync<SetActiveLanguageRequest>(Request.Body,
+                cancellationToken: cancellationToken);
+        }
+        catch (JsonException)
+        {
+            request = null;
+        }
+
+        var result = await switcher.SetActiveAsync(learnerId, request?.TargetLanguage, cancellationToken);
+        return result.Outcome switch
+        {
+            SetActiveLanguageOutcome.Switched => Ok(new ActiveLanguageView(result.ActiveTargetLanguage!)),
+            SetActiveLanguageOutcome.NotOnboarded => NotFound(IdentityError.NotOnboarded()),
+            SetActiveLanguageOutcome.NotStudying => Conflict(LanguageErrors.NotStudying()),
+            SetActiveLanguageOutcome.ConcurrentUpdate => Conflict(LanguageErrors.ConcurrentUpdate()),
+            _ => throw new InvalidOperationException($"Необроблена гілка перемикання мови: {result.Outcome}.")
         };
     }
 }

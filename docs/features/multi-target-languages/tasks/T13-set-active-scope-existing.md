@@ -10,7 +10,7 @@ files_hint:
   - "ConstantLearning/Features/Content/"
 owner: "Viacheslav Melnichenko"
 estimate: "L"
-status: "todo"
+status: "done"
 ---
 
 # T13 — `setActiveLanguage` + scoping наявних ендпоінтів за активною мовою
@@ -38,9 +38,9 @@ learner, тіло не змінюється.
 
 ## Definition of Done
 
-- [ ] `setActiveLanguage` перемикає активну мову; 409 `language.not_studying` для невивченої (і для невідомого коду — existence-hiding, без 404).
-- [ ] Integration: після перемикання today/session/dictionary віддають стан нової мови; облік старої незмінний і доступний назад (AC-03).
-- [ ] Тест: незавершена session старої мови продовжується тієї ж доби learner (AC-04).
-- [ ] Тест: щойно обрана мова показує порожній початковий стан без лічильників інших мов (AC-07).
-- [ ] Contract-тест на `openapi.yaml`; крос-файлові дельти зафіксовано для злиття в reference-контракт.
-- [ ] PR ≤500 LOC.
+- [x] `setActiveLanguage` перемикає активну мову; 409 `language.not_studying` для невивченої (і для невідомого коду — existence-hiding, без 404).
+- [x] Integration: після перемикання today/session/dictionary віддають стан нової мови; облік старої незмінний і доступний назад (AC-03).
+- [x] Тест: незавершена session старої мови продовжується тієї ж доби learner (AC-04).
+- [x] Тест: щойно обрана мова показує порожній початковий стан без лічильників інших мов (AC-07).
+- [x] Contract-тест на `openapi.yaml`; крос-файлові дельти зафіксовано для злиття в reference-контракт.
+- [x] PR ≤500 LOC.

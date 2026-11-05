@@ -8,3 +8,10 @@ namespace ConstantLearning.Features.Identity.Languages;
 /// </summary>
 public sealed record StartLanguageRequest(
     [property: JsonPropertyName("target_language")] string? TargetLanguage);
+
+/// <summary>
+/// Тіло <c>setActiveLanguage</c>: код мови, яку learner робить активною. Невідомий чи невивчений код
+/// дає <c>language.not_studying</c> (existence-hiding — контракт не розкриває, чи мова взагалі існує).
+/// </summary>
+public sealed record SetActiveLanguageRequest(
+    [property: JsonPropertyName("target_language")] string? TargetLanguage);

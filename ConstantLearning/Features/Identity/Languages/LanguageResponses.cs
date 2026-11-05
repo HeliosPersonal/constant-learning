@@ -25,3 +25,7 @@ public sealed record LearnerLanguageView(
 public sealed record LearnerLanguagesResponse(
     [property: JsonPropertyName("active_target_language")] string? ActiveTargetLanguage,
     [property: JsonPropertyName("items")] IReadOnlyList<LearnerLanguageView> Items);
+
+/// <summary>Активна мова learner-а після перемикання (<c>setActiveLanguage</c>).</summary>
+public sealed record ActiveLanguageView(
+    [property: JsonPropertyName("active_target_language")] string ActiveTargetLanguage);

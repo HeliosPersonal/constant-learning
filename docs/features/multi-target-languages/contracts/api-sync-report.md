@@ -72,6 +72,13 @@
 
 **Core checks (1, 2, 3): усі ✅.** Supporting checks (4, 5): ✅ з задокументованими крос-файловими дельтами.
 
+> **T13 (2026-11-05):** серверне active-language scoping наявних ендпоінтів реалізовано й покрито
+> contract-тестами (`ContractAssert` на `setActiveLanguage`, `searchDictionary`, `getDictionaryEntry`,
+> `startSession`, `getCurrentSession`, `acknowledgeNewWordCard`). Today/session/settings/profile вже
+> скоуплено через `LearnerDayStateService.GetForUpdateAsync` (T10); дельта point 4 для **словника**
+> (`DictionarySearchService` — пошук + картка за `learners.active_target_language`) дописана в T13.
+> Крос-файлові дельти point 5 лишаються незмінними — зливаються в reference-контракт на інтеграції.
+
 ## Section C — unresolved_origins
 
 **Порожньо** (scenario A). Усі поля мають походження в типізованій сутності data-model.md.

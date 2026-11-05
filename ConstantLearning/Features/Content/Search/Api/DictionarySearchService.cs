@@ -9,11 +9,14 @@ public sealed class DictionarySearchService(AppDbContext db, ILearnerWordStatusR
     public async Task<DictionarySearchPage?> SearchAsync(Guid learnerId, DictionarySearchRequest request,
         CancellationToken cancellationToken)
     {
+        // Словник читається у вимірі активної мови learner-а (AC-03): показуємо лише її записи,
+        // решта мов недосяжні з цього запиту. Інтеримний 'pl', доки активна мова не почата (як у LearnerDayStateService).
+        var language = await ResolveActiveLanguageAsync(learnerId, cancellationToken);
         var forms = db.SearchForms.AsNoTracking().Where(form => form.FormFolded == request.FoldedQuery
             || (request.Prefix && form.FormFolded.StartsWith(request.FoldedQuery)));
         var candidates = from entry in db.DictionaryEntries.AsNoTracking()
             join version in db.EntryVersions.AsNoTracking() on entry.PublishedVersionId equals version.Id
-            where version.EntryId == entry.Id && version.ValidationStatus == "approved"
+            where entry.TargetLanguage == language && version.EntryId == entry.Id && version.ValidationStatus == "approved"
                   && forms.Any(form => form.EntryId == entry.Id && form.VersionId == version.Id)
             select new SearchRow
             {
@@ -56,9 +59,12 @@ public sealed class DictionarySearchService(AppDbContext db, ILearnerWordStatusR
     public async Task<DictionaryEntryCard?> GetEntryAsync(Guid learnerId, Guid entryId,
         CancellationToken cancellationToken)
     {
+        // Картка слова теж обмежена активною мовою: id запису з іншої мови дає 404 (existence-hiding, AC-03).
+        var language = await ResolveActiveLanguageAsync(learnerId, cancellationToken);
         var version = await (from entry in db.DictionaryEntries.AsNoTracking()
             join published in db.EntryVersions.AsNoTracking() on entry.PublishedVersionId equals published.Id
-            where entry.Id == entryId && published.EntryId == entry.Id && published.ValidationStatus == "approved"
+            where entry.Id == entryId && entry.TargetLanguage == language
+                  && published.EntryId == entry.Id && published.ValidationStatus == "approved"
             select published).SingleOrDefaultAsync(cancellationToken);
         if (version is null) return null;
         var translations = await db.VersionTranslations.AsNoTracking().Where(row => row.VersionId == version.Id)
@@ -69,6 +75,11 @@ public sealed class DictionarySearchService(AppDbContext db, ILearnerWordStatusR
             version.PronunciationUk, version.ExamplePl, version.ExampleUk,
             ownStatuses.GetValueOrDefault(entryId, "not_started"));
     }
+
+    // Активна мова learner-а; інтеримний 'pl', доки жодної мови не почато (єдиний fallback, як на гарячому шляху).
+    private async Task<string> ResolveActiveLanguageAsync(Guid learnerId, CancellationToken cancellationToken) =>
+        await db.Learners.AsNoTracking().Where(learner => learner.Id == learnerId)
+            .Select(learner => learner.ActiveTargetLanguage).SingleOrDefaultAsync(cancellationToken) ?? "pl";
 
     private static IOrderedQueryable<SearchRow> Order(IQueryable<SearchRow> query) =>
         query.OrderByDescending(row => row.Exact).ThenBy(row => row.CoursePosition).ThenBy(row => row.Id);
