@@ -111,9 +111,13 @@ public sealed class DictionaryImportService(AppDbContext db, DictionaryImportRea
             }
             await db.SaveChangesAsync(cancellationToken);
             await publication.ApplyAsync(changes, cancellationToken);
-            // Валідний імпорт зі схваленим контентом вмикає мову (OQ-7): is_enabled=true в тій самій транзакції.
-            var published = changes.Count(change => change.ToVersionId is not null);
-            if (published > 0)
+            // Мова вмикається (OQ-7), коли в БД є опублікований схвалений запис цієї мови, а не лише тоді, коли
+            // цей прохід щось опублікував: повторний імпорт без змін інакше не вмикав би мову, завантажену раніше.
+            var hasApprovedContent = await db.DictionaryEntries.AsNoTracking()
+                .AnyAsync(entry => entry.TargetLanguage == dataset.Language && entry.PublishedVersion != null
+                    && entry.PublishedVersion.EntryId == entry.Id && entry.PublishedVersion.ValidationStatus == "approved",
+                    cancellationToken);
+            if (hasApprovedContent)
             {
                 var targetLanguage = await db.TargetLanguages
                     .FirstOrDefaultAsync(language => language.Code == dataset.Language, cancellationToken);
@@ -121,7 +125,7 @@ public sealed class DictionaryImportService(AppDbContext db, DictionaryImportRea
                 {
                     targetLanguage.IsEnabled = true;
                     await db.SaveChangesAsync(cancellationToken);
-                    logger.LogInformation("Мову {Language} увімкнено після валідного імпорту", dataset.Language);
+                    logger.LogInformation("Мову {Language} увімкнено: є опублікований схвалений контент", dataset.Language);
                 }
             }
             await transaction.CommitAsync(cancellationToken);

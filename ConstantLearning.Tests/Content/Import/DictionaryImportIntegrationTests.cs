@@ -68,6 +68,49 @@ public sealed class DictionaryImportIntegrationTests(PostgresFixture postgres) :
     }
 
     [DockerFact]
+    public async Task ReimportWithoutChanges_EnablesLanguageWhenApprovedContentIsAlreadyPublished()
+    {
+        // Регрес прод-стану: схвалений контент уже опублікований, а мова вимкнена. Повторний імпорт без змін
+        // має вмикати мову, інакше «Скоро» лишається назавжди.
+        using var bundle = new DictionaryImportTestBundle { Language = "en" };
+        bundle.Row["id"] = "editorial-water-reimport";
+        bundle.Row["lemma_pl"] = "water";
+        bundle.Row["gender"] = "";
+        bundle.Row["translation_uk"] = "вода";
+        bundle.Row["accepted_answers_pl"] = "water";
+        bundle.Row["pronunciation_uk"] = "вотер";
+        bundle.Row["example_pl"] = "This is clean water.";
+        bundle.Row["example_uk"] = "Це чиста вода.";
+        bundle.Evidence["id"] = "proof-water-reimport";
+        bundle.Evidence["lemma_pl"] = "water";
+        bundle.Evidence["source_url"] = "https://en.wiktionary.org/wiki/water";
+        bundle.Evidence["ipa"] = "ˈwɔːtər";
+        bundle.Evidence["translation_candidates"] = new System.Text.Json.Nodes.JsonArray("вода", "водичка");
+        bundle.Row["validation_sources"] = "proof-water-reimport";
+        await bundle.WriteAsync();
+
+        try
+        {
+            await Importer(Db).ImportAsync(bundle.DirectoryPath);
+            var english = await Db.TargetLanguages.SingleAsync(language => language.Code == "en");
+            english.IsEnabled = false;
+            await Db.SaveChangesAsync();
+
+            var second = await Importer(Db).ImportAsync(bundle.DirectoryPath);
+
+            second.Should().Be(new DictionaryImportResult(0, 0, 1, 0, 0));
+            (await Db.TargetLanguages.AsNoTracking().SingleAsync(language => language.Code == "en")).IsEnabled
+                .Should().BeTrue("опублікований схвалений контент мови вмикає її навіть без змін у проході");
+        }
+        finally
+        {
+            var english = await Db.TargetLanguages.SingleAsync(language => language.Code == "en");
+            english.IsEnabled = false;
+            await Db.SaveChangesAsync();
+        }
+    }
+
+    [DockerFact]
     public async Task EnglishDataset_ImportsUnderTargetLanguageAndEnablesLanguage()
     {
         using var bundle = new DictionaryImportTestBundle { Language = "en" };
