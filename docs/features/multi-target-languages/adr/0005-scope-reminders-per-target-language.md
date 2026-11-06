@@ -16,7 +16,7 @@ ticket: "TBD"
 
 ## Context
 
-Ліміт нових слів уже живе на рядку стану мови `learner_language_states` ([ADR-0002](0002-scope-day-state-per-target-language.md)), тож кожна мова має власний темп. Нагадування досі — один розклад `reminder_schedules(learner_id)` на learner, а `notification_dispatches` унікальні за (отримувач, вид, дата). Вимога: перемикання мови має переносити її нагадування так само, як ліміт, і нагадування однієї мови не змінюють розклад іншої. Пояс часу лишається глобальним атрибутом learner-а ([data-model.md](data-model.md)).
+Ліміт нових слів уже живе на рядку стану мови `learner_language_states` ([ADR-0002](0002-scope-day-state-per-target-language.md)), тож кожна мова має власний темп. Нагадування досі — один розклад `reminder_schedules(learner_id)` на learner, а `notification_dispatches` унікальні за (отримувач, вид, дата). Вимога: перемикання мови має переносити її нагадування так само, як ліміт, і нагадування однієї мови не змінюють розклад іншої. Пояс часу лишається глобальним атрибутом learner-а; див. [SAD](../../personal-trainer-mvp/sad.md).
 
 ## Decision drivers
 

@@ -30,9 +30,6 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
-      <Content Update="Resources\BotMessages.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
       <None Include="Resources\Templates\*.html">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>

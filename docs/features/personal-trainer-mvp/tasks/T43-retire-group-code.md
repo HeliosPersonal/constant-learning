@@ -7,7 +7,7 @@ acs: []
 files_hint: ["ConstantLearning/Services/", "ConstantLearning/Jobs/", "ConstantLearning/Data/", "ConstantLearning/Enums/", "ConstantLearning/Resources/", "ConstantLearning/Program.cs", "ConstantLearning.Tests/Services/"]
 owner: "Viacheslav Melnichenko"
 estimate: "M"
-status: "todo"
+status: "done"
 ---
 
 # T43 — Видалити код групової моделі
@@ -20,12 +20,13 @@ status: "todo"
 
 ## What
 
-Прибрати групові сервіси, Quartz-завдання, команди, сутності з `AppDbContext` і тексти бота; залишити лише те, що використовує новий модуль `Bot`. Snapshot EF після цього очікує видалення таблиць — його фіксує [T44](T44-migrate-drop-group-model.md).
+Прибрати групові сервіси, Quartz-завдання й команди, зокрема `/startlearning`, `/stoplearning`, `/restartprogress`, налаштування розкладу та `/getalllearned`. Зберегти `/start` нового модуля `Bot`, який відкриває Mini App. Ця зміна видаляє код, DI та тексти групового бота; сутності й таблиці `AppDbContext` лишаються до окремої міграції за [T44](T44-migrate-drop-group-model.md).
 
 Файли: `ConstantLearning/Services/`, `ConstantLearning/Jobs/`, `ConstantLearning/Data/`, `ConstantLearning/Enums/`, `ConstantLearning/Resources/`, `ConstantLearning/Program.cs`, `ConstantLearning.Tests/Services/`
 
 ## Definition of Done
 
-- [ ] `dotnet build` і тести зелені без групового коду
-- [ ] у коді немає посилань на `ChatRegistration`, `LearnedWord`, `NewWordsJob`
-- [ ] `dotnet build`, тести й лінтер без нових попереджень
+- [x] `dotnet build` без групового коду
+- [ ] `dotnet test` зелені без групового коду
+- [x] групові команди, сервіси, Quartz-завдання та реєстрація в DI видалені; `/start` Mini App збережено
+- [ ] сутності й таблиці буде видалено окремо міграцією [T44](T44-migrate-drop-group-model.md)

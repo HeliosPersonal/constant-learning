@@ -2,7 +2,7 @@
 
 Персональний тренер польської мови в Telegram: бот нагадує про заняття, а Mini App проводить урок, показує словник і налаштування. Бекенд на .NET 10 і PostgreSQL, фронтенд — React-застосунок, який ASP.NET Core роздає як SPA.
 
-Груповий режим більше не підтримується. Старий код груп ще є в репозиторії й прибирається в [T43](docs/features/personal-trainer-mvp/tasks/T43-retire-group-code.md).
+Бот підтримує `/start` для відкриття Mini App і надсилає персональні нагадування про заняття через планувальник сповіщень. Видалені групові команди й розсилки більше не використовуються; планувальник персональних сповіщень збережено.
 
 ## Як це працює
 
@@ -112,11 +112,6 @@ sequenceDiagram
 | `Telegram__SecretToken` | Секрет webhook. У production задається в Infisical. |
 | `Telegram__MiniAppUrl` | Публічна адреса Mini App. |
 | `ConnectionStrings__DefaultConnection` | Рядок підключення до PostgreSQL. |
-| `Language__TargetLanguage`, `Language__SourceLanguage` | Мовна пара: Polish і Ukrainian. |
-| `Language__TargetLanguageCode`, `Language__SourceLanguageCode` | Коди мов: `pl` і `uk`. |
-| `WordsImport__WordsFolder` | Каталог CSV зі словами для імпорту. |
-
-Параметри `Learning__*` (кількість слів, затримка відповіді) діють лише для старих групових завдань і зникнуть разом із ними.
 
 Production-конфігурація, секрети та порядок деплою — в [документі про деплой](docs/deployment.md).
 
@@ -128,10 +123,10 @@ ConstantLearning/            Бекенд: webhook, API, сервіси, EF Core
 ├── Features/                Модулі функцій (див. ADR-0003)
 ├── Platform/                Спільні компоненти
 ├── Data/, Migrations/       Контекст БД і міграції EF Core
-├── Services/                Логіка бота та навчання
+├── Services/                Допоміжні сервіси
 ├── HostedServices/          Старт: БД і webhook
-├── Jobs/                    Старі групові завдання Quartz
-├── Resources/               Тексти бота, шаблони, словники
+├── Jobs/                    Фонові завдання надсилання сповіщень
+├── Resources/               Шаблони й словникові дані
 └── wwwroot/                 Збірка Mini App
 ConstantLearning.MiniApp/    Mini App (React, Vite)
 ConstantLearning.Tests/      Тести .NET (xUnit, Testcontainers)

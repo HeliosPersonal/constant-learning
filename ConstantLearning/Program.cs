@@ -6,11 +6,9 @@ using ConstantLearning.Features.Learning;
 using ConstantLearning.Features.Notifications;
 using ConstantLearning.Features.Notifications.Dispatch;
 using ConstantLearning.HostedServices;
-using ConstantLearning.Jobs;
 using ConstantLearning.Platform;
 using ConstantLearning.Platform.Metrics;
 using ConstantLearning.Platform.Telegram;
-using ConstantLearning.Services;
 using Quartz;
 
 namespace ConstantLearning;
@@ -22,14 +20,6 @@ public static class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.AddEnvVariablesAndConfigureSecrets();
 
-        builder.Services.Configure<TelegramOptions>(builder.Configuration.GetSection(TelegramOptions.SectionName));
-        builder.Services.Configure<LearningOptions>(builder.Configuration.GetSection(LearningOptions.SectionName));
-        builder.Services.Configure<WordsImportOptions>(
-            builder.Configuration.GetSection(WordsImportOptions.SectionName));
-        builder.Services.Configure<LanguageOptions>(builder.Configuration.GetSection(LanguageOptions.SectionName));
-
-        builder.Configuration.AddJsonFile("Resources/BotMessages.json", optional: false, reloadOnChange: true);
-
         builder.Services.AddPlatform(builder.Configuration);
         builder.Services.AddIdentity(builder.Configuration);
         builder.Services.AddLearning();
@@ -37,15 +27,6 @@ public static class Program
         builder.Services.AddNotifications();
         builder.Services.AddBot();
         builder.Services.AddTelegram();
-        builder.Services.AddScoped<ITelegramBotService, TelegramBotService>();
-
-        builder.Services.AddSingleton<IBotMessagesService, BotMessagesService>();
-        builder.Services.AddSingleton<ITemplateService, TemplateService>();
-        builder.Services.AddScoped<IWordService, WordService>();
-        builder.Services.AddScoped<IMessageFormatterService, MessageFormatterService>();
-        builder.Services.AddScoped<IWordImportService, WordImportService>();
-        builder.Services.AddScoped<IProgressService, ProgressService>();
-        builder.Services.AddScoped<IChatRegistrationService, ChatRegistrationService>();
 
         builder.Services.AddQuartz(q =>
         {
@@ -55,21 +36,6 @@ public static class Program
                 .WithIdentity("NotificationDispatcher-trigger")
                 .WithSimpleSchedule(schedule => schedule.WithInterval(TimeSpan.FromSeconds(30)).RepeatForever()));
 
-            var repetitionJobKey = new JobKey("RepetitionJob");
-            q.AddJob<RepetitionJob>(opts => opts.WithIdentity(repetitionJobKey));
-
-            q.AddTrigger(opts => opts
-                .ForJob(repetitionJobKey)
-                .WithIdentity("RepetitionJob-trigger")
-                .WithCronSchedule("0 * * * * ?"));
-
-            var newWordsJobKey = new JobKey("NewWordsJob");
-            q.AddJob<NewWordsJob>(opts => opts.WithIdentity(newWordsJobKey));
-
-            q.AddTrigger(opts => opts
-                .ForJob(newWordsJobKey)
-                .WithIdentity("NewWordsJob-trigger")
-                .WithCronSchedule("0 * * * * ?"));
         });
 
         builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
