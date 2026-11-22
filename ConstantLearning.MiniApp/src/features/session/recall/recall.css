@@ -7,5 +7,6 @@
 .recall-example p { margin: 4px 0; }
 .recall-diff { overflow-wrap: anywhere; line-height: 1.8; }
 .recall-diff--delete, .recall-diff--substitute, .recall-diff--insert { text-decoration: underline; font-weight: 700; }
+.recall-dispute { margin-top: 8px; }
 .recall-dispute button { height: auto; min-height: 52px; padding: 12px; }
 .recall-dispute button span { white-space: normal; overflow: visible; text-overflow: clip; }
